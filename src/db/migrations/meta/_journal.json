@@ -1,0 +1,111 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790766686325,
+      "tag": "0000_furry_professor_monster",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790768264311,
+      "tag": "0001_zippy_alice",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790775702840,
+      "tag": "0002_calm_robin_chapel",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790777630242,
+      "tag": "0003_brave_sugar_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790780426306,
+      "tag": "0004_crazy_wallflower",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790781343206,
+      "tag": "0005_perpetual_miss_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790783191887,
+      "tag": "0006_swift_selene",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790871573021,
+      "tag": "0007_fearless_major_mapleleaf",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791033325726,
+      "tag": "0008_eager_maverick",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791281809921,
+      "tag": "0009_admin_panel",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791291221462,
+      "tag": "0010_telegram_digest",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791372465520,
+      "tag": "0011_follows",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791373115191,
+      "tag": "0012_offer_sizes",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791374860787,
+      "tag": "0013_deal_sizes",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791375586377,
+      "tag": "0014_site_settings",
+      "breakpoints": true
+    }
+  ]
+}

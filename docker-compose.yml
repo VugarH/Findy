@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: serfeli-db
+    environment:
+      POSTGRES_USER: serfeli
+      POSTGRES_PASSWORD: serfeli
+      POSTGRES_DB: serfeli
+    ports:
+      - "5433:5432"
+    volumes:
+      - serfeli-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U serfeli"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  serfeli-db:

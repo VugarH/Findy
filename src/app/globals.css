@@ -1,0 +1,177 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. Components only use the semantic names below (bg-surface,
+ * text-muted, bg-brand…), so re-theming or adding a theme means editing this file.
+ */
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface-2: #f1efe9;
+  --ink: #14171a;
+  --muted: #5d6673;
+  --line: #e4e1d9;
+  --brand: #0b7a55;
+  --brand-strong: #086345;
+  --brand-soft: #e1f3ea;
+  --on-brand: #ffffff;
+  --deal: #d93a1e;
+  --deal-soft: #fdebe6;
+  --on-deal: #ffffff;
+  --chart-line: #0b7a55;
+  --global: #3452c7;
+  --global-soft: #e8ecfd;
+  --cat-electronics: #4a5fd1;
+  --cat-beauty: #c94f8f;
+  --cat-toys: #c9861a;
+  --cat-fashion: #2f7d9a;
+  --cat-shoes: #b4532a;
+  --cat-bags: #7a5a3a;
+  --cat-watches: #4f5b66;
+  --cat-jewelry: #a07a12;
+  --cat-home: #5f7d2e;
+  --cat-baby: #8a63c7;
+  --cat-sports: #c23b3b;
+  --shadow: 0 1px 2px rgb(20 23 26 / 0.04), 0 8px 24px -12px rgb(20 23 26 / 0.12);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d1012;
+  --surface: #15191c;
+  --surface-2: #1c2125;
+  --ink: #eceef0;
+  --muted: #98a2ad;
+  --line: #272d33;
+  --brand: #37c08d;
+  --brand-strong: #56d3a4;
+  --brand-soft: #12302a;
+  --on-brand: #06241a;
+  --deal: #ff7a5c;
+  --deal-soft: #3a1b14;
+  --on-deal: #2a0d06;
+  --chart-line: #2ea87a;
+  --global: #8ea2ff;
+  --global-soft: #1b2347;
+  --cat-electronics: #8ea0ff;
+  --cat-beauty: #f08cc0;
+  --cat-toys: #f0b352;
+  --cat-fashion: #6cc4e4;
+  --cat-shoes: #f29a6e;
+  --cat-bags: #d2aa82;
+  --cat-watches: #b4c0cc;
+  --cat-jewelry: #e8c75a;
+  --cat-home: #a6c97a;
+  --cat-baby: #c2a3f2;
+  --cat-sports: #f08a8a;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1012;
+    --surface: #15191c;
+    --surface-2: #1c2125;
+    --ink: #eceef0;
+    --muted: #98a2ad;
+    --line: #272d33;
+    --brand: #37c08d;
+    --brand-strong: #56d3a4;
+    --brand-soft: #12302a;
+    --on-brand: #06241a;
+    --deal: #ff7a5c;
+    --deal-soft: #3a1b14;
+    --on-deal: #2a0d06;
+    --chart-line: #2ea87a;
+    --global: #8ea2ff;
+    --global-soft: #1b2347;
+    --cat-electronics: #8ea0ff;
+    --cat-beauty: #f08cc0;
+    --cat-toys: #f0b352;
+    --cat-fashion: #6cc4e4;
+    --cat-shoes: #f29a6e;
+    --cat-bags: #d2aa82;
+    --cat-watches: #b4c0cc;
+    --cat-jewelry: #e8c75a;
+    --cat-home: #a6c97a;
+    --cat-baby: #c2a3f2;
+    --cat-sports: #f08a8a;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-deal: var(--deal);
+  --color-deal-soft: var(--deal-soft);
+  --color-on-deal: var(--on-deal);
+  --color-chart-line: var(--chart-line);
+  --color-global: var(--global);
+  --color-global-soft: var(--global-soft);
+  --color-cat-electronics: var(--cat-electronics);
+  --color-cat-beauty: var(--cat-beauty);
+  --color-cat-toys: var(--cat-toys);
+  --color-cat-fashion: var(--cat-fashion);
+  --color-cat-shoes: var(--cat-shoes);
+  --color-cat-bags: var(--cat-bags);
+  --color-cat-watches: var(--cat-watches);
+  --color-cat-jewelry: var(--cat-jewelry);
+  --color-cat-home: var(--cat-home);
+  --color-cat-baby: var(--cat-baby);
+  --color-cat-sports: var(--cat-sports);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: var(--shadow);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+@keyframes pulse-soft {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Show one of two elements depending on the active theme (explicit or from the OS). */
+.when-dark {
+  display: none;
+}
+:root[data-theme="dark"] .when-dark {
+  display: block;
+}
+:root[data-theme="dark"] .when-light {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .when-dark {
+    display: block;
+  }
+  :root:not([data-theme="light"]) .when-light {
+    display: none;
+  }
+}

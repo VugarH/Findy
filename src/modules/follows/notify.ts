@@ -1,11 +1,11 @@
-import { and, desc, eq, gt, gte, isNotNull, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gt, isNotNull, lte, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { deals, followRuns, follows, notifications, offers, products, suppliers, users } from "@/db/schema";
 import type { CategorySlug } from "@/config/categories";
 import type { MarketConfig } from "@/config/markets";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
-import { freshSince } from "@/modules/catalog/offer-view";
+import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { sendMessage, TelegramError } from "@/modules/telegram/api";
 import { telegramEnabled } from "@/modules/telegram/config";
 import { messageContext } from "@/modules/telegram/context";
@@ -168,7 +168,7 @@ async function loadNewDeals(market: MarketConfig, from: Date, to: Date): Promise
         eq(deals.marketCode, market.code),
         gt(deals.dealSince, from),
         lte(deals.dealSince, to),
-        gte(offers.lastSeenAt, freshSince(market, to)),
+        offerIsLive(freshSince(market, to)),
       ),
     );
   return rows.map((row) => ({ ...row, brandKey: row.brandKey || null, discountPct: Math.round(row.discountPct) }));

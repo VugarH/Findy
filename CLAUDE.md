@@ -19,7 +19,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Subcategory rules (≤10/category) | `src/config/subcategories.ts` (`classifyProduct`) |
 | Audience (women/men/kids/unisex) | `src/config/audience.ts` |
 | Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts` |
-| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0014) |
+| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0015) |
 | Store adapters | `src/modules/suppliers/adapters/{shopify,structured-data}/{adapter,stores}.ts` |
 | Code store list → daily job | `suppliers/registry.ts` (`getAdapters`, `getAllAdapters` = code + admin stores) |
 | Stores added in the panel | `suppliers/custom-config.ts` (zod, client-safe), `suppliers/custom.ts` (adapters, preview) |
@@ -29,7 +29,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Brand / article numbers | `catalog/normalizers/fashion.ts` (`KNOWN_BRANDS`, `ARTICLE_FORMATS`) |
 | Locks / placement rules (pure) | `catalog/locks.ts`, `catalog/placement.ts` (`reclassify`, `resolvePlacement`) |
 | Manual offers, merges | `catalog/manual-offers.ts`, `catalog/merge.ts` |
-| Freshness (live = seen < 48 h) | `catalog/offer-view.ts` (`freshSince`, `hasFreshOffer`) |
+| Freshness (live = seen < 48 h and not removed) | `catalog/offer-view.ts` (`freshSince`, `offerIsLive`, `hasFreshOffer`); a successful store read marks offers it no longer lists (`offers.removed_at`, `ingest.ts` `markUnlistedOffers`) |
 | Is it a deal? | `catalog/summary.ts`; deals table built by `deals/build.ts` |
 | Daily pipeline | `deals/pipeline.ts`; publish/patch deals `deals/publish.ts` |
 | Deal list queries + filters | `deals/queries.ts`, `deals/filters.ts` |

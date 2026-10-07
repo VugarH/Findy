@@ -19,7 +19,26 @@ const WOMEN = /kadin|\bwomen|\bwmns\b|\bladies\b|\blady\b|bayan|\bfemme\b|\bqadi
 const MEN = /erkek|\bmen\b|\bmens\b|\bmen's|\bhomme\b|\bkisi\b|\bgents?\b|\bfor him\b/;
 const UNISEX = /unisex/;
 
-export function detectAudience(text: string): Audience | null {
+/**
+ * Brands whose titles do not say who a product is for, because the whole line
+ * is for one audience. `only`: every product (Good American is women's
+ * clothing; its "baby tee" is a cropped top, not for babies). `otherwise`:
+ * when the title says nothing (Kith's main line is menswear; "Kith Women" and
+ * "Kith Kids" are brands of their own). Keyed by lower-case brand.
+ */
+const BRAND_AUDIENCES: Record<string, { only: Audience } | { otherwise: Audience }> = {
+  "good american": { only: "women" },
+  kith: { otherwise: "men" },
+};
+
+/** Who a product is for, from its title (and product type) and, for some brands, the brand itself. */
+export function detectAudience(text: string, brand?: string | null): Audience | null {
+  const rule = brand ? BRAND_AUDIENCES[brand.trim().toLowerCase()] : undefined;
+  if (rule && "only" in rule) return rule.only;
+  return fromText(text) ?? (rule && "otherwise" in rule ? rule.otherwise : null);
+}
+
+function fromText(text: string): Audience | null {
   const folded = foldForMatching(text);
   if (KIDS.test(folded)) return "kids";
   const women = WOMEN.test(folded);

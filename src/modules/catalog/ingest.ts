@@ -1,4 +1,4 @@
-import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { offers, priceObservations, products, suppliers } from "@/db/schema";
 import { detectAudience } from "@/config/audience";
@@ -75,6 +75,28 @@ export async function recordSupplierFailure(supplierId: string, error: string, a
  * new), upserts the offer and records today's price observation.
  * Used by both the daily job and live search, so both feed the same catalog.
  */
+/**
+ * After a successful read of a store's catalog: its offers this read did not
+ * list are gone there (deleted, unpublished), so they stop showing now rather
+ * than when they turn stale. Offers entered by hand are never touched.
+ * Returns how many were marked.
+ */
+export async function markUnlistedOffers(supplierId: string, readAt: Date): Promise<number> {
+  const marked = await db
+    .update(offers)
+    .set({ removedAt: readAt })
+    .where(
+      and(
+        eq(offers.supplierId, supplierId),
+        eq(offers.manual, false),
+        lt(offers.lastSeenAt, readAt),
+        isNull(offers.removedAt),
+      ),
+    )
+    .returning({ id: offers.id });
+  return marked.length;
+}
+
 export async function ingestOffers(
   supplier: SupplierDefinition,
   rawOffers: RawOffer[],
@@ -148,6 +170,7 @@ export async function ingestOffers(
         deliveryMinDays: sql`excluded.delivery_min_days`,
         deliveryMaxDays: sql`excluded.delivery_max_days`,
         lastSeenAt: sql`excluded.last_seen_at`,
+        removedAt: null,
       },
     })
     .returning({ id: offers.id, priceMinor: offers.priceMinor, currency: offers.currency });
@@ -208,7 +231,7 @@ async function resolveProducts(
           modelKey: keys.modelKey,
           categorySlug: raw.categorySlug,
           subcategorySlug: classifyProduct(raw.categorySlug, canonicalTitle(raw), raw.productType),
-          audience: detectAudience(`${canonicalTitle(raw)} ${raw.productType ?? ""}`),
+          audience: detectAudience(`${canonicalTitle(raw)} ${raw.productType ?? ""}`, raw.brand),
           sourceType: raw.productType ?? null,
           imageUrl: raw.imageUrl ?? null,
           weightKg: raw.weightKg ?? getCategory(raw.categorySlug).defaultWeightKg,

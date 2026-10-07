@@ -4,6 +4,7 @@ import { reclassify, resolvePlacement } from "./placement";
 
 const coat = {
   title: "Tween Slim Fit Siyah Palto",
+  brand: null,
   sourceType: null,
   categorySlug: "fashion" as const,
   subcategorySlug: "other",
@@ -21,6 +22,12 @@ describe("locks", () => {
 describe("reclassify (daily job)", () => {
   it("applies the rules to fields nobody set by hand", () => {
     expect(reclassify({ ...coat, title: "Erkek Mont" })).toEqual({ subcategorySlug: "jackets-coats", audience: "men" });
+  });
+
+  it("moves a product whose title clearly names another category", () => {
+    const sunglasses = { ...coat, title: "Pilgrim JUNIE sunglasses black", categorySlug: "jewelry" as const };
+    expect(reclassify(sunglasses)).toMatchObject({ categorySlug: "bags", subcategorySlug: "sunglasses" });
+    expect(reclassify({ ...sunglasses, lockedFields: ["categorySlug"] })).not.toHaveProperty("categorySlug");
   });
 
   it("leaves locked fields alone, so a correction is never undone overnight", () => {

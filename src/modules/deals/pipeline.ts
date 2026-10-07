@@ -2,7 +2,13 @@ import { and, desc, eq, gt, gte } from "drizzle-orm";
 import { db } from "@/db/client";
 import { pipelineRuns, searchQueries, suppliers, type PipelineStats, type SupplierRunStat } from "@/db/schema";
 import type { MarketConfig } from "@/config/markets";
-import { ingestOffers, recordSupplierFailure, recordSupplierSuccess, registerSupplier } from "@/modules/catalog/ingest";
+import {
+  ingestOffers,
+  markUnlistedOffers,
+  recordSupplierFailure,
+  recordSupplierSuccess,
+  registerSupplier,
+} from "@/modules/catalog/ingest";
 import { getAllAdapters, getLiveSearchAdapters } from "@/modules/suppliers/registry";
 import type { AdapterContext, SupplierAdapter } from "@/modules/suppliers/types";
 import { loadMarket, refreshFxRates } from "@/modules/pricing/fx";
@@ -23,7 +29,8 @@ export interface PipelineResult {
  * The daily job:
  *   0. refresh exchange rates
  *   1. collect every supplier's catalog (one failing store never stops the rest),
- *      and re-confirm the prices entered by hand in the admin panel
+ *      hide what a store no longer lists, and re-confirm the prices entered by
+ *      hand in the admin panel
  *   2. refresh the products users searched for most (demand-driven catalog)
  *   3. sort products into subcategories with the current rules
  *   4. rebuild the published deals
@@ -145,7 +152,9 @@ async function collectOne(adapter: SupplierAdapter, ctx: AdapterContext): Promis
     // Only now — with real data in hand — does the store enter our database.
     await recordSupplierSuccess(adapter.definition, rawOffers.length, ctx.now);
     const { offerCount } = await ingestOffers(adapter.definition, rawOffers, ctx.now);
-    return { supplierId, ok: true, offers: offerCount };
+    // Only after a successful read: a store that failed today keeps its offers until they turn stale.
+    const removed = await markUnlistedOffers(supplierId, ctx.now);
+    return { supplierId, ok: true, offers: offerCount, removed };
   } catch (error) {
     const message = describeError(error);
     await recordSupplierFailure(supplierId, message, ctx.now);

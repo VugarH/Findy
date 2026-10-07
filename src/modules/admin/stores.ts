@@ -1,11 +1,11 @@
-import { count, eq, gte, sql } from "drizzle-orm";
+import { count, eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { offers, suppliers, type Supplier } from "@/db/schema";
 import { getMarket } from "@/config/markets";
 import type { CategorySlug } from "@/config/categories";
 import type { CurrencyCode } from "@/config/currencies";
 import { registerSupplier, supplierColumns } from "@/modules/catalog/ingest";
-import { freshSince } from "@/modules/catalog/offer-view";
+import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { customDefinition, toCustomStore, trustScoreFor, type CustomStore } from "@/modules/suppliers/custom";
 import { getAdapters, isCodeSupplier } from "@/modules/suppliers/registry";
 import type { SupplierDefinition } from "@/modules/suppliers/types";
@@ -63,7 +63,7 @@ async function offerCounts(): Promise<Map<string, { total: number; live: number;
     .select({
       supplierId: offers.supplierId,
       total: count(),
-      live: sql<number>`(count(*) filter (where ${gte(offers.lastSeenAt, since)}))::int`,
+      live: sql<number>`(count(*) filter (where ${offerIsLive(since)}))::int`,
       manual: sql<number>`(count(*) filter (where ${offers.manual}))::int`,
     })
     .from(offers)

@@ -34,6 +34,16 @@ export const SIZED_CATEGORIES: readonly CategorySlug[] = ["fashion", "shoes", "s
 export const isSizedCategory = (slug: CategorySlug | undefined): boolean =>
   slug !== undefined && SIZED_CATEGORIES.includes(slug);
 
+/**
+ * Categories whose deal lists get the "For" (women / men / kids) filter: only
+ * where store titles reliably say who a product is for. Elsewhere most titles
+ * say nothing, so the counts would cover a small part of the list.
+ */
+export const AUDIENCE_CATEGORIES: readonly CategorySlug[] = ["fashion", "shoes"];
+
+export const hasAudienceFilter = (slug: CategorySlug | undefined): boolean =>
+  slug !== undefined && AUDIENCE_CATEGORIES.includes(slug);
+
 export function getCategory(slug: CategorySlug) {
   return CATEGORIES.find((c) => c.slug === slug)!;
 }
@@ -57,6 +67,44 @@ const CATEGORY_HINTS: [CategorySlug, RegExp][] = [
   // After clothing, so a "ski jacket" or "yoga leggings" stays clothing.
   ["sports", /dumbbell|dambil|kettlebell|barbell|halter|agirlik plak|\bweights?\b|\byoga\b|pilates|\bmat\b|kosu bandi|treadmill|bisiklet|bicycle|cycling|\bbikes?\b|\bkask|helmet|cadir|\btents?\b|uyku tulumu|sleeping bag|\bkamp|camping|trekking|hiking|baston|trekking pole|kayak|\bskis?\b|snowboard|raket|racket|padel|badminton|\btopu\b|\bballs?\b|boks|boxing|protein|shaker|matara|water bottle|termos|thermos|tumbler|massage gun|masaj tabancasi|percussive|foam roller|recovery|resistance band|direnc lastigi|jump rope|atlama ipi|squat|bench|power rack|home gym|fitness|\bgym\b|headlamp|kafa lambasi|lantern|fener|\bstove|hammock|hamak|kamp sandalye|camp chair|sleeping pad|\bdalis|diving|surf|yuzme|swim goggles/],
 ];
+
+/**
+ * Words that say a product does belong to a category CATEGORY_HINTS has no
+ * rule for, or misses: a "Barbie Sweater Doll" stays a toy, a phone wallet
+ * case stays electronics.
+ */
+const KEEP_HINTS: [CategorySlug, RegExp][] = [
+  ["electronics", /iphone|ipad|imac|galaxy|pixel|magsafe|\bcases?\b|charg|cable|\busb|bluetooth|wireless|power ?bank|\bphones?\b|smart|laptop|macbook|airpods|headphone|earbud|speaker|camera|\bcam\b|\bmounts?\b|\bclips?\b/],
+  ["toys", /\bdolls?\b|lego|playset|play set|\btoys?\b|oyuncak|figure|figur|plush|pelus|puzzle|\bgame\b|\bkit\b|\bset(i)?\b|craft|maker|decorate|costume|kostum|magic|hardcover|\bbooks?\b|\binch\b/],
+  // Sunglass models are often called "Jacket"; a watch "on a bracelet" is still a watch.
+  ["bags", /polari[sz]ed|\boakley\b/],
+  ["watches", /\bgmt\b|automatic|quartz|\bdial\b|\d ?mm\b/],
+];
+
+/**
+ * Product words clear enough to move a product out of its store's category:
+ * "Pilgrim AUSTEN sunglasses" from a jewelry store is sunglasses. Narrow on
+ * purpose: CATEGORY_HINTS are loose because they only choose among a store's
+ * own categories ("cream" is beauty there, but also a shoe colour).
+ */
+const DEFINITE_HINTS: [CategorySlug, RegExp][] = [
+  // Before bags, so a "hat necklace" is a necklace; a "pendant keychain" is not jewelry.
+  ["jewelry", /^(?!.*(keychain|key ?ring|anahtarlik)).*(necklace|kolye|earrings?\b|\bkupe\b|bracelet|bileklik|pendant|anklet)/],
+  ["bags", /sunglass|gunes gozlu|eyewear|backpack|sirt canta|\bwallets?\b|cuzdan|\btote\b|duffel|snapback|strapback|trucker hat|59fifty|9forty|beanie|bucket hat|\bhats?\b/],
+  ["fashion", /\bt-?shirts?\b|tisort|hoodie|sweatshirt|\btees?\b|sweater|\bjackets?\b|\bshorts\b|joggers?\b/],
+];
+
+/**
+ * The category a product clearly belongs to instead of `current`, or null to
+ * keep it. Only when the title says nothing that fits `current`: a "Sorting
+ * Hat watch" stays a watch, a "Sunglasses Chain" from a jewelry store stays jewelry.
+ */
+export function definiteCategory(current: CategorySlug, title: string): CategorySlug | null {
+  const folded = foldForMatching(title);
+  const fits = [...CATEGORY_HINTS, ...KEEP_HINTS].some(([slug, hint]) => slug === current && hint.test(folded));
+  if (fits) return null;
+  return DEFINITE_HINTS.find(([slug, hint]) => slug !== current && hint.test(folded))?.[0] ?? null;
+}
 
 /**
  * The category of a product from a store that sells several: the first of

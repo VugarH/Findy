@@ -18,3 +18,20 @@ describe("detectAudience", () => {
     expect(detectAudience(title)).toBe(expected);
   });
 });
+
+describe("brands whose line is for one audience", () => {
+  it("Good American is women's, even a \"baby tee\"", () => {
+    expect(detectAudience("Good American THE RIB BABY TEE | WHITE", "Good American")).toBe("women");
+    expect(detectAudience("Good American GOOD 90s JEANS | INDIGO", "Good American")).toBe("women");
+  });
+
+  it("Kith's main line is menswear unless the title says otherwise", () => {
+    expect(detectAudience("Kith Curtis Short - Cyclone", "Kith")).toBe("men");
+    expect(detectAudience("Kith Kids Hoodie", "Kith")).toBe("kids");
+    expect(detectAudience("Kith Women Nelson Hoodie", "Kith Women")).toBe("women");
+  });
+
+  it("leaves other brands to their titles", () => {
+    expect(detectAudience("Nike Air Force 1", "Nike")).toBeNull();
+  });
+});

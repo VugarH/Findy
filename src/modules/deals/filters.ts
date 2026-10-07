@@ -1,5 +1,5 @@
 import { isAudience } from "@/config/audience";
-import { isCategorySlug, isSizedCategory } from "@/config/categories";
+import { hasAudienceFilter, isCategorySlug, isSizedCategory } from "@/config/categories";
 import { BRAND_SEPARATOR, brandKey } from "@/modules/catalog/brand";
 import { isSubcategoryOf } from "@/config/subcategories";
 import type { FilterSwitches } from "@/modules/settings/filter-switches";
@@ -96,7 +96,8 @@ function readDealFilters(params: RawSearchParams, lockedCategory?: DealFilters["
     category,
     // A subcategory only makes sense inside its own category.
     subcategory: category && subcategory && isSubcategoryOf(category, subcategory) ? subcategory : undefined,
-    audience: audience && isAudience(audience) ? audience : undefined,
+    // Who a product is for is offered only where titles say it (see AUDIENCE_CATEGORIES).
+    audience: hasAudienceFilter(category) && audience && isAudience(audience) ? audience : undefined,
     brands: brands.length > 0 ? brands : undefined,
     sizes: sizes.length > 0 ? sizes : undefined,
     scope: scope === "local" || scope === "global" ? scope : undefined,
@@ -159,10 +160,11 @@ export function filterQuery(
     ...filterParams(current, includeCategory, extra),
     ...patch,
   };
-  // A different category invalidates the chosen subcategory, brands and sizes.
+  // A different category invalidates the chosen subcategory, audience, brands and sizes.
   if ("category" in patch && !("sub" in patch)) delete merged.sub;
   if ("category" in patch && !("brand" in patch)) delete merged.brand;
   if ("category" in patch && !("sizes" in patch)) delete merged.sizes;
+  if ("category" in patch && !("for" in patch)) delete merged.for;
 
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(merged)) {

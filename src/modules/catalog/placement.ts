@@ -1,5 +1,5 @@
 import { detectAudience, type Audience } from "@/config/audience";
-import { isCategorySlug, type CategorySlug } from "@/config/categories";
+import { definiteCategory, isCategorySlug, type CategorySlug } from "@/config/categories";
 import { classifyProduct, type SubcategorySlug } from "@/config/subcategories";
 import { isLocked, withLocks, withoutLocks } from "./locks";
 
@@ -16,6 +16,7 @@ export type AudienceChoice = Audience | "auto" | "none";
 
 interface ClassifiableProduct {
   title: string;
+  brand: string | null;
   categorySlug: string;
   sourceType: string | null;
   subcategorySlug: string;
@@ -24,21 +25,28 @@ interface ClassifiableProduct {
 }
 
 /**
- * What the rules say a product's subcategory and audience should be, or
- * undefined for a field that stays as it is — because it is already right or
- * because someone set it by hand (a locked field).
+ * What the rules say a product's category, subcategory and audience should be,
+ * or undefined for a field that stays as it is — because it is already right
+ * or because someone set it by hand (a locked field). The category moves only
+ * when the title clearly names another kind of product (`definiteCategory`):
+ * sunglasses sold by a jewelry store go to sunglasses.
  */
 export function reclassify(product: ClassifiableProduct): {
+  categorySlug?: CategorySlug;
   subcategorySlug?: SubcategorySlug;
   audience?: Audience | null;
 } {
-  const result: { subcategorySlug?: SubcategorySlug; audience?: Audience | null } = {};
+  const result: { categorySlug?: CategorySlug; subcategorySlug?: SubcategorySlug; audience?: Audience | null } = {};
   if (isCategorySlug(product.categorySlug) && !isLocked(product.lockedFields, "subcategorySlug")) {
-    const next = classifyProduct(product.categorySlug, product.title, product.sourceType);
+    let category: CategorySlug = product.categorySlug;
+    // A hand-picked subcategory pins its category too.
+    const moved = isLocked(product.lockedFields, "categorySlug") ? null : definiteCategory(category, product.title);
+    if (moved) category = result.categorySlug = moved;
+    const next = classifyProduct(category, product.title, product.sourceType);
     if (next !== product.subcategorySlug) result.subcategorySlug = next;
   }
   if (!isLocked(product.lockedFields, "audience")) {
-    const next = detectAudience(`${product.title} ${product.sourceType ?? ""}`);
+    const next = detectAudience(`${product.title} ${product.sourceType ?? ""}`, product.brand);
     if (next !== product.audience) result.audience = next;
   }
   return result;
@@ -57,7 +65,7 @@ interface Placement {
  * the rules.
  */
 export function resolvePlacement(
-  current: Placement & { title: string; sourceType: string | null },
+  current: Placement & { title: string; brand?: string | null; sourceType: string | null },
   choice: { categorySlug: CategorySlug; subcategory?: SubcategoryChoice; audience?: AudienceChoice },
 ): Placement {
   let locks = current.lockedFields;
@@ -77,7 +85,7 @@ export function resolvePlacement(
   let audience = current.audience;
   if (choice.audience === "auto") {
     locks = withoutLocks(locks, ["audience"]);
-    audience = detectAudience(`${current.title} ${current.sourceType ?? ""}`);
+    audience = detectAudience(`${current.title} ${current.sourceType ?? ""}`, current.brand);
   } else if (choice.audience !== undefined) {
     locks = withLocks(locks, ["audience"]);
     audience = choice.audience === "none" ? null : choice.audience;

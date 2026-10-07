@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { deals, offers, products, suppliers, type Product } from "@/db/schema";
 import { detectAudience } from "@/config/audience";
@@ -9,7 +9,7 @@ import { withLocks, type LockableField } from "@/modules/catalog/locks";
 import { createManualOffer, type ManualOfferInput } from "@/modules/catalog/manual-offers";
 import { matchKeysOf } from "@/modules/catalog/matching";
 import { mergeProducts, type MergeError } from "@/modules/catalog/merge";
-import { freshSince } from "@/modules/catalog/offer-view";
+import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { resolvePlacement, type AudienceChoice, type SubcategoryChoice } from "@/modules/catalog/placement";
 import { patchProductDeals, withdrawProductDeals } from "@/modules/deals/publish";
 
@@ -92,7 +92,7 @@ function productConditions(filters: ProductFilters): SQL[] {
   }
   if (filters.live) {
     conditions.push(
-      sql`exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${gte(offers.lastSeenAt, since)})`,
+      sql`exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${offerIsLive(since)})`,
     );
   }
   if (filters.manual) {
@@ -122,7 +122,7 @@ export async function listAdminProducts(
     .select({
       productId: offers.productId,
       total: sql<number>`count(*)::int`.as("total"),
-      live: sql<number>`(count(*) filter (where ${gte(offers.lastSeenAt, since)}))::int`.as("live"),
+      live: sql<number>`(count(*) filter (where ${offerIsLive(since)}))::int`.as("live"),
       stores: sql<string[]>`array_agg(distinct ${suppliers.name})`.as("stores"),
     })
     .from(offers)
@@ -252,7 +252,7 @@ export async function getAdminProduct(id: string): Promise<AdminProductDetail | 
       deliveryMaxDays: offer.deliveryMaxDays,
       firstSeenAt: offer.firstSeenAt,
       lastSeenAt: offer.lastSeenAt,
-      live: offer.lastSeenAt >= since,
+      live: offer.lastSeenAt >= since && offer.removedAt === null,
     })),
   };
 }
@@ -439,10 +439,11 @@ export async function createProduct(input: NewProduct): Promise<CreateProductRes
   const placement = resolvePlacement(
     {
       title: input.title,
+      brand: input.brand,
       sourceType: null,
       categorySlug: input.categorySlug,
       subcategorySlug: classifyProduct(input.categorySlug, input.title),
-      audience: detectAudience(input.title),
+      audience: detectAudience(input.title, input.brand),
       lockedFields: ["title", "categorySlug", ...(input.brand ? (["brand"] as const) : [])],
     },
     { categorySlug: input.categorySlug, subcategory: input.subcategory, audience: input.audience },

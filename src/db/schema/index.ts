@@ -143,6 +143,12 @@ export const offers = pgTable(
     manual: boolean("manual").notNull().default(false),
     firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    /**
+     * Set when a complete, successful read of the store no longer listed this
+     * offer (deleted or unpublished there): it stops showing at once instead of
+     * after `staleAfterHours`. Cleared when the store lists it again.
+     */
+    removedAt: timestamp("removed_at", { withTimezone: true }),
   },
   (t) => [
     uniqueIndex("offers_supplier_external_idx").on(t.supplierId, t.externalId),
@@ -230,6 +236,8 @@ export interface SupplierRunStat {
   supplierId: string;
   ok: boolean;
   offers: number;
+  /** Offers the store no longer lists, hidden by this run (offers.removed_at). */
+  removed?: number;
   error?: string;
 }
 

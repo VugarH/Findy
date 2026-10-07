@@ -4,7 +4,7 @@ import { products } from "@/db/schema";
 import { reclassify } from "./placement";
 
 /**
- * Applies the current subcategory and audience rules to every product and
+ * Applies the current category, subcategory and audience rules to every product and
  * saves what changed. Runs in the daily job, so editing a rule fixes old
  * products too. Fields set by hand in the admin panel are left alone.
  */
@@ -13,6 +13,7 @@ export async function classifyProducts(): Promise<number> {
     .select({
       id: products.id,
       title: products.title,
+      brand: products.brand,
       categorySlug: products.categorySlug,
       sourceType: products.sourceType,
       subcategorySlug: products.subcategorySlug,
@@ -21,15 +22,22 @@ export async function classifyProducts(): Promise<number> {
     })
     .from(products);
 
+  const categoryChanges = new Map<string, string[]>();
   const changes = new Map<string, string[]>();
   const audienceChanges = new Map<string | null, string[]>();
   for (const row of rows) {
     const next = reclassify(row);
+    if (next.categorySlug) categoryChanges.set(next.categorySlug, [...(categoryChanges.get(next.categorySlug) ?? []), row.id]);
     if (next.subcategorySlug) changes.set(next.subcategorySlug, [...(changes.get(next.subcategorySlug) ?? []), row.id]);
     if (next.audience !== undefined) audienceChanges.set(next.audience, [...(audienceChanges.get(next.audience) ?? []), row.id]);
   }
 
   let changed = 0;
+  for (const [categorySlug, ids] of categoryChanges) {
+    for (let i = 0; i < ids.length; i += 5000) {
+      await db.update(products).set({ categorySlug }).where(inArray(products.id, ids.slice(i, i + 5000)));
+    }
+  }
   for (const [subcategorySlug, ids] of changes) {
     for (let i = 0; i < ids.length; i += 5000) {
       const batch = ids.slice(i, i + 5000);

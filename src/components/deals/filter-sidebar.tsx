@@ -2,7 +2,7 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import { Suspense } from "react";
 import { AUDIENCES } from "@/config/audience";
-import { CATEGORIES } from "@/config/categories";
+import { CATEGORIES, hasAudienceFilter } from "@/config/categories";
 import { CURRENCIES } from "@/config/currencies";
 import { subcategoriesOf } from "@/config/subcategories";
 import { LOCALE_TAGS } from "@/i18n/config";
@@ -47,8 +47,10 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
   const subcategories = filters.category
     ? subcategoriesOf(filters.category).filter((slug) => facets.subcategories[slug] || slug === filters.subcategory)
     : [];
-  // Shown only where titles say who products are for (clothing, shoes…), not for phones.
-  const audiences = AUDIENCES.filter((audience) => facets.audiences[audience] || audience === filters.audience);
+  // Only in clothing and shoes, where titles say who a product is for (see AUDIENCE_CATEGORIES).
+  const audiences = hasAudienceFilter(filters.category)
+    ? AUDIENCES.filter((audience) => facets.audiences[audience] || audience === filters.audience)
+    : [];
   const selectedBrands = filters.brands ?? [];
   const toggleBrand = (key: string) => {
     const next = selectedBrands.includes(key)

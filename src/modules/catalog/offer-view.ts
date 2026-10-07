@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { offers, priceObservations, products, suppliers, type Product } from "@/db/schema";
 import { getCategory, type CategorySlug } from "@/config/categories";
@@ -58,11 +58,17 @@ export function freshSince(market: MarketConfig, now = new Date()): Date {
   return new Date(now.getTime() - market.deals.staleAfterHours * 3_600_000);
 }
 
-/** SQL condition: the product is active and has an offer a store has confirmed recently. */
+/**
+ * SQL condition: the offer is live — its store confirmed it since `since`
+ * (see freshSince) and did not drop it from its listing in a later read.
+ */
+export function offerIsLive(since: Date): SQL {
+  return and(gte(offers.lastSeenAt, since), isNull(offers.removedAt))!;
+}
+
+/** SQL condition: the product is active and has a live offer. */
 export function hasFreshOffer(market: MarketConfig, now = new Date()): SQL {
-  // Raw SQL parameters are not type-mapped by the driver, so the timestamp goes in as ISO text.
-  const since = freshSince(market, now).toISOString();
-  return sql`${products.active} and exists (select 1 from ${offers} where ${offers.productId} = ${products.id} and ${offers.lastSeenAt} >= ${since}::timestamptz)`;
+  return sql`${products.active} and exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${offerIsLive(freshSince(market, now))})`;
 }
 
 export async function loadProductsWithOffers(
@@ -79,7 +85,7 @@ export async function loadProductsWithOffers(
     .innerJoin(products, eq(offers.productId, products.id))
     .where(
       and(
-        gte(offers.lastSeenAt, freshSince(market, now)),
+        offerIsLive(freshSince(market, now)),
         eq(suppliers.active, true),
         eq(products.active, true),
         productIds ? inArray(offers.productId, productIds) : undefined,

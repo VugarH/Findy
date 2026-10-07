@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectCategory } from "./categories";
+import { definiteCategory, detectCategory } from "./categories";
 
 describe("detectCategory", () => {
   const sneakerShop = ["shoes", "bags", "fashion"] as const;
@@ -44,5 +44,36 @@ describe("detectCategory", () => {
   it("reads URL slugs, which have no Turkish letters", () => {
     expect(detectCategory(["shoes", "fashion"], "urun nike revolution 8 kadin spor ayakkabi")).toBe("shoes");
     expect(detectCategory(["bags", "fashion"], "erkek deri cuzdan")).toBe("bags");
+  });
+});
+
+describe("definiteCategory", () => {
+  it.each([
+    ["jewelry", "Pilgrim AUSTEN sunglasses grey", "bags"],
+    ["watches", "Lilienthal Berlin Eyewear Strap – Brown", "bags"],
+    ["watches", "Lilienthal Berlin Virtuoso Wallet - Black", "bags"],
+    ["fashion", "UNDEFEATED RACING STRAPBACK", "bags"],
+    ["fashion", "Represent Doberman Pendant Necklace - Silver", "jewelry"],
+    ["beauty", "Jeffree Star Cosmetics Engraved Cowgirl Hat Necklace", "jewelry"],
+    ["beauty", "Glossier Terrazzo Hoodie", "fashion"],
+    ["toys", "Barbie Signature Barbie Christmas Tree Red Ugly Sweater", "fashion"],
+    ["electronics", "Peak Design City Backpack 22L", "bags"],
+  ] as const)("%s: %s -> %s", (current, title, expected) => {
+    expect(definiteCategory(current, title)).toBe(expected);
+  });
+
+  it.each([
+    ["jewelry", "Missoma Calissa Sunglasses Chain | 18ct Gold Plated"],
+    ["watches", "Timex Harry Potter x Timex Weekender Sorting Hat 37mm Leather Strap Watch"],
+    ["watches", "Timex Atelier GMT24 M1a 40mm Swiss Made Automatic Stainless Steel Bracelet"],
+    ["bags", "OAKLEY SPEED CAT EYE JACKET REDUX - YELLOW BENGAL"],
+    ["toys", "Barbie Signature Barbie Holiday Sweater Doll with Long Blonde Hair"],
+    ["toys", "Disney Prenses Belle Asa Kolye Bileklik Seti"],
+    ["electronics", "Twelve South BackPack for iMac & Studio Display"],
+    ["electronics", "Satechi Vegan-Leather FindAll™ Keychain"],
+    ["home", "Fellow Stagg Tasting Glasses"],
+    ["shoes", "Steve Madden GERONIMO CREAM"],
+  ] as const)("keeps %s: %s", (current, title) => {
+    expect(definiteCategory(current, title)).toBeNull();
   });
 });

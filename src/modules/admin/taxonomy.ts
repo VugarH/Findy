@@ -1,10 +1,10 @@
-import { and, eq, gte, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { deals, offers, products } from "@/db/schema";
 import { CATEGORY_SLUGS, type CategorySlug } from "@/config/categories";
 import { getMarket } from "@/config/markets";
 import { OTHER_SUBCATEGORY, subcategoriesOf, type SubcategorySlug } from "@/config/subcategories";
-import { freshSince } from "@/modules/catalog/offer-view";
+import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 
 /**
  * The category tree with how many products sit in each branch. Categories
@@ -39,7 +39,7 @@ export async function getCategoryTree(): Promise<CategoryBranch[]> {
       category: products.categorySlug,
       subcategory: products.subcategorySlug,
       products: sql<number>`count(*)::int`,
-      live: sql<number>`(count(*) filter (where exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${gte(offers.lastSeenAt, since)})))::int`,
+      live: sql<number>`(count(*) filter (where exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${offerIsLive(since)})))::int`,
       deals: sql<number>`(count(*) filter (where exists (select 1 from ${deals} where ${eq(deals.productId, products.id)})))::int`,
       locked: sql<number>`(count(*) filter (where 'subcategorySlug' = any(${products.lockedFields})))::int`,
     })

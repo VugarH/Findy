@@ -1,9 +1,9 @@
-import { and, count, eq, gte, isNull, sql } from "drizzle-orm";
+import { and, count, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { deals, offers, orderRequests, products, type AdminEvent } from "@/db/schema";
 import { getMarket } from "@/config/markets";
 import { OTHER_SUBCATEGORY } from "@/config/subcategories";
-import { freshSince } from "@/modules/catalog/offer-view";
+import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { listAdminEvents, unpublishedChanges } from "./audit";
 import { latestRun, type AdminRun } from "./runs";
 import { listAdminStores, type AdminStore, type StoreStatus } from "./stores";
@@ -30,7 +30,7 @@ export async function getDashboard(): Promise<Dashboard> {
         active: sql<number>`(count(*) filter (where ${current}))::int`,
         off: sql<number>`(count(*) filter (where not ${products.active} and ${products.mergedIntoId} is null))::int`,
         unsorted: sql<number>`(count(*) filter (where ${current} and ${products.subcategorySlug} = ${OTHER_SUBCATEGORY}))::int`,
-        live: sql<number>`(count(*) filter (where ${current} and exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${gte(offers.lastSeenAt, since)})))::int`,
+        live: sql<number>`(count(*) filter (where ${current} and exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${offerIsLive(since)})))::int`,
         manual: sql<number>`(count(*) filter (where ${current} and exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${eq(offers.manual, true)})))::int`,
       })
       .from(products),

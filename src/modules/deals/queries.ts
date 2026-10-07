@@ -6,7 +6,7 @@ import { isSizedCategory, type CategorySlug } from "@/config/categories";
 import type { MarketConfig } from "@/config/markets";
 import type { SubcategorySlug } from "@/config/subcategories";
 import type { ProductCardData } from "@/modules/catalog/card";
-import { freshSince } from "@/modules/catalog/offer-view";
+import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { sortSizes } from "@/modules/suppliers/sizes";
 import type { SupplierScope } from "@/modules/suppliers/types";
 
@@ -58,7 +58,7 @@ const ORDER_BY: Record<DealSort, SQL[]> = {
 const BRAND_KEY = sql<string>`lower(trim(${products.brand}))`;
 
 function liveDeals(market: MarketConfig) {
-  return and(eq(deals.marketCode, market.code), gte(offers.lastSeenAt, freshSince(market)));
+  return and(eq(deals.marketCode, market.code), offerIsLive(freshSince(market)));
 }
 
 function whereFor(market: MarketConfig, filters: DealFilters) {

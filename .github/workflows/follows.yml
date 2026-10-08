@@ -1,0 +1,28 @@
+# New deals → people who follow a brand, store or category (bell + Telegram).
+# Meant for 10:00 in Baku, after the daily deals job; safe to run again.
+name: Follow notifications
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # 06:00 UTC = 10:00 in Baku
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      MARKET: ${{ vars.MARKET || 'az' }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      TELEGRAM_CHANNEL_LOCALE: ${{ vars.TELEGRAM_CHANNEL_LOCALE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run follows:notify

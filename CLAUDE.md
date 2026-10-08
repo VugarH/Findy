@@ -10,6 +10,7 @@ Drizzle + PostgreSQL 17 (Docker `serfeli-db`, port 5433, user/db `serfeli`), vit
 
 Don't read whole docs up front. This file is the map; open `docs/ARCHITECTURE.md` only for the
 recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` = store research.
+`docs/DEPLOY.md` = production: Vercel (site, region fra1) + Neon (DB) + GitHub Actions (daily 07:00 / follows 10:00 Baku).
 
 ## Where things are
 
@@ -86,6 +87,7 @@ docker exec -i serfeli-db psql -U serfeli -d serfeli   # SQL (note -i for heredo
 - Text matching uses `foldForMatching` (Turkish/Azerbaijani letters → ASCII); write rules in ASCII.
 - Shopify serves prices in the visitor's currency: read `cart_currency` (`servedCurrency`).
 - Background shell commands get killed on long runs; long jobs go to the user's terminal.
+- Scripts load `.env` with `--env-file-if-exists` (production has no `.env`; GitHub Actions passes secrets as env).
 - A `position: fixed` element inside the header is pinned to the header (its `backdrop-blur`
   makes a containing block): portal toasts/menus to `document.body`.
 - Telegram is optional (env `TELEGRAM_*`); every path must work without it. Without a webhook,

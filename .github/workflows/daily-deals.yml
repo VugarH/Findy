@@ -1,0 +1,56 @@
+# The daily job: collect every store, build deals, price alerts, Telegram top deals.
+# Runs on GitHub's machines against the production database (secret DATABASE_URL).
+# Start it by hand under Actions → "Daily deals" → Run workflow.
+name: Daily deals
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # 03:00 UTC = 07:00 in Baku (GitHub may start it a little late)
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Only these store ids, comma-separated (empty = every store)"
+        required: false
+        default: ""
+
+# Never two collections at once.
+concurrency:
+  group: collection
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      MARKET: ${{ vars.MARKET || 'az' }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      BOT_CONTACT: ${{ vars.BOT_CONTACT }}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+      VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      TELEGRAM_CHANNEL_URL: ${{ vars.TELEGRAM_CHANNEL_URL }}
+      TELEGRAM_CHANNEL_LOCALE: ${{ vars.TELEGRAM_CHANNEL_LOCALE }}
+      TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Apply database migrations
+        run: npm run db:migrate
+      - name: Collect and publish
+        env:
+          # Through the environment, never pasted into the script.
+          ONLY: ${{ inputs.only }}
+        run: |
+          if [ -n "$ONLY" ]; then
+            npm run deals:run -- --only "$ONLY"
+          else
+            npm run deals:run
+          fi

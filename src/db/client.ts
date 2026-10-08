@@ -7,7 +7,13 @@ const globalForDb = globalThis as unknown as { pgClient?: ReturnType<typeof post
 function createClient() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set. Copy .env.example to .env.");
-  return postgres(url, { max: 10, onnotice: () => {} });
+  return postgres(url, {
+    // On a serverless host every instance opens its own pool: keep it small.
+    max: process.env.VERCEL ? 3 : 10,
+    // Neon's pooled address ("-pooler") runs PgBouncer, which cannot keep named prepared statements.
+    prepare: !url.includes("-pooler."),
+    onnotice: () => {},
+  });
 }
 
 // Reuse one pool across hot reloads in development.

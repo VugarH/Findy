@@ -5,7 +5,12 @@
 export const siteConfig = {
   name: "Sərfəli",
   domain: "serfeli.az",
-  demoData: process.env.NEXT_PUBLIC_DEMO_DATA !== "false",
+  /**
+   * Sample stores and prices instead of the real ones — only when switched on
+   * explicitly, so a deployment or a scheduled job that lacks the setting
+   * never fills the live database with demo data.
+   */
+  demoData: process.env.NEXT_PUBLIC_DEMO_DATA?.trim().toLowerCase() === "true",
 } as const;
 
 /**

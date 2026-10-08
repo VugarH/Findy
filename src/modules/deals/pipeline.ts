@@ -126,34 +126,72 @@ export async function disabledSupplierIds(): Promise<Set<string>> {
   return new Set(rows.map((row) => row.id));
 }
 
-/** How many stores are collected at the same time. Each store is still hit one request at a time. */
-const SUPPLIER_CONCURRENCY = 16;
+/**
+ * Stores are collected in lanes that run side by side, because they are
+ * limited in different ways:
+ *   - Shopify: every Shopify store shares one request queue (Shopify counts us
+ *     as one visitor across all of them), so more parallel stores only means
+ *     more waiting. A few keep the queue busy while others save their data.
+ *   - Everything else: each store has its own polite pace (one page at a time),
+ *     so they all start at once, the biggest first — a 900-page sitemap store
+ *     sets the length of the run, and it must not wait behind the Shopify queue.
+ * Each store is still hit one request at a time.
+ */
+export interface CollectionLane {
+  name: "shopify" | "own-pace";
+  concurrency: number;
+  /** Indexes into the adapter list, in the order they start. */
+  order: number[];
+}
 
-/** Step 1 on its own — also used to back-fill price history for past days. */
+const SHOPIFY_LANE_CONCURRENCY = 4;
+const OWN_PACE_LANE_CONCURRENCY = 32;
+
+export function planLanes(adapters: SupplierAdapter[]): CollectionLane[] {
+  const indexes = adapters.map((_, index) => index);
+  const isShopify = (index: number) => adapters[index].definition.access.kind === "shopify-json";
+  const size = (index: number) => adapters[index].definition.access.politeness.maxRequestsPerRun;
+  return [
+    { name: "shopify" as const, concurrency: SHOPIFY_LANE_CONCURRENCY, order: indexes.filter(isShopify) },
+    {
+      name: "own-pace" as const,
+      concurrency: OWN_PACE_LANE_CONCURRENCY,
+      // Biggest first; the sort is stable, so equal stores keep their listed order.
+      order: indexes.filter((index) => !isShopify(index)).sort((a, b) => size(b) - size(a)),
+    },
+  ].filter((lane) => lane.order.length > 0);
+}
+
+/** Step 1 on its own — also used to back-fill price history for past days. Stats come back in `adapters` order. */
 export async function collectCatalogs(adapters: SupplierAdapter[], ctx: AdapterContext): Promise<SupplierRunStat[]> {
   const stats: SupplierRunStat[] = new Array(adapters.length);
-  let next = 0;
 
-  async function worker() {
-    while (next < adapters.length) {
-      const index = next++;
-      stats[index] = await collectOne(adapters[index], ctx);
+  async function runLane({ concurrency, order }: CollectionLane) {
+    let next = 0;
+    async function worker() {
+      while (next < order.length) {
+        const index = order[next++];
+        stats[index] = await collectOne(adapters[index], ctx);
+      }
     }
+    await Promise.all(Array.from({ length: Math.min(concurrency, order.length) }, worker));
   }
-  await Promise.all(Array.from({ length: Math.min(SUPPLIER_CONCURRENCY, adapters.length) }, worker));
+  await Promise.all(planLanes(adapters).map(runLane));
   return stats;
 }
 
 async function collectOne(adapter: SupplierAdapter, ctx: AdapterContext): Promise<SupplierRunStat> {
   const supplierId = adapter.definition.id;
   try {
-    const rawOffers = await adapter.fetchCatalog(ctx);
+    let listedEverything = false;
+    const rawOffers = await adapter.fetchCatalog({ ...ctx, listedEverything: () => (listedEverything = true) });
     if (rawOffers.length === 0) throw new Error("The store returned no offers");
     // Only now — with real data in hand — does the store enter our database.
     await recordSupplierSuccess(adapter.definition, rawOffers.length, ctx.now);
     const { offerCount } = await ingestOffers(adapter.definition, rawOffers, ctx.now);
-    // Only after a successful read: a store that failed today keeps its offers until they turn stale.
-    const removed = await markUnlistedOffers(supplierId, ctx.now);
+    // Only after a successful read of the whole listing. A store that failed, or that is read as a
+    // sample (sitemap stores, large Shopify catalogs), keeps its offers until they turn stale.
+    const removed = listedEverything ? await markUnlistedOffers(supplierId, ctx.now) : 0;
     return { supplierId, ok: true, offers: offerCount, removed };
   } catch (error) {
     const message = describeError(error);

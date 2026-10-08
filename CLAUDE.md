@@ -29,9 +29,9 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Brand / article numbers | `catalog/normalizers/fashion.ts` (`KNOWN_BRANDS`, `ARTICLE_FORMATS`) |
 | Locks / placement rules (pure) | `catalog/locks.ts`, `catalog/placement.ts` (`reclassify`, `resolvePlacement`) |
 | Manual offers, merges | `catalog/manual-offers.ts`, `catalog/merge.ts` |
-| Freshness (live = seen < 48 h and not removed) | `catalog/offer-view.ts` (`freshSince`, `offerIsLive`, `hasFreshOffer`); a successful store read marks offers it no longer lists (`offers.removed_at`, `ingest.ts` `markUnlistedOffers`) |
+| Freshness (live = seen < 48 h and not removed) | `catalog/offer-view.ts` (`freshSince`, `offerIsLive`, `hasFreshOffer`); a successful read of a store's *whole* listing (adapter calls `ctx.listedEverything()`; Shopify under 500 products — never sitemap samples) marks offers it no longer lists (`offers.removed_at`, `ingest.ts` `markUnlistedOffers`) |
 | Is it a deal? | `catalog/summary.ts`; deals table built by `deals/build.ts` |
-| Daily pipeline | `deals/pipeline.ts`; publish/patch deals `deals/publish.ts` |
+| Daily pipeline | `deals/pipeline.ts` (stores collected in lanes, `planLanes`: Shopify shares one queue, 4 at a time; all other stores start at once, biggest first); publish/patch deals `deals/publish.ts` |
 | Deal list queries + filters | `deals/queries.ts`, `deals/filters.ts` |
 | Search (+ az/ru/en synonyms) | `search/catalog-search.ts`, `search/synonyms.ts` |
 | Cart / parcel planner | `modules/cart/plan.ts` (pure: parcels per store), `cart/service.ts`; cost `pricing/landed-cost.ts` `computeParcelCost`; browser cart `components/cart/cart-store.ts` (localStorage); page `(site)/cart` |
@@ -40,6 +40,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Day's top deals (digest) | `modules/digest/pick.ts` (pure), `digest/service.ts`; page `(site)/top` |
 | Telegram (channel post, bot, account link) | `modules/telegram/*` (`format.ts` = all message text, pure); webhook `app/api/telegram/webhook` |
 | Site settings (admin → Settings) | `modules/settings/*` (`site_settings` table); deal-filter switches `filter-switches.ts` (client-safe defaults), applied in `parseDealFilters` + `FilterSidebar` |
+| Display order (admin → Order) | `modules/settings/display-order.ts` (client-safe: `orderedCategories`, `orderedSubcategories`, `orderedBrands`); used by header, footer, home, `FilterSidebar`; editor `components/admin/display-order-form.tsx`, counts `modules/admin/ordering.ts`. List categories via `orderedCategories(await getDisplayOrder())`, not `CATEGORIES` |
 | Admin services / actions / text | `src/modules/admin/*`, `modules/admin/actions/*`, `src/i18n/dictionaries/admin/{en,az,ru}.ts` |
 | Admin UI | `src/components/admin/*` (ui.tsx primitives, fields.tsx `useAdminForm`), pages `src/app/[lang]/admin/` |
 | Public pages | `src/app/[lang]/(site)/…` (route group; URLs have no "(site)") |

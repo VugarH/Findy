@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CATEGORIES } from "@/config/categories";
 import { siteConfig } from "@/config/site";
 import { getI18n } from "@/i18n/server";
+import { orderedCategories } from "@/modules/settings/display-order";
+import { getDisplayOrder } from "@/modules/settings/service";
 import { channelUrl } from "@/modules/telegram/config";
 import { Container } from "@/components/ui/container";
 import { Logo } from "./logo";
@@ -9,6 +10,7 @@ import { Logo } from "./logo";
 export async function Footer() {
   const { t, href } = await getI18n();
   const channel = channelUrl();
+  const categories = orderedCategories(await getDisplayOrder());
 
   return (
     <footer className="mt-20 border-t border-line bg-surface">
@@ -24,7 +26,7 @@ export async function Footer() {
           <Link href={href("/top")} className="font-semibold text-ink hover:underline">
             {t.top.nav}
           </Link>
-          {CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <Link key={category.slug} href={href(`/category/${category.slug}`)} className="text-muted hover:text-ink">
               {t.categories[category.slug].name}
             </Link>

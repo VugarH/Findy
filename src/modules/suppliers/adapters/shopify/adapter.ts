@@ -219,7 +219,11 @@ export function createShopifyAdapter(store: ShopifyStore): SupplierAdapter {
           const offer = toRawOffer(product, served);
           if (offer) offers.push(offer);
         }
-        if (products.length < PAGE_SIZE) break;
+        if (products.length < PAGE_SIZE) {
+          // A short page is the last one: the whole catalog was read.
+          ctx.listedEverything?.();
+          break;
+        }
       }
       return offers;
     },

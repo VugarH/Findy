@@ -101,6 +101,12 @@ export interface AdapterContext {
   /** "Now" for the request. Injected so runs are reproducible and back-fillable. */
   now: Date;
   signal?: AbortSignal;
+  /**
+   * fetchCatalog calls this when it read the store's whole listing, not a
+   * sample: offers it did not return are then gone from the store and are
+   * hidden at once (see markUnlistedOffers). Sampling adapters never call it.
+   */
+  listedEverything?: () => void;
 }
 
 /**

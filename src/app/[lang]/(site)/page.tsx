@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Calculator, Handshake, RefreshCw, ShieldCheck } from "lucide-react";
-import { CATEGORIES } from "@/config/categories";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
@@ -15,15 +14,18 @@ import { ButtonLink } from "@/components/ui/button";
 import { CATEGORY_TEXT, CategoryIcon } from "@/components/ui/category-icon";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { orderedCategories } from "@/modules/settings/display-order";
+import { getDisplayOrder } from "@/modules/settings/service";
 
 export default async function HomePage() {
   const { t, money, href, market, locale } = await getI18n();
 
-  const [stats, top, lowest, popular] = await Promise.all([
+  const [stats, top, lowest, popular, order] = await Promise.all([
     getDealStats(market),
     listDeals(market, { sort: "best", limit: 9 }),
     listDeals(market, { badge: "lowest_price", sort: "discount", limit: 4 }),
     getPopularCoverage(market),
+    getDisplayOrder(),
   ]);
   // Families sold by several stores come first: those are the ones worth comparing.
   const popularTiles = [...popular].sort((a, b) => b.stores.length - a.stores.length).slice(0, 12);
@@ -88,7 +90,7 @@ export default async function HomePage() {
         <section>
           <SectionHeading title={t.home.categoriesTitle} />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {CATEGORIES.map((category) => (
+            {orderedCategories(order).map((category) => (
               <Link
                 key={category.slug}
                 href={href(`/category/${category.slug}`)}

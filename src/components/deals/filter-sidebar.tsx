@@ -2,9 +2,8 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import { Suspense } from "react";
 import { AUDIENCES } from "@/config/audience";
-import { CATEGORIES, hasAudienceFilter } from "@/config/categories";
+import { hasAudienceFilter } from "@/config/categories";
 import { CURRENCIES } from "@/config/currencies";
-import { subcategoriesOf } from "@/config/subcategories";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
@@ -18,7 +17,8 @@ import {
   type ParsedDealFilters,
 } from "@/modules/deals/filters";
 import type { BrandFacet, DealFacets } from "@/modules/deals/queries";
-import { getFilterSwitches } from "@/modules/settings/service";
+import { orderedBrands, orderedCategories, orderedSubcategories } from "@/modules/settings/display-order";
+import { getDisplayOrder, getFilterSwitches } from "@/modules/settings/service";
 import { BrandFilter } from "./brand-filter";
 import { DiscountSlider } from "./discount-slider";
 import { FilterGroup, FilterOption } from "./filter-panel";
@@ -42,10 +42,10 @@ interface SidebarProps {
 export async function FilterSidebar({ filters, facets, link, priceForm, showCategory, showSource }: SidebarProps) {
   const { t, market, locale } = await getI18n();
   // Filters an admin switched off are not offered (their URL params are already ignored).
-  const on = await getFilterSwitches();
+  const [on, order] = await Promise.all([getFilterSwitches(), getDisplayOrder()]);
   const countryName = new Intl.DisplayNames([LOCALE_TAGS[locale]], { type: "region" });
   const subcategories = filters.category
-    ? subcategoriesOf(filters.category).filter((slug) => facets.subcategories[slug] || slug === filters.subcategory)
+    ? orderedSubcategories(order, filters.category).filter((slug) => facets.subcategories[slug] || slug === filters.subcategory)
     : [];
   // Only in clothing and shoes, where titles say who a product is for (see AUDIENCE_CATEGORIES).
   const audiences = hasAudienceFilter(filters.category)
@@ -59,8 +59,9 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
     return link({ brand: next.length ? next.join(BRAND_SEPARATOR) : undefined });
   };
   // A ticked brand with no deals left under the other filters still needs its box, to untick it.
+  // Admins' top brands first (Settings → Order), the rest by number of deals.
   const brandOptions = [
-    ...facets.brands,
+    ...orderedBrands(order, facets.brands),
     ...selectedBrands
       .filter((key) => !facets.brands.some((facet) => facet.key === key))
       .map((key) => ({ key, name: key, total: 0 })),
@@ -87,7 +88,7 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
           <FilterOption href={link({ category: undefined })} active={!filters.category}>
             {t.filters.all}
           </FilterOption>
-          {CATEGORIES.map((category) => (
+          {orderedCategories(order).map((category) => (
             <FilterOption
               key={category.slug}
               href={link({ category: category.slug })}

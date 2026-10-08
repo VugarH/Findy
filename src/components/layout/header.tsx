@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Flame, Shield, User } from "lucide-react";
 import { Suspense } from "react";
-import { CATEGORIES } from "@/config/categories";
 import { siteConfig } from "@/config/site";
+import { orderedCategories } from "@/modules/settings/display-order";
+import { getDisplayOrder } from "@/modules/settings/service";
 import { getI18n } from "@/i18n/server";
 import { isAdmin } from "@/modules/admin/guard";
 import { countUnreadNotifications } from "@/modules/alerts/service";
@@ -24,10 +25,12 @@ import { ThemeToggle } from "./theme-toggle";
 export async function Header() {
   const { locale, t, href, market } = await getI18n();
   const user = await getCurrentUser();
-  const [unread, digest] = await Promise.all([
+  const [unread, digest, order] = await Promise.all([
     user ? countUnreadNotifications(user.id) : 0,
     latestDigest(market.code),
+    getDisplayOrder(),
   ]);
+  const categories = orderedCategories(order);
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
@@ -99,7 +102,7 @@ export async function Header() {
           </Link>
           <CategoryMenu
             label={t.nav.allCategories}
-            items={CATEGORIES.map((category) => ({
+            items={categories.map((category) => ({
               slug: category.slug,
               href: href(`/category/${category.slug}`),
               name: t.categories[category.slug].name,
@@ -112,7 +115,7 @@ export async function Header() {
           />
           {/* Quick links; the menu above lists every category, so these may scroll. */}
           <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
-            {CATEGORIES.map((category) => (
+            {categories.map((category) => (
               <Link
                 key={category.slug}
                 href={href(`/category/${category.slug}`)}

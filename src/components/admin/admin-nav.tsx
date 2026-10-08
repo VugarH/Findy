@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  ArrowUpDown,
   FolderTree,
   LayoutDashboard,
   Package,
@@ -27,6 +28,7 @@ const SECTIONS = [
   { path: "/stores", key: "stores", icon: Store },
   { path: "/products", key: "products", icon: Package },
   { path: "/categories", key: "categories", icon: FolderTree },
+  { path: "/order", key: "order", icon: ArrowUpDown },
   { path: "/orders", key: "orders", icon: ShoppingBag },
   { path: "/runs", key: "runs", icon: PlayCircle },
   { path: "/telegram", key: "telegram", icon: Send },

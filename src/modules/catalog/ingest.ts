@@ -76,9 +76,9 @@ export async function recordSupplierFailure(supplierId: string, error: string, a
  * Used by both the daily job and live search, so both feed the same catalog.
  */
 /**
- * After a successful read of a store's catalog: its offers this read did not
- * list are gone there (deleted, unpublished), so they stop showing now rather
- * than when they turn stale. Offers entered by hand are never touched.
+ * After a successful read of a store's whole listing: its offers this read did
+ * not list are gone there (deleted, unpublished), so they stop showing now
+ * rather than when they turn stale. Offers entered by hand are never touched.
  * Returns how many were marked.
  */
 export async function markUnlistedOffers(supplierId: string, readAt: Date): Promise<number> {

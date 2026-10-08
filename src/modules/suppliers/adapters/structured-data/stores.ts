@@ -16,6 +16,8 @@ import type { StructuredDataStore } from "./adapter";
 const POPULAR_SPORT = /adidas|puma|nike|jordan|new-balance|skechers|converse|vans|reebok|asics|lumberjack|columbia|timberland|crocs/;
 const POPULAR_FASHION = /lacoste|tommy|calvin-klein|guess|michael-kors|hugo|boss|armani|ralph-lauren|gant|karl-lagerfeld|diesel|levi/;
 const POPULAR_BEAUTY = /loreal|l-oreal|maybelline|nivea|garnier|la-roche|cerave|vichy|nyx|essence|flormar|golden-rose|pastel|bioderma|the-purest|neutrogena|avene|clinique|estee|mac-|dior|chanel/;
+/** Gratis's own brands, sold nowhere else online, read before the rest of Gratis. */
+const GRATIS_OWN_BRANDS = /\/(bee-beauty|beaulis|lykd|benri)-/;
 const POPULAR_WATCHES = /\/(casio|g-shock|tissot|seiko|citizen|lacoste|tommy-hilfiger|guess|michael-kors|daniel-wellington|swatch|fossil|armani|hugo-boss|boss|police|orient)-/;
 
 export const STRUCTURED_DATA_STORES: StructuredDataStore[] = [
@@ -260,7 +262,39 @@ export const STRUCTURED_DATA_STORES: StructuredDataStore[] = [
     sitemap: "https://www.gratis.com/sitemap.xml",
     productSitemaps: /Product-tr-TRY/,
     productUrl: /-p-\d+$/,
-    focus: POPULAR_BEAUTY,
+    focus: new RegExp(`${GRATIS_OWN_BRANDS.source}|${POPULAR_BEAUTY.source}`),
+    // Its own brands alone are ~1,400 products; 900 pages take ~23 min at one every 1.5 s.
+    productsPerRun: 900,
+  },
+  {
+    id: "pastel",
+    name: "Pastel",
+    origin: "https://www.pastelshop.com",
+    originCountry: "TR",
+    currency: "TRY",
+    reliability: { basis: "official-brand-store", note: "Official online store of the Turkish cosmetics brand Pastel (Pastel, Show by Pastel)" },
+    shipsToMarket: false,
+    categories: ["beauty"],
+    fallbackCategory: "beauty",
+    sitemap: "https://www.pastelshop.com/xml/sitemap/sitemap.xml",
+    productSitemaps: /\/product\.xml$/,
+    productUrl: /^https:\/\/www\.pastelshop\.com\/[^/?#]+$/,
+    // The whole catalog (~880 products): ~22 min at one page every 1.5 s.
+    productsPerRun: 900,
+  },
+  {
+    id: "sinoz",
+    name: "Sinoz",
+    origin: "https://www.sinoz.com.tr",
+    originCountry: "TR",
+    currency: "TRY",
+    reliability: { basis: "official-brand-store", note: "Official online store of the Turkish skin-care brand Sinoz" },
+    shipsToMarket: false,
+    categories: ["beauty"],
+    fallbackCategory: "beauty",
+    sitemap: "https://www.sinoz.com.tr/sitemap.xml",
+    productUrl: /-p$/,
+    brand: "Sinoz",
   },
   {
     id: "rossmann-tr",

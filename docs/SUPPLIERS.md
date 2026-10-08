@@ -229,3 +229,15 @@ also switches the live web search back on.
 - Neither store has been asked for permission. Both allow these pages in robots.txt, but a short
   email introducing the service (you send them buyers) is the right next step and the route to a
   proper feed.
+
+## Turkish beauty brands (added 2026-10-08)
+
+| Brand | Where we read it | Notes |
+|---|---|---|
+| Nascita | nascita.com.tr (Shopify, official) | also lists its sister brand Fenda |
+| Urban Care | urbancare.com.tr (Shopify, official) | |
+| Pastel, Show by Pastel | pastelshop.com (sitemap + schema.org, official) | whole catalog (~880) read each run; barcodes as GTIN |
+| Sinoz | sinoz.com.tr (sitemap + schema.org, official) | ~45 products |
+| The Purest Solutions | thepurestsolutions.com (Shopify, official) | connected earlier |
+| Beaulis, LYKD, Bee Beauty, Benri | Gratis (gratis.com) | Gratis's own brands, no store of their own; read first among Gratis products (900 pages per run) |
+| HC Care | — | no official online store; sold on Trendyol/Hepsiburada/Watsons (all block automated requests) and not on Gratis |

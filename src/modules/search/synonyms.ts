@@ -48,7 +48,7 @@ const GROUPS: SynonymGroup[] = [
   { stems: ["corab", "corap", "носк", "носок", "sock"], titles: ["corap", "sock"] },
   { stems: ["idman", "спортив", "tracksuit", "esofman"], titles: ["esofman", "tracksuit", "training", "antrenman", "sport"] },
 
-  // Bags & accessories
+  // Accessories (bags, wallets, belts, caps, sunglasses)
   { stems: ["canta", "сумк", "сумоч", "bag"], titles: ["canta", "bag", "tote", "clutch"] },
   { stems: ["рюкзак", "ryukzak", "backpack"], titles: ["sirt canta", "backpack"] },
   { stems: ["кошел", "бумажн", "wallet", "cuzdan", "pulqab"], titles: ["cuzdan", "wallet", "kartlik", "card holder"] },

@@ -56,8 +56,7 @@ const RULES = {
     { slug: "casual", match: /ayakkab|\bshoes?\b|footwear|casual|lifestyle|gunluk|\bkids\b|cocuk/ },
   ],
   bags: [
-    { slug: "luggage-travel", match: /valiz|bavul|luggage|suitcase|kabin boy|\btrolley|duffel|seyahat canta|travel bag|weekender/ },
-    { slug: "backpacks", match: /sirt canta|backpack|rucksack|\bdaypack/ },
+    { slug: "backpacks", match: /sirt canta|backpack|rucksack|\bdaypack|valiz|bavul|luggage|suitcase|kabin boy|\btrolley|duffel|seyahat canta|travel bag|weekender/ },
     { slug: "wallets-cardholders", match: /cuzdan|\bwallets?\b|kartlik|card ?holder|card ?case|coin purse|para kesesi|anahtarlik|keychain|key ?ring/ },
     { slug: "belts", match: /(?<!bel )\bkemer\b|\bbelts?\b(?! bag)/ },
     { slug: "sunglasses", match: /gozlu[kg]|sunglass|eyewear|\bglasses\b|optik/ },

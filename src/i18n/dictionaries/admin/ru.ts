@@ -221,6 +221,7 @@ const adminRu: AdminDictionary = {
         "old-price-json": "«oldPrice» в данных страницы",
         "old-price-field": "«old_price» в данных страницы",
         "ga4-discount": "«discount» в Google Analytics",
+        "strikethrough": "schema.org StrikethroughPrice (IdeaSoft и др.)",
       },
       brandFromTitle: "Брать бренд из названия товара",
       productsPerRun: "Страниц товаров за запуск",

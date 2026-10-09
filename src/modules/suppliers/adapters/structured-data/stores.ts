@@ -424,6 +424,23 @@ export const STRUCTURED_DATA_STORES: StructuredDataStore[] = [
     productUrl: /\/urun\//,
     brand: "Siveno",
   },
+  // Toys
+  {
+    id: "pilsan",
+    name: "Pilsan",
+    origin: "https://www.pilsanstore.com.tr",
+    originCountry: "TR",
+    currency: "TRY",
+    reliability: { basis: "official-brand-store", note: "Official online store of the Turkish toy maker Pilsan (ride-ons, play sets, outdoor toys)" },
+    shipsToMarket: false,
+    categories: ["toys"],
+    fallbackCategory: "toys",
+    sitemap: "https://www.pilsanstore.com.tr/sitemap.xml",
+    productSitemaps: /sitemap_product_\d+\.xml/,
+    productUrl: /\/urun\//,
+    brand: "Pilsan",
+    listPrice: "strikethrough",
+  },
   // Electronics
   {
     id: "troy",
@@ -473,6 +490,22 @@ export const STRUCTURED_DATA_STORES: StructuredDataStore[] = [
     focus: /lego|barbie|hot-wheels|playmobil|nerf|disney|marvel|fisher-price|monster-high/,
   },
   // Home & kitchen
+  {
+    id: "bernardo",
+    name: "Bernardo",
+    origin: "https://www.bernardo.com.tr",
+    originCountry: "TR",
+    currency: "TRY",
+    reliability: { basis: "official-brand-store", note: "Official online store of the Turkish kitchenware brand Bernardo" },
+    shipsToMarket: false,
+    categories: ["home"],
+    fallbackCategory: "home",
+    sitemap: "https://www.bernardo.com.tr/sitemap.xml",
+    productSitemaps: /sitemap_product_\d+\.xml/,
+    productUrl: /\/urun\//,
+    brand: "Bernardo",
+    listPrice: "strikethrough",
+  },
   {
     id: "emsan",
     name: "Emsan",

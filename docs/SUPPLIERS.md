@@ -267,3 +267,23 @@ Greyder (Shopify store that publishes no products — empty /products.json, no p
 only an AI-agent commerce endpoint), Avva and Schafer (HTTP 403), Vakko, Hatemoğlu, Madame Coco,
 Bernardo, Bioxcin, Panço (no schema.org Product data on product pages), Taç (robots.txt disallows
 its sitemap), Korkmaz and Tudors (no answer), Jimmy Key (site is wholesale only).
+
+## Toys and microdata stores (2026-10-09)
+
+The structured-data adapter now also reads schema.org **microdata** (itemscope/itemprop in the
+HTML, `structured-data/microdata.ts`) when a page has no JSON-LD, and a new crossed-out-price
+source `strikethrough` (schema.org StrikethroughPrice). IdeaSoft shops use both.
+
+| Store | Category | Notes |
+|---|---|---|
+| Pilsan (pilsanstore.com.tr) | Toys | Turkish toy maker; microdata; ~440 products; crossed-out prices |
+| Bernardo (bernardo.com.tr) | Home | kitchenware; microdata with barcodes; crossed-out prices |
+
+Not connected:
+- **Toyzz Shop** (toyzzshop.com, ~21,000 products, Turkey's largest toy chain, owned by Sunman):
+  robots.txt allows product pages, but they are a JavaScript app — the HTML has no product
+  data; name and price come from the shop's own undocumented API. Waiting for the user's
+  decision.
+- **Sunman** (sunman.com.tr): toy distributor; no consumer shop, only a B2B portal. Its
+  products are sold through Toyzz Shop.
+- Still no product data (neither JSON-LD nor microdata): Madame Coco, Panço, Vakko, Hatemoğlu, Bioxcin.

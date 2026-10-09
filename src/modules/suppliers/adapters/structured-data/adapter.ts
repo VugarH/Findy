@@ -194,7 +194,8 @@ export function toRawOffer(html: string, url: string, store: StructuredDataStore
     gtin: product.gtin ?? [product.sku, product.mpn].find(isGtin) ?? undefined,
     mpn: articleNumberOf(brand, [product.mpn, product.sku, path, product.name], category) ?? undefined,
     categorySlug: category,
-    imageUrl: product.image ?? undefined,
+    // Pages may give "//host/a.jpg" or "/a.jpg": made absolute against the page.
+    imageUrl: absoluteUrl(product.image, url),
     priceMinor: toMinor(product.price),
     currency: store.currency,
     listPriceMinor: listPrice ? toMinor(listPrice) : undefined,
@@ -215,4 +216,13 @@ export function isGtin(value: string | null | undefined): value is string {
   const check = digits.pop()!;
   const sum = digits.reverse().reduce((total, digit, i) => total + digit * (i % 2 === 0 ? 3 : 1), 0);
   return (10 - (sum % 10)) % 10 === check;
+}
+
+function absoluteUrl(value: string | null, page: string): string | undefined {
+  if (!value) return undefined;
+  try {
+    return new URL(value, page).toString();
+  } catch {
+    return undefined;
+  }
 }

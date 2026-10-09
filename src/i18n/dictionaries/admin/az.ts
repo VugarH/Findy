@@ -223,6 +223,7 @@ const adminAz: AdminDictionary = {
         "old-price-json": "Səhifə məlumatında «oldPrice»",
         "old-price-field": "Səhifə məlumatında «old_price»",
         "ga4-discount": "Google Analytics «discount»",
+        "strikethrough": "schema.org StrikethroughPrice (IdeaSoft və s.)",
       },
       brandFromTitle: "Brendi məhsulun adından oxu",
       productsPerRun: "Hər toplamada məhsul səhifəsi",

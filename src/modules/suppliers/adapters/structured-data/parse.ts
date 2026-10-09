@@ -1,4 +1,5 @@
 import { decodeHtml } from "../../http";
+import { readMicrodataProduct, readStrikethroughPrice } from "./microdata";
 import { sizesFromStructuredVariants, type SizeOption } from "../../sizes";
 import type { ListPriceSource } from "./list-price";
 
@@ -34,7 +35,9 @@ export function readStructuredProduct(html: string): StructuredProduct | null {
       if (parsed) return parsed;
     }
   }
-  return null;
+  // No JSON-LD: the same data written as microdata into the HTML.
+  const microdata = readMicrodataProduct(html);
+  return microdata ? toStructuredProduct(microdata) : null;
 }
 
 function parseJson(text: string): unknown {
@@ -147,7 +150,7 @@ function toStructuredProduct(node: Json): StructuredProduct | null {
   };
 }
 
-const LIST_PRICE_PATTERNS: Record<Exclude<ListPriceSource, "ga4-discount">, RegExp> = {
+const LIST_PRICE_PATTERNS: Record<Exclude<ListPriceSource, "ga4-discount" | "strikethrough">, RegExp> = {
   "retail-price": /\\?"retail_price\\?"\s*:\s*\\?"?([\d.]+)/,
   "old-price-json": /"oldPrice"\s*:\s*"?([\d.]+)/,
   "old-price-field": /"old_price"\s*:\s*"?([\d.]+)/,
@@ -159,7 +162,9 @@ const MAX_LIST_RATIO = 5;
 export function readListPrice(html: string, price: number, source: ListPriceSource | undefined): number | null {
   if (!source) return null;
   let listPrice: number | null = null;
-  if (source === "ga4-discount") {
+  if (source === "strikethrough") {
+    listPrice = parsePrice(readStrikethroughPrice(html));
+  } else if (source === "ga4-discount") {
     const discount = parsePrice(/["']discount["']\s*:\s*["']?([\d.]+)/.exec(html)?.[1]);
     listPrice = discount ? price + discount : null;
   } else {

@@ -12,14 +12,12 @@
 import { PoliteClient } from "@/modules/suppliers/http";
 import { RobotsPolicy } from "@/modules/suppliers/robots";
 import {
+  LIST_PRICE_SOURCES,
   readListPrice,
   readSitemap,
   readStructuredProduct,
-  type ListPriceSource,
   type SitemapEntry,
 } from "@/modules/suppliers/adapters/structured-data/parse";
-
-const LIST_PRICE_SOURCES: ListPriceSource[] = ["retail-price", "old-price-json", "old-price-field", "ga4-discount"];
 const PRODUCT_HINT = /product|urun|ürün/i;
 
 async function probe(host: string): Promise<string[]> {

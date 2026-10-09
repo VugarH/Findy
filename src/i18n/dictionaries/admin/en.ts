@@ -222,6 +222,7 @@ const adminEn = {
         "old-price-json": "“oldPrice” in the page data",
         "old-price-field": "“old_price” in the page data",
         "ga4-discount": "Google Analytics “discount”",
+        "strikethrough": "schema.org StrikethroughPrice (IdeaSoft and others)",
       },
       brandFromTitle: "Read the brand from the product name",
       productsPerRun: "Product pages per run",

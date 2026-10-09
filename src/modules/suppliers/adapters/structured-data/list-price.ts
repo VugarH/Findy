@@ -11,7 +11,9 @@ export type ListPriceSource =
   /** A page-state JSON with "old_price". */
   | "old-price-field"
   /** Google Analytics 4 item data: price + "discount". */
-  | "ga4-discount";
+  | "ga4-discount"
+  /** schema.org's own crossed-out price: a priceSpecification of type StrikethroughPrice. */
+  | "strikethrough";
 
 /** Every crossed-out-price source the adapter can read, for forms and validation. */
 export const LIST_PRICE_SOURCES = [
@@ -19,4 +21,5 @@ export const LIST_PRICE_SOURCES = [
   "old-price-json",
   "old-price-field",
   "ga4-discount",
+  "strikethrough",
 ] as const satisfies readonly ListPriceSource[];

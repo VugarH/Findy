@@ -90,9 +90,11 @@ const RULES = {
     { slug: "cookware-knives", match: /tencere|\btava\b|\bpans?\b|\bpots?\b|cookware|skillet|dutch oven|\bwok\b|sahan|guvec|bicak|knife|knives|kesme tahtasi|cutting board/ },
     { slug: "tableware-drinkware", match: /tabak|\bplates?\b|bardak|\bglass(es)?\b|\bmugs?\b|kupa|fincan|\bcups?\b|termos|tumbler|thermos|matara|bottle|catal|kasik|cutlery|surahi|pitcher|servis|kadeh|\bbowls?\b|kase/ },
     { slug: "floor-care", match: /supurge|vacuum|\bmop\b|paspas|steam cleaner|buharli temizle/ },
-    { slug: "irons-garment", match: /\butu\b|\biron\b|garment steamer|buharli utu|buhar kazanli/ },
+    // Irons share a type with vacuums: home has room for 10, and bedding needed one.
+    { slug: "floor-care", match: /\butu\b|\biron\b|garment steamer|buharli utu|buhar kazanli/ },
     { slug: "climate-air", match: /air purifier|hava temizle|nemlendirici|humidifier|nem alma|dehumidifier|\bfan\b|vantilator|heater|isitici|radiator|klima/ },
     { slug: "storage", match: /saklama|storage|kavanoz|\bjars?\b|organizer|lunch ?box|beslenme|\bcontainer/ },
+    { slug: "home-textiles", match: /yorgan|yastik|nevresim|carsaf|battaniye|\bpike\b|uyku seti|havlu|bornoz|kirlent|masa ortusu|duvet|pillow|blanket|bedding|bedspread|towel|bathrobe|cushion|runner|bath mat|banyo paspasi|perde|curtain/ },
   ],
   baby: [
     { slug: "car-seats", match: /oto koltugu|car ?seat|isofix|araba koltugu/ },

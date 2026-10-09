@@ -241,3 +241,29 @@ also switches the live web search back on.
 | The Purest Solutions | thepurestsolutions.com (Shopify, official) | connected earlier |
 | Beaulis, LYKD, Bee Beauty, Benri | Gratis (gratis.com) | Gratis's own brands, no store of their own; read first among Gratis products (900 pages per run) |
 | HC Care | — | no official online store; sold on Trendyol/Hepsiburada/Watsons (all block automated requests) and not on Gratis |
+
+## More Turkish brands (2026-10-09)
+
+Connected:
+
+| Store | Read through | Category | Notes |
+|---|---|---|---|
+| Ramsey | Shopify (www.ramsey.com.tr) | Clothing | menswear |
+| Marcomen | Shopify (www.marcomen.com.tr) | Shoes | leather shoes |
+| Chakra | Shopify (mychakrastore.com, EUR) | Home | chakra.com.tr redirects to this international store |
+| Desa | sitemap + schema.org | Bags, shoes, clothing | leather; reuses a SKU across pages (ingest keeps one listing per id) |
+| Sarar | sitemap + schema.org | Clothing, home | also Interview and Sarar Home bedding; clothing pages read first |
+| Roman | sitemap + schema.org | Clothing | womenswear, also jewelry and bags |
+| Tergan | sitemap + schema.org | Shoes, bags | |
+| Divarese | sitemap + schema.org | Shoes, bags | also George Hogg |
+| Emsan | sitemap + schema.org | Home | tableware, cookware; barcodes as GTIN |
+| Procsin | sitemap + schema.org | Beauty | |
+| Siveno | sitemap + schema.org | Beauty | natural soaps; also cleaning products |
+
+Already connected before this round: Flormar, Karaca, Derimod.
+
+Checked and not usable: Mavi (mavi.com redirects visitors outside Turkey to mavicompany.com),
+Greyder (Shopify store that publishes no products — empty /products.json, no product sitemap;
+only an AI-agent commerce endpoint), Avva and Schafer (HTTP 403), Vakko, Hatemoğlu, Madame Coco,
+Bernardo, Bioxcin, Panço (no schema.org Product data on product pages), Taç (robots.txt disallows
+its sitemap), Korkmaz and Tudors (no answer), Jimmy Key (site is wholesale only).

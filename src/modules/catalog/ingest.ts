@@ -97,11 +97,26 @@ export async function markUnlistedOffers(supplierId: string, readAt: Date): Prom
   return marked.length;
 }
 
+/**
+ * One listing per store id. Some stores show the same SKU on several pages
+ * (Desa), and one insert cannot write the same offer twice; the in-stock
+ * listing wins, else the first.
+ */
+export function uniqueListings(rawOffers: RawOffer[]): RawOffer[] {
+  const byId = new Map<string, RawOffer>();
+  for (const raw of rawOffers) {
+    const kept = byId.get(raw.externalId);
+    if (!kept || (!kept.inStock && raw.inStock)) byId.set(raw.externalId, raw);
+  }
+  return [...byId.values()];
+}
+
 export async function ingestOffers(
   supplier: SupplierDefinition,
-  rawOffers: RawOffer[],
+  listed: RawOffer[],
   now: Date,
 ): Promise<IngestResult> {
+  const rawOffers = uniqueListings(listed);
   if (rawOffers.length === 0) return { offerCount: 0, productIds: [] };
 
   const allKeyed = rawOffers.map((raw) => ({ raw, keys: matchKeysOf(raw) }));

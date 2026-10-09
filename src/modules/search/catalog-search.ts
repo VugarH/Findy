@@ -1,6 +1,6 @@
-import { and, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { products, searchQueries } from "@/db/schema";
+import { deals, products, searchQueries } from "@/db/schema";
 import type { MarketConfig } from "@/config/markets";
 import { toCard, type ProductCardData } from "@/modules/catalog/card";
 import { hasFreshOffer, loadProductsWithOffers } from "@/modules/catalog/offer-view";
@@ -11,7 +11,11 @@ import { brandKey } from "@/modules/catalog/brand";
 import type { SupplierScope } from "@/modules/suppliers/types";
 import { expandQuery } from "./synonyms";
 
-const MAX_RESULTS = 200;
+/**
+ * Matches looked at per search. The sidebar counts and filters work on these,
+ * so the cap is high enough that a normal search sees every match.
+ */
+const MAX_RESULTS = 1000;
 
 export const SEARCH_SORTS = ["relevance", "price_asc", "price_desc", "discount", "newest", "oldest"] as const;
 export type SearchSort = (typeof SEARCH_SORTS)[number];
@@ -85,6 +89,13 @@ export async function searchCatalog(
           ),
         ),
       ),
+    )
+    // A fixed order: without one the database may return a different set of
+    // matches each time, and the counts would change from click to click.
+    // Products that are deals now come first.
+    .orderBy(
+      desc(sql`exists (select 1 from ${deals} where ${eq(deals.productId, products.id)} and ${eq(deals.marketCode, market.code)})`),
+      asc(products.id),
     )
     .limit(MAX_RESULTS);
 

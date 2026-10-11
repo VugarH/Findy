@@ -9,15 +9,18 @@ interface Props {
   value: string;
   /** The first option is the default and is left out of the URL. */
   options: { value: string; label: string }[];
+  /** Also remember the choice in this cookie until the browser closes (read by the server). */
+  cookie?: string;
 }
 
-/** A dropdown that writes its choice to the URL and returns to page 1. */
-export function ParamSelect({ param, label, value, options }: Props) {
+/** A dropdown that writes its choice to the URL (and optionally a cookie) and returns to page 1. */
+export function ParamSelect({ param, label, value, options, cookie }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   function onChange(next: string) {
+    if (cookie) document.cookie = `${cookie}=${encodeURIComponent(next)}; path=/; samesite=lax`;
     const query = new URLSearchParams(searchParams);
     if (next === options[0].value) query.delete(param);
     else query.set(param, next);

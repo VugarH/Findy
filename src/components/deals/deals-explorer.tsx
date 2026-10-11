@@ -1,10 +1,12 @@
-import { SearchX } from "lucide-react";
+import { ArrowLeft, SearchX } from "lucide-react";
+import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import type { CategorySlug } from "@/config/categories";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { fmt } from "@/i18n/format";
-import { filterParams, filterQuery, PAGE_SIZES, parseDealFilters, type RawSearchParams } from "@/modules/deals/filters";
+import { filterParams, filterQuery, PAGE_SIZE_COOKIE, PAGE_SIZES, parseDealFilters, type RawSearchParams } from "@/modules/deals/filters";
+import { withPageSizeCookie } from "@/modules/deals/page-size";
 import { getDealFacets, listDeals } from "@/modules/deals/queries";
 import { getFilterSwitches } from "@/modules/settings/service";
 import { FollowButton } from "@/components/follows/follow-button";
@@ -32,7 +34,7 @@ interface Props {
 export async function DealsExplorer({ title, subtitle, searchParams, basePath, lockedCategory, action }: Props) {
   const { t, money, href, market, locale } = await getI18n();
   const switches = await getFilterSwitches();
-  const filters = parseDealFilters(searchParams, lockedCategory, switches);
+  const filters = parseDealFilters(await withPageSizeCookie(searchParams), lockedCategory, switches);
   const showCategory = !lockedCategory && switches.category;
 
   const [{ items, total }, facets] = await Promise.all([
@@ -68,9 +70,22 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
   return (
     <Container className="max-w-[88rem] py-6">
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-extrabold tracking-tight">{title}</h1>
-          <p className="mt-1 text-sm text-muted">{subtitle}</p>
+        <div className="flex min-w-0 items-start gap-2">
+          {/* A category (page or filter) goes straight back to all deals, however many were opened. */}
+          {(lockedCategory || filters.category) && (
+            <Link
+              href={href("/deals")}
+              aria-label={t.nav.back}
+              title={t.nav.back}
+              className="-ml-2 mt-0.5 grid size-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+            >
+              <ArrowLeft className="size-5" aria-hidden />
+            </Link>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-2xl font-extrabold tracking-tight">{title}</h1>
+            <p className="mt-1 text-sm text-muted">{subtitle}</p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           {action}
@@ -119,6 +134,7 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
                 <Suspense>
                   <ParamSelect
                     param="size"
+                    cookie={PAGE_SIZE_COOKIE}
                     label={t.filters.perPage}
                     value={String(filters.size)}
                     options={PAGE_SIZES.map((size) => ({ value: String(size), label: String(size) }))}

@@ -4,7 +4,8 @@ import { Suspense } from "react";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
-import { filterParams, filterQuery, PAGE_SIZES, parseDealFilters } from "@/modules/deals/filters";
+import { filterParams, filterQuery, PAGE_SIZE_COOKIE, PAGE_SIZES, parseDealFilters } from "@/modules/deals/filters";
+import { withPageSizeCookie } from "@/modules/deals/page-size";
 import { getFilterSwitches } from "@/modules/settings/service";
 import {
   facetsOfCards,
@@ -48,7 +49,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
 
   // Search has its own sort options, so the deal-list sort is left at its default here.
   const sort = parseSearchSort(first(params.sort));
-  const filters = parseDealFilters({ ...params, sort: undefined }, undefined, await getFilterSwitches());
+  const filters = parseDealFilters(await withPageSizeCookie({ ...params, sort: undefined }), undefined, await getFilterSwitches());
 
   // The local/abroad choice changes which offer represents a product, so it is applied
   // while building the cards; everything else filters the finished list.
@@ -134,6 +135,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
                 <Suspense>
                   <ParamSelect
                     param="size"
+                    cookie={PAGE_SIZE_COOKIE}
                     label={t.filters.perPage}
                     value={String(filters.size)}
                     options={PAGE_SIZES.map((size) => ({ value: String(size), label: String(size) }))}

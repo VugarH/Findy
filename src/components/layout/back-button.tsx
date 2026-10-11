@@ -10,8 +10,13 @@ import { Container } from "@/components/ui/container";
 let pagesSeen = 0;
 let lastPath: string | null = null;
 
+/** Deal listings (/deals, /category/…) show their own back arrow beside the title. */
+function hasOwnBackLink(pathname: string, href: (path: string) => string): boolean {
+  return pathname === href("/deals") || pathname.startsWith(href("/category/"));
+}
+
 /**
- * "← Back" above every page except the home page. It goes to the previous
+ * "← Back" above every page except the home page and the deal listings. It goes to the previous
  * page on our site; opened straight from a link (Telegram, a shared URL) it
  * goes home instead of leaving the site.
  */
@@ -28,7 +33,7 @@ export function BackButton() {
     }
   }, [pathname]);
 
-  if (pathname === href("/") || pathname === "/") return null;
+  if (pathname === href("/") || pathname === "/" || hasOwnBackLink(pathname, href)) return null;
 
   return (
     <Container className="pt-4">

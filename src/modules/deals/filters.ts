@@ -8,6 +8,8 @@ import { DEAL_SORTS, type DealFilters, type DealSort } from "./queries";
 
 export const PAGE_SIZES = [20, 50, 100] as const;
 export const DEFAULT_PAGE_SIZE = PAGE_SIZES[0];
+/** Remembers the visitor's "per page" choice until the browser closes (deal lists and search). */
+export const PAGE_SIZE_COOKIE = "page-size";
 /** The discount slider: 0 (any) up to MAX in steps. */
 export const DISCOUNT_SLIDER = { max: 70, step: 5 } as const;
 /** At most this many brands can be ticked at once (keeps URLs and queries small). */
@@ -26,6 +28,11 @@ export interface ParsedDealFilters extends DealFilters {
 }
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+
+/** The remembered page size fills in when the URL does not name one. */
+export function withRememberedPageSize(params: RawSearchParams, remembered: string | undefined): RawSearchParams {
+  return params.size !== undefined || !remembered ? params : { ...params, size: remembered };
+}
 
 /**
  * Turns URL search params into validated filters; anything unknown is ignored,

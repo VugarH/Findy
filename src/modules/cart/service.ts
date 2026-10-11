@@ -1,3 +1,4 @@
+import { usableImage } from "@/config/images";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
 import { offers, products, suppliers } from "@/db/schema";
@@ -64,7 +65,7 @@ export async function loadCart(market: MarketConfig, items: CartItem[], now = ne
   for (const item of items) {
     const row = known.get(item.offerId);
     if (!row) continue;
-    const product: CartProduct = row.product;
+    const product: CartProduct = { ...row.product, imageUrl: usableImage(row.product.imageUrl) };
     const offer = live.get(item.offerId);
     if (offer?.inStock) {
       available.push({

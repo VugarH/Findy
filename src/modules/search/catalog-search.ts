@@ -49,7 +49,9 @@ export async function cardsForProducts(
       // so the price and store on the card are the best ones *there*.
       const offers = scope ? entry.offers.filter((offer) => offer.supplier.scope === scope) : entry.offers;
       const summary = summarizeProduct({ product: entry.product, offers }, market);
-      return summary ? [toCard(entry.product, summary)] : [];
+      const card = summary ? toCard(entry.product, summary) : null;
+      // Without a usable photo a product is not listed (see config/images.ts).
+      return card?.imageUrl ? [card] : [];
     })
     .sort((a, b) => (b.discountPct ?? 0) - (a.discountPct ?? 0) || a.landedMinor - b.landedMinor);
 }

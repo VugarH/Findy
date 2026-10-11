@@ -1,3 +1,4 @@
+import { usableImage } from "@/config/images";
 import { and, arrayOverlaps, asc, count, desc, eq, gte, inArray, lte, max, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { deals, offers, pipelineRuns, products, suppliers } from "@/db/schema";
@@ -117,7 +118,7 @@ export async function listDeals(
       audience: deal.audience as Audience | null,
       addedAt: product.createdAt.toISOString(),
       originCountry: deal.originCountry,
-      imageUrl: product.imageUrl,
+      imageUrl: usableImage(product.imageUrl),
       landedMinor: deal.landedMinor,
       usualLandedMinor: deal.usualLandedMinor,
       discountPct: Math.round(deal.realDiscountPct),

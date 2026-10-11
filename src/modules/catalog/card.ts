@@ -1,3 +1,4 @@
+import { usableImage } from "@/config/images";
 import type { Product } from "@/db/schema";
 import type { Audience } from "@/config/audience";
 import type { CategorySlug } from "@/config/categories";
@@ -52,7 +53,7 @@ export function toCard(product: Product, summary: ProductSummary): ProductCardDa
     audience: product.audience as Audience | null,
     addedAt: product.createdAt.toISOString(),
     originCountry: best.supplier.originCountry,
-    imageUrl: product.imageUrl,
+    imageUrl: usableImage(product.imageUrl),
     landedMinor: best.landed.totalMinor,
     usualLandedMinor: deal?.usualLandedMinor ?? null,
     discountPct: deal?.discountPct ?? null,

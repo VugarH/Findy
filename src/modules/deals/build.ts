@@ -3,6 +3,7 @@ import { db } from "@/db/client";
 import { deals } from "@/db/schema";
 import type { MarketConfig } from "@/config/markets";
 import { loadProductsWithOffers } from "@/modules/catalog/offer-view";
+import { usableImage } from "@/config/images";
 import { summarizeProduct } from "@/modules/catalog/summary";
 import { inStockSizeKeys } from "@/modules/suppliers/sizes";
 
@@ -22,6 +23,8 @@ export async function buildDeals(market: MarketConfig, runId: string, now: Date)
   const since = new Map(previous.map((row) => [row.productId, row.dealSince]));
 
   const rows = entries.flatMap((entry) => {
+    // No usable photo, no deal card: a grey box looks like a broken site.
+    if (!usableImage(entry.product.imageUrl)) return [];
     const summary = summarizeProduct(entry, market);
     if (!summary?.deal) return [];
     const { best, deal } = summary;

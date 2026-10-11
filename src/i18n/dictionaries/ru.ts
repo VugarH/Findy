@@ -8,6 +8,7 @@ const ru: Dictionary = {
   },
   demoBanner: "Демо-режим — магазины и цены являются примером данных.",
   nav: {
+    back: "Назад",
     allCategories: "Все категории",
     admin: "Панель управления",
     stores: "Магазины",

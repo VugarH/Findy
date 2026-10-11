@@ -8,6 +8,7 @@ const az: Dictionary = {
   },
   demoBanner: "Demo rejimi — mağazalar və qiymətlər nümunə məlumatdır.",
   nav: {
+    back: "Geri",
     allCategories: "Bütün kateqoriyalar",
     admin: "İdarə paneli",
     stores: "Mağazalar",

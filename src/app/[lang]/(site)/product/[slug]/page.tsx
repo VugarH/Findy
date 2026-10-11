@@ -1,3 +1,4 @@
+import { usableImage } from "@/config/images";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -89,7 +90,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
 
       <div className="mt-5 grid gap-8 lg:grid-cols-[1fr_2fr]">
         <div className="aspect-square overflow-hidden rounded-3xl border border-line lg:sticky lg:top-40 lg:self-start">
-          <ProductImage imageUrl={product.imageUrl} title={product.title} category={category} />
+          <ProductImage imageUrl={usableImage(product.imageUrl)} title={product.title} category={category} />
         </div>
 
         <div className="min-w-0 space-y-8">

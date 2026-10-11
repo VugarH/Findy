@@ -30,4 +30,11 @@ describe("store filter", () => {
       { key: "gratis", name: "Gratis", total: 1 },
     ]);
   });
+
+  it("narrows the other lists to the ticked stores, but not the store list", () => {
+    const shoe = { ...card("d", "superstep", "SuperStep"), categorySlug: "shoes" } as ProductCardData;
+    const facets = facetsOfCards([card("a", "allbeauty", "allbeauty"), shoe], undefined, ["superstep"]);
+    expect(facets.categories).toEqual({ shoes: 1 });
+    expect(facets.stores.map((store) => store.key)).toEqual(["allbeauty", "superstep"]);
+  });
 });

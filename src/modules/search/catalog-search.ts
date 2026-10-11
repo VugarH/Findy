@@ -121,23 +121,25 @@ export function filterCards(cards: ProductCardData[], filters: DealFilters): Pro
   );
 }
 
-/** Counts for the filter sidebar, from the results themselves. */
-export function facetsOfCards(cards: ProductCardData[], category?: CategorySlug): DealFacets {
+/** Counts for the filter sidebar, from the results themselves. Ticked stores narrow every list but the store list. */
+export function facetsOfCards(cards: ProductCardData[], category?: CategorySlug, stores?: string[]): DealFacets {
   const tally = (values: string[]) => {
     const counts: Record<string, number> = {};
     for (const value of values) counts[value] = (counts[value] ?? 0) + 1;
     return counts;
   };
-  const inCategory = category ? cards.filter((card) => card.categorySlug === category) : cards;
+  const ofCategory = (list: ProductCardData[]) => (category ? list.filter((card) => card.categorySlug === category) : list);
+  const inStores = stores?.length ? cards.filter((card) => stores.includes(card.supplierId)) : cards;
+  const inCategory = ofCategory(inStores);
   return {
-    categories: tally(cards.map((card) => card.categorySlug)),
+    categories: tally(inStores.map((card) => card.categorySlug)),
     countries: Object.entries(tally(inCategory.map((card) => card.originCountry)))
       .map(([country, total]) => ({ country, total }))
       .sort((a, b) => b.total - a.total),
     subcategories: category ? tally(inCategory.map((card) => card.subcategorySlug)) : {},
     audiences: tally(inCategory.flatMap((card) => (card.audience ? [card.audience] : []))),
     brands: category ? brandFacets(inCategory) : [],
-    stores: storeFacets(inCategory),
+    stores: storeFacets(ofCategory(cards)),
     sizes: isSizedCategory(category)
       ? sizeFacets(Object.entries(tally(inCategory.flatMap((card) => card.sizes ?? []))).map(([key, total]) => ({ key, total })))
       : [],

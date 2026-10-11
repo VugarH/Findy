@@ -104,7 +104,8 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
           <FilterOption href={link({ category: undefined })} active={!filters.category}>
             {t.filters.all}
           </FilterOption>
-          {orderedCategories(order).map((category) => (
+          {/* Every category stays listed, so the panel keeps its height; those without deals go last. */}
+          {withEmptyLast(orderedCategories(order), (category) => facets.categories[category.slug] ?? 0).map((category) => (
             <FilterOption
               key={category.slug}
               href={link({ category: category.slug })}
@@ -114,6 +115,34 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
               {t.categories[category.slug].name}
             </FilterOption>
           ))}
+        </FilterGroup>
+      )}
+
+      {on.store && storeOptions.length > 1 && (
+        <FilterGroup title={t.filters.store}>
+          <BrandFilter
+            options={storeOptions}
+            labels={{
+              showAll: fmt(t.filters.showAllStores, { count: storeOptions.length }),
+              showFewer: t.filters.showFewerBrands,
+              search: t.filters.searchStores,
+              none: t.filters.noStores,
+            }}
+          />
+        </FilterGroup>
+      )}
+
+      {on.brand && brandOptions.length > 1 && (
+        <FilterGroup title={t.filters.brand}>
+          <BrandFilter
+            options={brandOptions}
+            labels={{
+              showAll: fmt(t.filters.showAllBrands, { count: brandOptions.length }),
+              showFewer: t.filters.showFewerBrands,
+              search: t.filters.searchBrands,
+              none: t.filters.noBrands,
+            }}
+          />
         </FilterGroup>
       )}
 
@@ -132,34 +161,6 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
               {t.audiences[audience]}
             </FilterOption>
           ))}
-        </FilterGroup>
-      )}
-
-      {on.brand && brandOptions.length > 1 && (
-        <FilterGroup title={t.filters.brand}>
-          <BrandFilter
-            options={brandOptions}
-            labels={{
-              showAll: fmt(t.filters.showAllBrands, { count: brandOptions.length }),
-              showFewer: t.filters.showFewerBrands,
-              search: t.filters.searchBrands,
-              none: t.filters.noBrands,
-            }}
-          />
-        </FilterGroup>
-      )}
-
-      {on.store && storeOptions.length > 1 && (
-        <FilterGroup title={t.filters.store}>
-          <BrandFilter
-            options={storeOptions}
-            labels={{
-              showAll: fmt(t.filters.showAllStores, { count: storeOptions.length }),
-              showFewer: t.filters.showFewerBrands,
-              search: t.filters.searchStores,
-              none: t.filters.noStores,
-            }}
-          />
         </FilterGroup>
       )}
 
@@ -269,6 +270,11 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
       )}
     </>
   );
+}
+
+/** Keeps the given order, with the items that have nothing moved to the end. */
+function withEmptyLast<T>(items: T[], countOf: (item: T) => number): T[] {
+  return [...items.filter((item) => countOf(item) > 0), ...items.filter((item) => countOf(item) === 0)];
 }
 
 interface ActiveProps {

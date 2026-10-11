@@ -39,7 +39,7 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
 
   const [{ items, total }, facets] = await Promise.all([
     listDeals(market, filters),
-    getDealFacets(market, filters.category),
+    getDealFacets(market, filters.category, filters.stores),
   ]);
 
   const pages = Math.max(1, Math.ceil(total / filters.size));

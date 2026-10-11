@@ -56,7 +56,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
   const found = await searchCatalog(query, market, filters.scope);
   await recordSearch(query, market, found.length, false);
 
-  const facets = facetsOfCards(found, filters.category);
+  const facets = facetsOfCards(found, filters.category, filters.stores);
   const matching = sortCards(filterCards(found, filters), sort);
   const total = matching.length;
   const pages = Math.max(1, Math.ceil(total / filters.size));

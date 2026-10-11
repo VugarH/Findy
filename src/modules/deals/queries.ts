@@ -178,10 +178,15 @@ export interface BrandFacet {
   total: number;
 }
 
-/** What the filter chips can offer: only values that actually have deals. */
-export async function getDealFacets(market: MarketConfig, category?: CategorySlug): Promise<DealFacets> {
-  const live = liveDeals(market);
+/**
+ * What the filter chips can offer: only values that actually have deals.
+ * Ticked stores narrow every list except the store list itself, which shows
+ * the category's stores so more can be ticked.
+ */
+export async function getDealFacets(market: MarketConfig, category?: CategorySlug, storeIds?: string[]): Promise<DealFacets> {
+  const live = and(liveDeals(market), storeIds?.length ? inArray(offers.supplierId, storeIds) : undefined);
   const inCategory = and(live, category ? eq(deals.categorySlug, category) : undefined);
+  const storesInCategory = and(liveDeals(market), category ? eq(deals.categorySlug, category) : undefined);
   const withOffer = eq(deals.offerId, offers.id);
   // Qualified by hand: offers has a sizes column too, and raw columns render unqualified.
   const dealSize = sql<string>`unnest(${sql.raw('"deals"."sizes"')})`;
@@ -233,7 +238,7 @@ export async function getDealFacets(market: MarketConfig, category?: CategorySlu
       .from(deals)
       .innerJoin(offers, withOffer)
       .innerJoin(suppliers, eq(offers.supplierId, suppliers.id))
-      .where(inCategory)
+      .where(storesInCategory)
       .groupBy(suppliers.id, suppliers.name)
       .orderBy(desc(count()), suppliers.name),
     isSizedCategory(category)

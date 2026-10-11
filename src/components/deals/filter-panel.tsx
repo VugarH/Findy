@@ -31,7 +31,8 @@ export function FilterOption({
       aria-current={active ? "true" : undefined}
       className={cn(
         "group flex items-center gap-2 rounded-lg px-2 py-1 text-[13px] transition-colors hover:bg-surface-2",
-        active ? "font-semibold text-ink" : "text-ink",
+        // An empty value stays in place (lists keep their length as filters change) but recedes.
+        active ? "font-semibold text-ink" : count === 0 ? "text-muted" : "text-ink",
       )}
     >
       <span

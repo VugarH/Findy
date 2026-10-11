@@ -93,6 +93,12 @@ export interface RawOffer {
   sizes?: SizeOption[];
   deliveryDays?: { min: number; max: number };
   attributes?: Record<string, string>;
+  /**
+   * Only refresh the offer if we already track it; never start tracking it.
+   * For stores read for their discounts only: a product whose discount ended
+   * updates its old offer instead of keeping a stale "deal".
+   */
+  updateOnly?: boolean;
 }
 
 export interface AdapterContext {

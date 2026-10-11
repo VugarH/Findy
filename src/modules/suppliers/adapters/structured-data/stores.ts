@@ -22,21 +22,6 @@ const POPULAR_WATCHES = /\/(casio|g-shock|tissot|seiko|citizen|lacoste|tommy-hil
 
 export const STRUCTURED_DATA_STORES: StructuredDataStore[] = [
   {
-    id: "superstep",
-    name: "SuperStep",
-    origin: "https://www.superstep.com.tr",
-    originCountry: "TR",
-    currency: "TRY",
-    reliability: { basis: "established-retailer", note: "One of Turkey's largest sneaker and sportswear chains, selling adidas, Nike, Puma, New Balance and others" },
-    shipsToMarket: false,
-    categories: ["shoes", "bags", "fashion"],
-    sitemap: "https://www.superstep.com.tr/sitemap.xml",
-    productSitemaps: /\/sitemap\/products-/,
-    productUrl: /\/urun\//,
-    focus: POPULAR_SPORT,
-    listPrice: "retail-price",
-  },
-  {
     id: "sneaksup",
     name: "Sneaks Up",
     origin: "https://www.sneaksup.com",

@@ -1,4 +1,6 @@
 import { siteConfig } from "@/config/site";
+import { createAkinonAdapter } from "./adapters/akinon/adapter";
+import { AKINON_STORES } from "./adapters/akinon/stores";
 import { bakuElectronicsAdapter } from "./adapters/baku-electronics";
 import { demoAdapters } from "./adapters/demo";
 import { createShopifyAdapter } from "./adapters/shopify/adapter";
@@ -22,6 +24,7 @@ const REAL_ADAPTERS: SupplierAdapter[] = [
   worldTelecomAdapter,
   ...SHOPIFY_STORES.map(createShopifyAdapter),
   ...STRUCTURED_DATA_STORES.map(createStructuredDataAdapter),
+  ...AKINON_STORES.map(createAkinonAdapter),
 ];
 
 /** Demo mode (NEXT_PUBLIC_DEMO_DATA=true) swaps in the fictional stores; the two are never mixed. */

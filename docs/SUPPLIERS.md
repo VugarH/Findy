@@ -297,3 +297,15 @@ allbeauty → `/collections/offers-outlet-70/products.json` (~4,100 products, ro
 it; 18 pages in the shared Shopify queue, ~45 s). First run: 4,184 offers, 3,863 deals.
 Other big Shopify stores can get the same once their sale collection is found
 (`/collections.json` lists them with product counts).
+
+## SuperStep through category pages (2026-10-11)
+
+SuperStep (Akinon) gives almost every discount as a cart offer ("SEPETTE %30 İNDİRİM"):
+the product price equals the list price, so its JSON-LD showed no discount, and 300 product
+pages a day covered ~1.5% of its ~17,000 products. It now has its own adapter
+(`adapters/akinon/`): category pages /erkek/, /kadin/, /cocuk/ with ?page= (allowed by
+robots.txt), 48 products each with price, cart offers, stock and sizes. The price is the
+one-item cart price when that offer applies to every shopper. At the user's request only
+discounted products are stored (max 3,000); a product without a discount only updates an
+offer we already track (`RawOffer.updateOnly`). First run: 3,000 offers, 2,801 deals,
+~11 minutes. Sneaks Up, Beymen, Network may hide cart offers the same way — not checked yet.

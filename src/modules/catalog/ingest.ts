@@ -111,12 +111,27 @@ export function uniqueListings(rawOffers: RawOffer[]): RawOffer[] {
   return [...byId.values()];
 }
 
+/** Drops update-only listings (RawOffer.updateOnly) for offers we do not track yet. */
+async function withoutUntracked(supplierId: string, rawOffers: RawOffer[]): Promise<RawOffer[]> {
+  const updateOnly = rawOffers.filter((raw) => raw.updateOnly).map((raw) => raw.externalId);
+  if (updateOnly.length === 0) return rawOffers;
+  const tracked = new Set<string>();
+  for (let i = 0; i < updateOnly.length; i += 1000) {
+    const rows = await db
+      .select({ externalId: offers.externalId })
+      .from(offers)
+      .where(and(eq(offers.supplierId, supplierId), inArray(offers.externalId, updateOnly.slice(i, i + 1000))));
+    for (const row of rows) tracked.add(row.externalId);
+  }
+  return rawOffers.filter((raw) => !raw.updateOnly || tracked.has(raw.externalId));
+}
+
 export async function ingestOffers(
   supplier: SupplierDefinition,
   listed: RawOffer[],
   now: Date,
 ): Promise<IngestResult> {
-  const rawOffers = uniqueListings(listed);
+  const rawOffers = await withoutUntracked(supplier.id, uniqueListings(listed));
   if (rawOffers.length === 0) return { offerCount: 0, productIds: [] };
 
   const allKeyed = rawOffers.map((raw) => ({ raw, keys: matchKeysOf(raw) }));

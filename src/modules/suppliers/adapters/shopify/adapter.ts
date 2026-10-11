@@ -29,6 +29,12 @@ export interface ShopifyStore {
   shipsToMarket: boolean;
   /** Set for single-brand stores whose `vendor` field is unreliable. */
   brand?: string;
+  /**
+   * A big store's own sale collection, read after the first pages so its
+   * discounts are covered even though the whole catalog is not
+   * (/collections/<handle>/products.json, at most `pages` pages).
+   */
+  saleCollection?: { handle: string; pages: number };
 }
 
 /**
@@ -164,10 +170,16 @@ export function createShopifyAdapter(store: ShopifyStore): SupplierAdapter {
         "All Shopify stores share one queue: one request every 2.5 s platform-wide; on HTTP 429 wait as told, retry once",
         `Prices are saved in the currency each response is served in (its cart_currency cookie; ${store.currency} if absent) — stores may price Azerbaijani visitors in AZN`,
         `GET /products.json?limit=${PAGE_SIZE}&page=1…${MAX_PAGES}`,
+        ...(store.saleCollection
+          ? [`GET /collections/${store.saleCollection.handle}/products.json, up to ${store.saleCollection.pages} pages (the store's sale collection)`]
+          : []),
         "One offer per product, from its cheapest available variant",
         "Skip gift cards, warranties, samples and anything under the minimum price",
       ],
-      entryPoints: [origin + LIST_PATH],
+      entryPoints: [
+        origin + LIST_PATH,
+        ...(store.saleCollection ? [`${origin}/collections/${store.saleCollection.handle}${LIST_PATH}`] : []),
+      ],
       fields: {
         externalId: "products[].id",
         title: "products[].title",
@@ -181,10 +193,12 @@ export function createShopifyAdapter(store: ShopifyStore): SupplierAdapter {
         currency: "fixed per store, read once from /meta.json",
       },
       robots: { checkedOn: "2026-09-30", notes: "/products.json allowed when connected; re-checked on every run." },
-      politeness: { delayMs: SHOPIFY_DELAY_MS, maxRequestsPerRun: MAX_PAGES + 1 },
+      politeness: { delayMs: SHOPIFY_DELAY_MS, maxRequestsPerRun: MAX_PAGES + 1 + (store.saleCollection?.pages ?? 0) },
       liveSearch: { supported: false, reason: "Shopify stores disallow /search in robots.txt." },
       assumptions: [
-        `Only the first ${PAGE_SIZE * MAX_PAGES} products are read; larger catalogs are covered partially.`,
+        store.saleCollection
+          ? `Only the first ${PAGE_SIZE * MAX_PAGES} products plus up to ${PAGE_SIZE * store.saleCollection.pages} from the sale collection are read; the rest of the catalog is covered partially.`
+          : `Only the first ${PAGE_SIZE * MAX_PAGES} products are read; larger catalogs are covered partially.`,
         store.shipsToMarket
           ? "The store lists Azerbaijan as a shipping destination, but its shipping price is unknown; a forwarder estimate is used."
           : "The store does not ship to Azerbaijan directly; delivery is assumed through a freight forwarder.",
@@ -207,25 +221,40 @@ export function createShopifyAdapter(store: ShopifyStore): SupplierAdapter {
 
       const robots = await RobotsPolicy.fetch(origin, client);
       if (!robots.allows(LIST_PATH)) throw new Error("robots.txt no longer allows /products.json");
-      const offers: RawOffer[] = [];
+      const offers = new Map<string, RawOffer>();
 
-      for (let page = 1; page <= MAX_PAGES; page++) {
-        const response = await client.get(`${origin}${LIST_PATH}?limit=${PAGE_SIZE}&page=${page}`);
-        if (response.status !== 200) throw new Error(`HTTP ${response.status} for ${origin}${LIST_PATH}`);
+      /** Reads one listing page; returns how many products it held. */
+      const readPage = async (path: string, page: number): Promise<number> => {
+        const response = await client.get(`${origin}${path}?limit=${PAGE_SIZE}&page=${page}`);
+        if (response.status !== 200) throw new Error(`HTTP ${response.status} for ${origin}${path}`);
         const body = JSON.parse(response.text);
         const served = { ...store, currency: servedCurrency(response.headers, store.currency) };
         const products: ShopifyProduct[] = body.products ?? [];
         for (const product of products) {
           const offer = toRawOffer(product, served);
-          if (offer) offers.push(offer);
+          if (offer) offers.set(offer.externalId, offer);
         }
-        if (products.length < PAGE_SIZE) {
+        return products.length;
+      };
+
+      let readEverything = false;
+      for (let page = 1; page <= MAX_PAGES; page++) {
+        if ((await readPage(LIST_PATH, page)) < PAGE_SIZE) {
           // A short page is the last one: the whole catalog was read.
           ctx.listedEverything?.();
+          readEverything = true;
           break;
         }
       }
-      return offers;
+
+      const sale = store.saleCollection;
+      const salePath = sale && `/collections/${sale.handle}${LIST_PATH}`;
+      if (sale && salePath && !readEverything && robots.allows(salePath)) {
+        for (let page = 1; page <= sale.pages; page++) {
+          if ((await readPage(salePath, page)) < PAGE_SIZE) break;
+        }
+      }
+      return [...offers.values()];
     },
 
     async search(): Promise<RawOffer[]> {

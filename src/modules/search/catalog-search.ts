@@ -6,7 +6,7 @@ import { toCard, type ProductCardData } from "@/modules/catalog/card";
 import { hasFreshOffer, loadProductsWithOffers } from "@/modules/catalog/offer-view";
 import { summarizeProduct } from "@/modules/catalog/summary";
 import { isSizedCategory, type CategorySlug } from "@/config/categories";
-import { sizeFacets, type BrandFacet, type DealFacets, type DealFilters } from "@/modules/deals/queries";
+import { sizeFacets, type BrandFacet, type DealFacets, type DealFilters, type StoreFacet } from "@/modules/deals/queries";
 import { brandKey } from "@/modules/catalog/brand";
 import type { SupplierScope } from "@/modules/suppliers/types";
 import { expandQuery } from "./synonyms";
@@ -112,6 +112,7 @@ export function filterCards(cards: ProductCardData[], filters: DealFilters): Pro
       (!filters.subcategory || card.subcategorySlug === filters.subcategory) &&
       (!filters.audience || card.audience === filters.audience) &&
       (!filters.brands?.length || (card.brand !== null && filters.brands.includes(brandKey(card.brand)))) &&
+      (!filters.stores?.length || filters.stores.includes(card.supplierId)) &&
       (!filters.country || card.originCountry === filters.country) &&
       (!filters.minDiscount || (card.discountPct ?? 0) >= filters.minDiscount) &&
       (!filters.priceMin || card.landedMinor >= filters.priceMin * 100) &&
@@ -136,10 +137,22 @@ export function facetsOfCards(cards: ProductCardData[], category?: CategorySlug)
     subcategories: category ? tally(inCategory.map((card) => card.subcategorySlug)) : {},
     audiences: tally(inCategory.flatMap((card) => (card.audience ? [card.audience] : []))),
     brands: category ? brandFacets(inCategory) : [],
+    stores: storeFacets(inCategory),
     sizes: isSizedCategory(category)
       ? sizeFacets(Object.entries(tally(inCategory.flatMap((card) => card.sizes ?? []))).map(([key, total]) => ({ key, total })))
       : [],
   };
+}
+
+/** Stores behind the results, most first. */
+function storeFacets(cards: ProductCardData[]): StoreFacet[] {
+  const byId = new Map<string, StoreFacet>();
+  for (const card of cards) {
+    const entry = byId.get(card.supplierId) ?? { key: card.supplierId, name: card.supplierName, total: 0 };
+    entry.total++;
+    byId.set(card.supplierId, entry);
+  }
+  return [...byId.values()].sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
 }
 
 /** Brands among the results, most first, each under the spelling most stores use. */

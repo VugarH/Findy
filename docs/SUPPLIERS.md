@@ -287,3 +287,13 @@ Not connected:
 - **Sunman** (sunman.com.tr): toy distributor; no consumer shop, only a B2B portal. Its
   products are sold through Toyzz Shop.
 - Still no product data (neither JSON-LD nor microdata): Madame Coco, Panço, Vakko, Hatemoğlu, Bioxcin.
+
+## allbeauty sale collection (2026-10-11)
+
+Shopify stores are read for their first 500 products only, and allbeauty's catalog is far
+bigger, so only a few of its discounts showed. A Shopify store can now name its own sale
+collection (`saleCollection` in `adapters/shopify/stores.ts`), read after the first pages:
+allbeauty → `/collections/offers-outlet-70/products.json` (~4,100 products, robots.txt allows
+it; 18 pages in the shared Shopify queue, ~45 s). First run: 4,184 offers, 3,863 deals.
+Other big Shopify stores can get the same once their sale collection is found
+(`/collections.json` lists them with product counts).

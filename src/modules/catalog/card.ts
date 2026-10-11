@@ -29,6 +29,7 @@ export interface ProductCardData {
   savingsMinor: number | null;
   /** False when the discount is the store's own claim, not yet backed by our history. */
   verified: boolean;
+  supplierId: string;
   supplierName: string;
   scope: SupplierScope;
   deliveryMaxDays: number;
@@ -59,6 +60,7 @@ export function toCard(product: Product, summary: ProductSummary): ProductCardDa
     discountPct: deal?.discountPct ?? null,
     savingsMinor: deal?.savingsMinor ?? null,
     verified: deal?.verified ?? false,
+    supplierId: best.supplier.id,
     supplierName: best.supplier.name,
     scope: best.supplier.scope,
     deliveryMaxDays: best.delivery.max,

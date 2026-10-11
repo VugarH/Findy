@@ -14,6 +14,10 @@ export const PAGE_SIZE_COOKIE = "page-size";
 export const DISCOUNT_SLIDER = { max: 70, step: 5 } as const;
 /** At most this many brands can be ticked at once (keeps URLs and queries small). */
 export const MAX_BRANDS = 20;
+/** At most this many stores can be ticked at once. */
+export const MAX_STORES = 20;
+/** Stores in the URL: "store=allbeauty,boyner" (supplier ids). */
+export const STORE_SEPARATOR = ",";
 /** At most this many sizes can be ticked at once. */
 export const MAX_SIZES = 12;
 /** Sizes in the URL: "sizes=42,42.5" (sizeKey form). */
@@ -56,6 +60,7 @@ function withoutSwitchedOff(filters: ParsedDealFilters, switches: FilterSwitches
     subcategory: off("subcategory") ? undefined : filters.subcategory,
     audience: off("audience") ? undefined : filters.audience,
     brands: off("brand") ? undefined : filters.brands,
+    stores: off("store") ? undefined : filters.stores,
     sizes: off("sizes") ? undefined : filters.sizes,
     minDiscount: off("discount") ? undefined : filters.minDiscount,
     priceMin: off("price") ? undefined : filters.priceMin,
@@ -78,6 +83,14 @@ function readDealFilters(params: RawSearchParams, lockedCategory?: DealFilters["
         .filter((key) => key.length > 0 && key.length <= 60),
     ),
   ].slice(0, MAX_BRANDS);
+  const stores = [
+    ...new Set(
+      (first(params.store) ?? "")
+        .split(STORE_SEPARATOR)
+        .map((id) => id.trim().toLowerCase())
+        .filter((id) => /^[a-z0-9][a-z0-9_-]{0,59}$/.test(id)),
+    ),
+  ].slice(0, MAX_STORES);
   // Sizes only mean something inside a category sold by size.
   const sizes = isSizedCategory(category)
     ? [
@@ -106,6 +119,7 @@ function readDealFilters(params: RawSearchParams, lockedCategory?: DealFilters["
     // Who a product is for is offered only where titles say it (see AUDIENCE_CATEGORIES).
     audience: hasAudienceFilter(category) && audience && isAudience(audience) ? audience : undefined,
     brands: brands.length > 0 ? brands : undefined,
+    stores: stores.length > 0 ? stores : undefined,
     sizes: sizes.length > 0 ? sizes : undefined,
     scope: scope === "local" || scope === "global" ? scope : undefined,
     country: country && /^[A-Z]{2}$/.test(country) ? country : undefined,
@@ -126,7 +140,7 @@ function wholeAmount(value: string | undefined): number | undefined {
   return amount > 0 && amount < 10_000_000 ? amount : undefined;
 }
 
-export type FilterKey = "category" | "sub" | "for" | "brand" | "sizes" | "scope" | "country" | "discount" | "min" | "max" | "sort" | "size" | "page";
+export type FilterKey = "category" | "sub" | "for" | "brand" | "store" | "sizes" | "scope" | "country" | "discount" | "min" | "max" | "sort" | "size" | "page";
 
 /**
  * The current filters as URL params (defaults omitted), without the page.
@@ -144,6 +158,7 @@ export function filterParams(
     ["sub", current.subcategory],
     ["for", current.audience],
     ["brand", current.brands?.join(BRAND_SEPARATOR)],
+    ["store", current.stores?.join(STORE_SEPARATOR)],
     ["sizes", current.sizes?.join(SIZE_SEPARATOR)],
     ["scope", current.scope],
     ["country", current.country],

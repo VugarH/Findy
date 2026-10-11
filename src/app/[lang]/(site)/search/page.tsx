@@ -164,6 +164,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
               showCategory
               showSource={false}
               brands={facets.brands}
+              stores={facets.stores}
               // Without the text, the same filters over all deals.
               query={{ text: query, remove: href("/deals") + filterQuery(filters, true, {}) }}
             />

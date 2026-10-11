@@ -522,6 +522,7 @@ const adminAz: AdminDictionary = {
       subcategory: { label: "Növ", hint: "Kateqoriya daxilində alt kateqoriyalar." },
       audience: { label: "Kimin üçün", hint: "Qadın, kişi, uşaq, uniseks." },
       brand: { label: "Brend", hint: "Kateqoriya daxilində brend seçimi." },
+      store: { label: "Mağaza", hint: "Hər mağaza üçün seçim qutusu (ən sərfəli təklifin mağazası)." },
       sizes: {
         label: "Ölçü",
         hint: "Geyim, ayaqqabı, idman və uşaq. Ölçü seçiləndə ölçü dərc etməyən mağazaların endirimləri görünmür.",

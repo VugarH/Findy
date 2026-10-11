@@ -20,6 +20,8 @@ export interface DealFilters {
   audience?: Audience;
   /** Brand keys (see catalog/brand.ts); a product matches any of them. */
   brands?: string[];
+  /** Store (supplier) ids; a deal matches when its best offer is from any of them. */
+  stores?: string[];
   /** ISO country the offer ships from. */
   country?: string;
   scope?: SupplierScope;
@@ -69,6 +71,7 @@ function whereFor(market: MarketConfig, filters: DealFilters) {
     filters.subcategory ? eq(deals.subcategorySlug, filters.subcategory) : undefined,
     filters.audience ? eq(deals.audience, filters.audience) : undefined,
     filters.brands?.length ? inArray(BRAND_KEY, filters.brands) : undefined,
+    filters.stores?.length ? inArray(offers.supplierId, filters.stores) : undefined,
     filters.country ? eq(deals.originCountry, filters.country) : undefined,
     filters.scope ? eq(deals.scope, filters.scope) : undefined,
     filters.minDiscount ? gte(deals.realDiscountPct, filters.minDiscount) : undefined,
@@ -89,7 +92,7 @@ export async function listDeals(
 
   const [rows, [{ total }]] = await Promise.all([
     db
-      .select({ deal: deals, product: products, supplierName: suppliers.name })
+      .select({ deal: deals, product: products, supplierId: suppliers.id, supplierName: suppliers.name })
       .from(deals)
       .innerJoin(products, eq(deals.productId, products.id))
       .innerJoin(offers, eq(deals.offerId, offers.id))
@@ -107,7 +110,7 @@ export async function listDeals(
   ]);
 
   const items = rows.map(
-    ({ deal, product, supplierName }): ProductCardData => ({
+    ({ deal, product, supplierId, supplierName }): ProductCardData => ({
       productId: product.id,
       offerId: deal.offerId,
       slug: product.slug,
@@ -124,6 +127,7 @@ export async function listDeals(
       discountPct: Math.round(deal.realDiscountPct),
       savingsMinor: deal.savingsMinor,
       verified: deal.verified,
+      supplierId,
       supplierName,
       scope: deal.scope,
       deliveryMaxDays: deal.deliveryMaxDays,
@@ -149,12 +153,21 @@ export interface DealFacets {
   audiences: Record<string, number>;
   /** Brands within the selected category, most deals first. */
   brands: BrandFacet[];
+  /** Stores whose offer is the best one, within the selected category, most deals first. */
+  stores: StoreFacet[];
   /** Sizes in stock within a sized category (clothes, shoes…), in size order. */
   sizes: SizeFacet[];
 }
 
 export interface SizeFacet {
   key: string;
+  total: number;
+}
+
+export interface StoreFacet {
+  /** Supplier id. */
+  key: string;
+  name: string;
   total: number;
 }
 
@@ -172,7 +185,7 @@ export async function getDealFacets(market: MarketConfig, category?: CategorySlu
   const withOffer = eq(deals.offerId, offers.id);
   // Qualified by hand: offers has a sizes column too, and raw columns render unqualified.
   const dealSize = sql<string>`unnest(${sql.raw('"deals"."sizes"')})`;
-  const [categories, countries, subcategories, audiences, brands, sizes] = await Promise.all([
+  const [categories, countries, subcategories, audiences, brands, stores, sizes] = await Promise.all([
     db
       .select({ slug: deals.categorySlug, total: count() })
       .from(deals)
@@ -215,6 +228,14 @@ export async function getDealFacets(market: MarketConfig, category?: CategorySlu
           .groupBy(BRAND_KEY)
           .orderBy(desc(count()), BRAND_KEY)
       : [],
+    db
+      .select({ key: suppliers.id, name: suppliers.name, total: count() })
+      .from(deals)
+      .innerJoin(offers, withOffer)
+      .innerJoin(suppliers, eq(offers.supplierId, suppliers.id))
+      .where(inCategory)
+      .groupBy(suppliers.id, suppliers.name)
+      .orderBy(desc(count()), suppliers.name),
     isSizedCategory(category)
       ? db
           .select({ key: dealSize, total: count() })
@@ -230,6 +251,7 @@ export async function getDealFacets(market: MarketConfig, category?: CategorySlu
     subcategories: Object.fromEntries(subcategories.map((row) => [row.slug, row.total])),
     audiences: Object.fromEntries(audiences.flatMap((row) => (row.audience ? [[row.audience, row.total]] : []))),
     brands,
+    stores,
     sizes: sizeFacets(sizes),
   };
 }

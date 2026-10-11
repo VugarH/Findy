@@ -164,6 +164,7 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
               showCategory={showCategory}
               showSource
               brands={facets.brands}
+              stores={facets.stores}
             />
 
             {pages > 1 && <div className="mt-4">{pagination}</div>}

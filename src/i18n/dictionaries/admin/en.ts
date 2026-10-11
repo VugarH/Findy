@@ -501,6 +501,7 @@ const adminEn = {
       subcategory: { label: "Type", hint: "Subcategories inside a category." },
       audience: { label: "For whom", hint: "Women, men, kids, unisex." },
       brand: { label: "Brand", hint: "Tick boxes per brand, inside a category." },
+      store: { label: "Store", hint: "Tick boxes per store (the store with the best offer)." },
       sizes: {
         label: "Size",
         hint: "Clothing, shoes, sports and baby. Deals from stores that publish no sizes are hidden while a size is chosen.",

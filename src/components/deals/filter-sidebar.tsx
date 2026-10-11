@@ -12,11 +12,13 @@ import {
   DISCOUNT_SLIDER,
   MAX_BRANDS,
   MAX_SIZES,
+  MAX_STORES,
   SIZE_SEPARATOR,
+  STORE_SEPARATOR,
   type FilterKey,
   type ParsedDealFilters,
 } from "@/modules/deals/filters";
-import type { BrandFacet, DealFacets } from "@/modules/deals/queries";
+import type { BrandFacet, DealFacets, StoreFacet } from "@/modules/deals/queries";
 import { orderedBrands, orderedCategories, orderedSubcategories } from "@/modules/settings/display-order";
 import { getDisplayOrder, getFilterSwitches } from "@/modules/settings/service";
 import { BrandFilter } from "./brand-filter";
@@ -66,6 +68,20 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
       .filter((key) => !facets.brands.some((facet) => facet.key === key))
       .map((key) => ({ key, name: key, total: 0 })),
   ].map((facet) => ({ ...facet, href: toggleBrand(facet.key), active: selectedBrands.includes(facet.key) }));
+  const selectedStores = filters.stores ?? [];
+  const toggleStore = (key: string) => {
+    const next = selectedStores.includes(key)
+      ? selectedStores.filter((store) => store !== key)
+      : [...selectedStores, key].slice(-MAX_STORES);
+    return link({ store: next.length ? next.join(STORE_SEPARATOR) : undefined });
+  };
+  // A ticked store with no deals left under the other filters still needs its box, to untick it.
+  const storeOptions = [
+    ...facets.stores,
+    ...selectedStores
+      .filter((key) => !facets.stores.some((facet) => facet.key === key))
+      .map((key) => ({ key, name: key, total: 0 })),
+  ].map((facet) => ({ ...facet, href: toggleStore(facet.key), active: selectedStores.includes(facet.key) }));
   const selectedSizes = filters.sizes ?? [];
   const toggleSize = (key: string) => {
     const next = selectedSizes.includes(key)
@@ -128,6 +144,20 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
               showFewer: t.filters.showFewerBrands,
               search: t.filters.searchBrands,
               none: t.filters.noBrands,
+            }}
+          />
+        </FilterGroup>
+      )}
+
+      {on.store && storeOptions.length > 1 && (
+        <FilterGroup title={t.filters.store}>
+          <BrandFilter
+            options={storeOptions}
+            labels={{
+              showAll: fmt(t.filters.showAllStores, { count: storeOptions.length }),
+              showFewer: t.filters.showFewerBrands,
+              search: t.filters.searchStores,
+              none: t.filters.noStores,
             }}
           />
         </FilterGroup>
@@ -250,6 +280,8 @@ interface ActiveProps {
   showSource: boolean;
   /** Display names for ticked brands (the URL holds lower-case keys). */
   brands?: BrandFacet[];
+  /** Display names for ticked stores (the URL holds store ids). */
+  stores?: StoreFacet[];
   /** The search text as a removable chip, on the search page. */
   query?: { text: string; remove: string };
 }
@@ -261,6 +293,7 @@ export function countActiveFilters(filters: ParsedDealFilters, showCategory: boo
     filters.subcategory,
     filters.audience,
     ...(filters.brands ?? []),
+    ...(filters.stores ?? []),
     ...(filters.sizes ?? []),
     showSource && filters.scope,
     filters.country,
@@ -271,9 +304,10 @@ export function countActiveFilters(filters: ParsedDealFilters, showCategory: boo
 }
 
 /** The applied filters as chips, each removable with one click. */
-export async function ActiveFilters({ filters, link, resetHref, showCategory, showSource, brands = [], query }: ActiveProps) {
+export async function ActiveFilters({ filters, link, resetHref, showCategory, showSource, brands = [], stores = [], query }: ActiveProps) {
   const { t, money, locale } = await getI18n();
   const brandNames = new Map(brands.map((brand) => [brand.key, brand.name]));
+  const storeNames = new Map(stores.map((store) => [store.key, store.name]));
   const countryName = new Intl.DisplayNames([LOCALE_TAGS[locale]], { type: "region" });
 
   const active = [
@@ -288,6 +322,13 @@ export async function ActiveFilters({ filters, link, resetHref, showCategory, sh
       return {
         label: brandNames.get(key) ?? key,
         remove: link({ brand: rest.length ? rest.join(BRAND_SEPARATOR) : undefined }),
+      };
+    }),
+    ...(filters.stores ?? []).map((key) => {
+      const rest = (filters.stores ?? []).filter((store) => store !== key);
+      return {
+        label: storeNames.get(key) ?? key,
+        remove: link({ store: rest.length ? rest.join(STORE_SEPARATOR) : undefined }),
       };
     }),
     ...(filters.sizes ?? []).map((key) => {

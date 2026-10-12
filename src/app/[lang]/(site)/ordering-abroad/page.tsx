@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Check } from "lucide-react";
+import { Check, MessageCircle } from "lucide-react";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
 import { toMinor } from "@/lib/money";
@@ -49,7 +49,20 @@ export default async function OrderingAbroadPage() {
         </section>
       </div>
 
-      <ButtonLink href={`${href("/deals")}?scope=global`}>{t.order.browseAbroad}</ButtonLink>
+      <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-global/30 bg-global-soft p-6">
+        <div className="min-w-0 max-w-2xl">
+          <h2 className="flex items-center gap-2 text-xl font-bold">
+            <MessageCircle className="size-5 text-global" aria-hidden />
+            {t.messages.helpCtaTitle}
+          </h2>
+          <p className="mt-1.5 leading-7 text-ink/80">{t.messages.helpCtaText}</p>
+        </div>
+        <ButtonLink href={href("/messages/new")}>{t.messages.writeToUs}</ButtonLink>
+      </section>
+
+      <ButtonLink href={`${href("/deals")}?scope=global`} variant="secondary">
+        {t.order.browseAbroad}
+      </ButtonLink>
     </Container>
   );
 }

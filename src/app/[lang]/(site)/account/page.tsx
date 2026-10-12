@@ -6,7 +6,7 @@ import { getI18n } from "@/i18n/server";
 import { logoutAction } from "@/modules/auth/actions";
 import { getCurrentUser } from "@/modules/auth/session";
 import { listUserOrderRequests } from "@/modules/orders/service";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -72,6 +72,16 @@ export default async function AccountPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-5 py-4">
+        <div className="min-w-0">
+          <h2 className="font-bold">{t.messages.title}</h2>
+          <p className="text-sm text-muted">{t.messages.helpCtaText}</p>
+        </div>
+        <ButtonLink href={href("/messages")} variant="secondary" size="sm">
+          {t.messages.allConversations}
+        </ButtonLink>
       </section>
 
       <form action={logoutAction} className="mt-8">

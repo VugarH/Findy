@@ -8,6 +8,7 @@ import { unpublishedChanges } from "@/modules/admin/audit";
 import { requireAdminPage } from "@/modules/admin/guard";
 import { getAdminI18n } from "@/modules/admin/i18n";
 import { countNewOrders } from "@/modules/admin/orders";
+import { countUnreadForAdmins } from "@/modules/messages/service";
 import { countFailingStores } from "@/modules/admin/stores";
 import { AdminI18nProvider } from "@/components/admin/admin-i18n";
 import { AdminNav } from "@/components/admin/admin-nav";
@@ -27,10 +28,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AdminLayout({ children }: LayoutProps<"/[lang]/admin">) {
   const user = await requireAdminPage();
   const { a, t, href, locale, dateTime } = await getAdminI18n();
-  const [unpublished, failingStores, newOrders] = await Promise.all([
+  const [unpublished, failingStores, newOrders, unreadMessages] = await Promise.all([
     unpublishedChanges(),
     countFailingStores(),
     countNewOrders(),
+    countUnreadForAdmins(),
   ]);
 
   return (
@@ -59,7 +61,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/[lang]/adm
       </header>
       <div className="mx-auto grid w-full max-w-[1400px] flex-1 grid-cols-[minmax(0,1fr)] gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[210px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-20 lg:self-start">
-          <AdminNav badges={{ stores: failingStores, orders: newOrders }} />
+          <AdminNav badges={{ stores: failingStores, orders: newOrders, messages: unreadMessages }} />
         </aside>
         <main className="min-w-0">
           <PublishBar pending={unpublished.count} builtAt={dateTime(unpublished.publishedAt)} />

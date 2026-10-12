@@ -38,7 +38,8 @@ export type AdminNoticeKey =
   | "merged"
   | "previewOk"
   | "digestPicked"
-  | "digestPosted";
+  | "digestPosted"
+  | "sent";
 
 export interface AdminFormState {
   /** Error per field. */

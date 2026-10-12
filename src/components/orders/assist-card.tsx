@@ -26,12 +26,17 @@ export async function AssistCard({ offer, productSlug }: { offer: OfferView; pro
           </p>
           <h2 className="mt-2 text-lg font-bold text-ink">{t.order.cardTitle}</h2>
           <p className="mt-1.5 text-sm leading-6 text-ink/80">{fmt(t.order.cardText, { store: offer.supplier.name })}</p>
-          <Link
-            href={href("/ordering-abroad")}
-            className="mt-2 inline-block text-sm font-semibold text-global hover:underline"
-          >
-            {t.order.howLink}
-          </Link>
+          <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            <Link href={href("/ordering-abroad")} className="text-sm font-semibold text-global hover:underline">
+              {t.order.howLink}
+            </Link>
+            <Link
+              href={`${href("/messages/new")}?product=${encodeURIComponent(productSlug)}`}
+              className="text-sm font-semibold text-global hover:underline"
+            >
+              {t.messages.askAboutProduct}
+            </Link>
+          </p>
         </div>
 
         <div className="flex shrink-0 flex-col gap-2">

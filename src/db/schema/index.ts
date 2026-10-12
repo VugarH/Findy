@@ -395,6 +395,60 @@ export const orderRequests = pgTable(
   ],
 );
 
+export type ConversationStatus = "open" | "closed";
+export type MessageSender = "user" | "admin";
+
+/**
+ * A person writing to us, mostly to have something bought abroad for them.
+ * One conversation per request; both sides write in it on the site.
+ */
+export const conversations = pgTable(
+  "conversations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** A short title: the product's name, or the start of the first message. */
+    subject: text("subject").notNull(),
+    /** Set when the person wrote from a product page; the title is copied in in case the product goes away. */
+    productId: uuid("product_id").references(() => products.id, { onDelete: "set null" }),
+    productTitle: text("product_title"),
+    productSlug: text("product_slug"),
+    /** Phone the person gave for this request (optional), in international format. */
+    contactPhone: text("contact_phone"),
+    status: text("status").$type<ConversationStatus>().notNull().default("open"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    lastMessageAt: timestamp("last_message_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Newest message from each side, and when each side last opened the thread: what is unread. */
+    lastUserMessageAt: timestamp("last_user_message_at", { withTimezone: true }),
+    lastAdminMessageAt: timestamp("last_admin_message_at", { withTimezone: true }),
+    userReadAt: timestamp("user_read_at", { withTimezone: true }),
+    adminReadAt: timestamp("admin_read_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("conversations_user_idx").on(t.userId, t.lastMessageAt),
+    index("conversations_status_idx").on(t.status, t.lastMessageAt),
+  ],
+);
+
+export const conversationMessages = pgTable(
+  "conversation_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    /** Admin messages reach the person signed as the team, never with the admin's own name. */
+    sender: text("sender").$type<MessageSender>().notNull(),
+    /** The admin who wrote it, for the record (shown only in the admin panel). */
+    adminId: uuid("admin_id").references(() => users.id, { onDelete: "set null" }),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("conversation_messages_conversation_idx").on(t.conversationId, t.createdAt)],
+);
+
 /** Products a person asked to be told about when the price drops. */
 export const priceWatches = pgTable(
   "price_watches",
@@ -555,6 +609,8 @@ export const followRuns = pgTable("follow_runs", {
 });
 export type Notification = typeof notifications.$inferSelect;
 export type OrderRequest = typeof orderRequests.$inferSelect;
+export type Conversation = typeof conversations.$inferSelect;
+export type ConversationMessage = typeof conversationMessages.$inferSelect;
 export type User = typeof users.$inferSelect;
 
 /**

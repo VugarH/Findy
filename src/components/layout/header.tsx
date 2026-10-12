@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame, Shield, User } from "lucide-react";
+import { Flame, MessageCircle, Shield, User } from "lucide-react";
 import { Suspense } from "react";
 import { siteConfig } from "@/config/site";
 import { orderedCategories } from "@/modules/settings/display-order";
@@ -7,6 +7,7 @@ import { getDisplayOrder } from "@/modules/settings/service";
 import { getI18n } from "@/i18n/server";
 import { isAdmin } from "@/modules/admin/guard";
 import { countUnreadNotifications } from "@/modules/alerts/service";
+import { countUnreadForAdmins, countUnreadForUser } from "@/modules/messages/service";
 import { getCurrentUser } from "@/modules/auth/session";
 import { marketDay, summarizeDigest } from "@/modules/digest/pick";
 import { latestDigest } from "@/modules/digest/service";
@@ -25,8 +26,10 @@ import { ThemeToggle } from "./theme-toggle";
 export async function Header() {
   const { locale, t, href, market } = await getI18n();
   const user = await getCurrentUser();
-  const [unread, digest, order] = await Promise.all([
+  const [unread, unreadMessages, digest, order] = await Promise.all([
     user ? countUnreadNotifications(user.id) : 0,
+    // Admins answer messages: their icon opens the inbox and counts what waits for the team.
+    isAdmin(user) ? countUnreadForAdmins() : user ? countUnreadForUser(user.id) : 0,
     latestDigest(market.code),
     getDisplayOrder(),
   ]);
@@ -62,6 +65,20 @@ export async function Header() {
             </Link>
           )}
           <CartLink />
+          {/* Writing to us (and our replies); the badge counts conversations with an unread reply. */}
+          <Link
+            href={href(isAdmin(user) ? "/admin/messages" : "/messages")}
+            title={t.nav.messages}
+            aria-label={unreadMessages > 0 ? `${t.nav.messages} (${unreadMessages})` : t.nav.messages}
+            className="relative grid size-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+          >
+            <MessageCircle className="size-[18px]" aria-hidden />
+            {unreadMessages > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 grid min-w-[18px] place-items-center rounded-full bg-deal px-1 text-[11px] font-bold leading-[18px] text-on-deal">
+                {unreadMessages > 99 ? "99+" : unreadMessages}
+              </span>
+            )}
+          </Link>
           <NotificationBell
             signedIn={user !== null}
             unread={unread}

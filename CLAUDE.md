@@ -20,7 +20,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Subcategory rules (≤10/category) | `src/config/subcategories.ts` (`classifyProduct`) |
 | Audience (women/men/kids/unisex) | `src/config/audience.ts` |
 | Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts` |
-| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0015) |
+| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0016) |
 | Store adapters | `src/modules/suppliers/adapters/{shopify,structured-data,akinon}/{adapter,stores}.ts` (akinon = category pages, cart prices, discounted-only + `RawOffer.updateOnly`) |
 | Code store list → daily job | `suppliers/registry.ts` (`getAdapters`, `getAllAdapters` = code + admin stores) |
 | Stores added in the panel | `suppliers/custom-config.ts` (zod, client-safe), `suppliers/custom.ts` (adapters, preview) |
@@ -37,6 +37,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Search (+ az/ru/en synonyms) | `search/catalog-search.ts`, `search/synonyms.ts` |
 | Cart / parcel planner | `modules/cart/plan.ts` (pure: parcels per store), `cart/service.ts`; cost `pricing/landed-cost.ts` `computeParcelCost`; browser cart `components/cart/cart-store.ts` (localStorage); page `(site)/cart` |
 | Follow brand/store/category → new deals | `modules/follows/*` (`match.ts` pure, `notify.ts` = daily 10:00 job); `deals.deal_since` kept across rebuilds in `deals/build.ts` |
+| Messages (customer ↔ team, "buy this for me") | `modules/messages/*` (`rules.ts` pure, `service.ts`, `actions.ts`, `notify.ts` Telegram heads-ups); pages `(site)/messages`, `admin/messages`; UI `components/messages/*`; replies show to customers as "Admin" (`t.messages.adminName`) |
 | Price alerts, notifications, push | `modules/alerts/*` (`check.ts` runs after each daily run); header bell `components/notifications/notification-bell.tsx` |
 | Day's top deals (digest) | `modules/digest/pick.ts` (pure), `digest/service.ts`; page `(site)/top` |
 | Telegram (channel post, bot, account link) | `modules/telegram/*` (`format.ts` = all message text, pure); webhook `app/api/telegram/webhook` |

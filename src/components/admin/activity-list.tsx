@@ -12,6 +12,7 @@ const ENTITY_PATHS: Record<string, (id: string) => string> = {
   store: (id) => `/admin/stores/${id}`,
   product: (id) => `/admin/products/${id}`,
   order: () => "/admin/orders",
+  conversation: (id) => `/admin/messages/${id}`,
   user: () => "/admin/users",
 };
 

@@ -37,6 +37,9 @@ export async function Footer() {
           <Link href={href("/alerts")} className="text-muted hover:text-ink">
             {t.alerts.nav}
           </Link>
+          <Link href={href("/messages")} className="text-muted hover:text-ink">
+            {t.nav.messages}
+          </Link>
           {channel && (
             <a href={channel} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-ink">
               {t.notifications.channel}

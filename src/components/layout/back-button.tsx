@@ -10,9 +10,9 @@ import { Container } from "@/components/ui/container";
 let pagesSeen = 0;
 let lastPath: string | null = null;
 
-/** Deal listings (/deals, /category/…) show their own back arrow beside the title. */
+/** Deal listings (/deals, /category/…) and conversations (/messages/…) show their own way back. */
 function hasOwnBackLink(pathname: string, href: (path: string) => string): boolean {
-  return pathname === href("/deals") || pathname.startsWith(href("/category/"));
+  return pathname === href("/deals") || pathname.startsWith(href("/category/")) || pathname.startsWith(href("/messages/"));
 }
 
 /**

@@ -145,3 +145,17 @@ export function newDealsMessage(groups: NewDealsGroup[], ctx: MessageContext): s
   );
   return newDealsMessage(shorter.filter((group) => group.deals.length > 0), ctx);
 }
+
+/** A message on the site, as a Telegram heads-up: who wrote, about what, the start of it and a link to the thread. */
+export function conversationNotice(
+  notice: { heading: string; subject: string; body: string; path: string },
+  ctx: MessageContext,
+): string {
+  return [
+    `💬 <b>${escapeHtml(notice.heading)}</b>`,
+    `<b>${escapeHtml(notice.subject)}</b>`,
+    escapeHtml(shorten(notice.body, 300)),
+    "",
+    link(ctx.url(notice.path), ctx.t.messages.openThread),
+  ].join("\n");
+}

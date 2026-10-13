@@ -24,6 +24,17 @@ export default async function OrderingAbroadPage() {
         <p className="mt-3 text-lg text-muted">{t.order.helpIntro}</p>
       </header>
 
+      <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-global/30 bg-global-soft p-6">
+        <div className="min-w-0 max-w-2xl">
+          <h2 className="flex items-center gap-2 text-xl font-bold">
+            <MessageCircle className="size-5 text-global" aria-hidden />
+            {t.messages.helpCtaTitle}
+          </h2>
+          <p className="mt-1.5 leading-7 text-ink/80">{t.messages.helpCtaText}</p>
+        </div>
+        <ButtonLink href={href("/messages/new")}>{t.messages.writeToUs}</ButtonLink>
+      </section>
+
       <section>
         <h2 className="mb-4 text-2xl font-bold tracking-tight">{t.order.stepsTitle}</h2>
         <OrderSteps t={t} />
@@ -48,17 +59,6 @@ export default async function OrderingAbroadPage() {
           </ul>
         </section>
       </div>
-
-      <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-global/30 bg-global-soft p-6">
-        <div className="min-w-0 max-w-2xl">
-          <h2 className="flex items-center gap-2 text-xl font-bold">
-            <MessageCircle className="size-5 text-global" aria-hidden />
-            {t.messages.helpCtaTitle}
-          </h2>
-          <p className="mt-1.5 leading-7 text-ink/80">{t.messages.helpCtaText}</p>
-        </div>
-        <ButtonLink href={href("/messages/new")}>{t.messages.writeToUs}</ButtonLink>
-      </section>
 
       <ButtonLink href={`${href("/deals")}?scope=global`} variant="secondary">
         {t.order.browseAbroad}

@@ -4,6 +4,7 @@ import { sendMessage, TelegramError } from "./api";
 import { messageContext } from "./context";
 import { dropAlertMessage, type DropAlert } from "./format";
 import { disconnectChat } from "./link";
+import { log } from "@/modules/logs/logger";
 
 /**
  * Sends one person their price drops from a daily run, in one message.
@@ -22,7 +23,7 @@ export async function sendDropAlerts(
     return true;
   } catch (error) {
     if (error instanceof TelegramError && error.chatGone) await disconnectChat(chatId);
-    else console.error("Telegram alert failed", error instanceof Error ? error.message : error);
+    else await log.warn("telegram", "alert.failed", "A price-drop alert could not be sent on Telegram", { error });
     return false;
   }
 }

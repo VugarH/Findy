@@ -2,6 +2,7 @@ import { inArray } from "drizzle-orm";
 import webpush from "web-push";
 import { db } from "@/db/client";
 import { pushSubscriptions } from "@/db/schema";
+import { log } from "@/modules/logs/logger";
 
 export interface PushMessage {
   title: string;
@@ -51,7 +52,7 @@ export async function sendPush(targets: Target[], message: PushMessage): Promise
         const status = (error as { statusCode?: number }).statusCode;
         // 404 / 410: the browser unsubscribed or the subscription expired.
         if (status === 404 || status === 410) gone.push(target.id);
-        else console.error("Push failed", status ?? error);
+        else await log.warn("push", "push.failed", "A browser push message could not be sent", { status, error });
       }
     }),
   );

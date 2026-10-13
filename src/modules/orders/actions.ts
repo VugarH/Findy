@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/modules/auth/session";
 import { normalizePhone } from "@/modules/auth/validation";
 import { loadMarket } from "@/modules/pricing/fx";
 import { createOrderRequest, getOrderableOffer } from "./service";
+import { log } from "@/modules/logs/logger";
 
 export type OrderErrorKey =
   | "nameRequired"
@@ -83,9 +84,15 @@ export async function createOrderRequestAction(_previous: OrderFormState, form: 
       locale: isLocale(locale) ? locale : DEFAULT_LOCALE,
       userId: user?.id ?? null,
     });
+    await log.info("orders", "request.created", `Order request ${reference}`, {
+      userId: user?.id,
+      reference,
+      offerId: parsed.data.offerId,
+      quantity: parsed.data.quantity,
+    });
     return { reference };
   } catch (error) {
-    console.error("Order request failed", error);
+    await log.error("orders", "request.failed", "An order request could not be saved", { error, offerId: parsed.data.offerId });
     return { formError: "unexpected", values };
   }
 }

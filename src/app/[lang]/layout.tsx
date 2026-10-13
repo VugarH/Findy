@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { siteConfig } from "@/config/site";
+import { siteConfig, siteUrl } from "@/config/site";
 import { getMarket } from "@/config/markets";
 import { I18nProvider } from "@/i18n/client";
-import { isLocale } from "@/i18n/config";
+import { isLocale, LOCALE_TAGS } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { parseTheme, THEME_COOKIE } from "@/components/layout/theme";
 import "../globals.css";
@@ -20,8 +20,12 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   if (!isLocale(lang)) return {};
   const t = getDictionary(lang);
   return {
+    // Shared links and preview images need absolute addresses.
+    metadataBase: new URL(siteUrl()),
     title: { default: `${siteConfig.name} — ${t.meta.title}`, template: `%s · ${siteConfig.name}` },
     description: t.meta.description,
+    openGraph: { siteName: siteConfig.name, type: "website", locale: LOCALE_TAGS[lang].replace("-", "_") },
+    twitter: { card: "summary_large_image" },
   };
 }
 

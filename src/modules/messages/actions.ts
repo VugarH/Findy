@@ -12,6 +12,7 @@ import { loadMarket } from "@/modules/pricing/fx";
 import { notifyAdminsOfMessage } from "./notify";
 import { MAX_MESSAGE_LENGTH } from "./rules";
 import { addMessage, canSendMore, getConversation, getOwnConversation, productForMessage, startConversation } from "./service";
+import { log } from "@/modules/logs/logger";
 
 export type MessageErrorKey = "bodyRequired" | "bodyLong" | "phoneInvalid" | "tooMany" | "signIn" | "notFound" | "unexpected";
 
@@ -58,8 +59,14 @@ export async function startConversationAction(_previous: MessageFormState, form:
     const conversation = await getConversation(id);
     const market = await loadMarket();
     if (conversation) after(() => notifyAdminsOfMessage(conversation, user.fullName, parsed.data.body, market));
+    await log.info("messages", "conversation.started", "A person started a conversation", {
+      userId: user.id,
+      conversationId: id,
+      product: slug || undefined,
+      withPhone: parsed.data.contactPhone !== null,
+    });
   } catch (error) {
-    console.error("Starting a conversation failed", error);
+    await log.error("messages", "start.failed", "Starting a conversation failed", { error, userId: user.id });
     return { error: "unexpected", values };
   }
   redirect(localePath(locale, `/messages/${id}`));
@@ -80,8 +87,9 @@ export async function sendMessageAction(previous: MessageFormState, form: FormDa
     await addMessage(conversation.id, { sender: "user", body: parsed.data });
     const market = await loadMarket();
     after(() => notifyAdminsOfMessage(conversation, user.fullName, parsed.data, market));
+    await log.info("messages", "message.sent", "A person wrote in a conversation", { userId: user.id, conversationId: conversation.id });
   } catch (error) {
-    console.error("Sending a message failed", error);
+    await log.error("messages", "send.failed", "Sending a message failed", { error, userId: user.id, conversationId: conversation.id });
     return { error: "unexpected", values };
   }
   refresh();

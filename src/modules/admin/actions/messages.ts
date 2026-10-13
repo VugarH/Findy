@@ -9,6 +9,7 @@ import { loadMarket } from "@/modules/pricing/fx";
 import { recordAdminEvent } from "../audit";
 import { text, type AdminFormState } from "../forms";
 import { requireAdmin } from "../guard";
+import { log } from "@/modules/logs/logger";
 
 /** Answers a person. They see it signed as the team; the panel keeps which admin wrote it. */
 export async function adminReplyAction(previous: AdminFormState, form: FormData): Promise<AdminFormState> {
@@ -22,6 +23,7 @@ export async function adminReplyAction(previous: AdminFormState, form: FormData)
   await addMessage(conversation.id, { sender: "admin", adminId: admin.id, body });
   const market = await loadMarket();
   after(() => notifyUserOfReply(conversation, body, market));
+  await log.info("messages", "reply.sent", "The team replied", { userId: conversation.userId, conversationId: conversation.id, adminId: admin.id });
   refresh();
   return { notice: "sent", noticeVars: { at: Date.now() } };
 }

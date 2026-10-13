@@ -5,6 +5,8 @@ const az: Dictionary = {
     title: "Real endirimlər, real yekun qiymət",
     description:
       "Yerli və xarici mağazalardan hər gün yoxlanılan endirimlər — çatdırılma və gömrük qiymətə daxildir.",
+    productPreview: "{store} mağazasında {price}. Çatdırılma və gömrük daxil yekun qiymət, mağazalar arasında müqayisə.",
+    productPreviewDeal: "{store} mağazasında {price} (−{pct}%). Çatdırılma və gömrük daxil yekun qiymət, mağazalar arasında müqayisə.",
   },
   demoBanner: "Demo rejimi — mağazalar və qiymətlər nümunə məlumatdır.",
   nav: {
@@ -370,7 +372,9 @@ const az: Dictionary = {
     phone: "Telefon nömrəsi",
     optional: "məcburi deyil",
     phoneHint: "Gələcəkdə çatdırılma bildirişləri üçün. Nümunə: +994 50 123 45 67",
-    acceptTerms: "İstifadə şərtləri və məxfilik siyasəti ilə razıyam.",
+    acceptTerms: "{terms} və {privacy} ilə razıyam.",
+    termsLink: "İstifadə şərtləri",
+    privacyLink: "məxfilik siyasəti",
     dealAlerts: "Böyük qiymət enişləri və endirimlər barədə e-poçt göndərin.",
     submitSignIn: "Daxil ol",
     submitRegister: "Hesab yarat",
@@ -695,6 +699,15 @@ const az: Dictionary = {
   footer: {
     tagline: "Yerli və xarici mağazalardan yoxlanılmış endirimlər və real yekun qiymət.",
     disclaimer: "Qiymətlər tez dəyişir. Ödənişdən əvvəl yekun qiyməti mağazada yoxlayın.",
+    terms: "İstifadə şərtləri",
+    privacy: "Məxfilik siyasəti",
+  },
+  errorPage: {
+    title: "Nəsə alınmadı",
+    text: "Bağışlayın, bu səhifə açılmadı. Problem qeydə alındı; yenidən cəhd edin.",
+    retry: "Yenidən cəhd et",
+    home: "Ana səhifəyə qayıt",
+    code: "Xəta kodu",
   },
   notFound: {
     title: "Səhifə tapılmadı",

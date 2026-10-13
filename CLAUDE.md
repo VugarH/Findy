@@ -20,7 +20,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Subcategory rules (≤10/category) | `src/config/subcategories.ts` (`classifyProduct`) |
 | Audience (women/men/kids/unisex) | `src/config/audience.ts` |
 | Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts` |
-| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0016) |
+| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0018) |
 | Store adapters | `src/modules/suppliers/adapters/{shopify,structured-data,akinon}/{adapter,stores}.ts` (akinon = category pages, cart prices, discounted-only + `RawOffer.updateOnly`) |
 | Code store list → daily job | `suppliers/registry.ts` (`getAdapters`, `getAllAdapters` = code + admin stores) |
 | Stores added in the panel | `suppliers/custom-config.ts` (zod, client-safe), `suppliers/custom.ts` (adapters, preview) |
@@ -38,6 +38,8 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Cart / parcel planner | `modules/cart/plan.ts` (pure: parcels per store), `cart/service.ts`; cost `pricing/landed-cost.ts` `computeParcelCost`; browser cart `components/cart/cart-store.ts` (localStorage); page `(site)/cart` |
 | Follow brand/store/category → new deals | `modules/follows/*` (`match.ts` pure, `notify.ts` = daily 10:00 job); `deals.deal_since` kept across rebuilds in `deals/build.ts` |
 | Messages (customer ↔ team, "buy this for me") | `modules/messages/*` (`rules.ts` pure, `service.ts`, `actions.ts`, `notify.ts` Telegram heads-ups); pages `(site)/messages`, `admin/messages`; UI `components/messages/*`; replies show to customers as "Admin" (`t.messages.adminName`) |
+| Logging (Admin → Logs) | `modules/logs/logger.ts` — `log.info/warn/error(area, event, message, { userId, error, …})`: console + `app_logs` table, secrets stripped (`sanitize.ts`), ≤30/min per event; server crashes via `src/instrumentation.ts` `onRequestError`; pruned by the daily job (`service.ts` `pruneLogs`: info 14 d, warn/error 30 d). Use it instead of `console.error` |
+| Analytics (Admin → Analytics) | `modules/analytics/*`: `visitor.ts` (cookieless daily visitor id, bots, device, source), `record.ts` (views via `POST /api/track` from `components/analytics/page-tracker.tsx`, searches from the search page, clicks in `app/go/[offerId]`), `report.ts` (queries; `saveDailyStatsAndPrune` in the daily job: `daily_stats` forever, `site_events` 90 days). Admins and bots are not counted |
 | Price alerts, notifications, push | `modules/alerts/*` (`check.ts` runs after each daily run); header bell `components/notifications/notification-bell.tsx` |
 | Day's top deals (digest) | `modules/digest/pick.ts` (pure), `digest/service.ts`; page `(site)/top` |
 | Telegram (channel post, bot, account link) | `modules/telegram/*` (`format.ts` = all message text, pure); webhook `app/api/telegram/webhook` |
@@ -47,6 +49,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Admin UI | `src/components/admin/*` (ui.tsx primitives, fields.tsx `useAdminForm`), pages `src/app/[lang]/admin/` |
 | Public pages | `src/app/[lang]/(site)/…` (route group; URLs have no "(site)") |
 | Site text | `src/i18n/dictionaries/{en,az,ru}.ts` (`Dictionary = typeof en`) |
+| Terms / privacy, error pages, SEO | texts `i18n/dictionaries/legal/*` (update `LEGAL_UPDATED` with any change; keep them true to what the code stores), pages `(site)/terms`, `(site)/privacy`; `error.tsx` per segment + `app/global-error.tsx`; `app/robots.ts`, `app/sitemap.ts`, `[lang]/opengraph-image.tsx`, `metadataBase` in `[lang]/layout.tsx` |
 
 ## Commands
 

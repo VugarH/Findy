@@ -120,6 +120,20 @@
       "when": 1791791702254,
       "tag": "0016_messages",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791809700815,
+      "tag": "0017_app_logs",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791810330594,
+      "tag": "0018_analytics",
+      "breakpoints": true
     }
   ]
 }

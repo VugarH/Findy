@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import { useId, useState, type ComponentProps } from "react";
+import { useId, useState, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 interface FieldProps extends Omit<ComponentProps<"input">, "id"> {
@@ -65,7 +65,7 @@ export function FormField({ label, optionalLabel, hint, error, reveal, type, cla
 }
 
 interface CheckProps extends Omit<ComponentProps<"input">, "id" | "type"> {
-  label: string;
+  label: ReactNode;
   error?: string;
 }
 

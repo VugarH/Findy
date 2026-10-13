@@ -14,6 +14,7 @@ import { formValues, localeOf, text, type AdminFormState } from "../forms";
 import { requireAdmin } from "../guard";
 import { createCustomStore, setStoreActive, setStoreNotes, updateCustomStore } from "../stores";
 import { parseStoreForm } from "../validation";
+import { log } from "@/modules/logs/logger";
 
 /** Switches a store on or off. Off: the daily job stops contacting it and its offers leave the site at once. */
 export async function setStoreActiveAction(form: FormData): Promise<void> {
@@ -71,7 +72,7 @@ export async function saveCustomStoreAction(_previous: AdminFormState, form: For
   try {
     created = await createCustomStore(parsed.data);
   } catch (error) {
-    console.error("Adding a store failed", error);
+    await log.error("stores", "add.failed", "Adding a store failed", { error, userId: admin.id });
     return { formError: "unexpected", values };
   }
   await recordAdminEvent(admin, {
@@ -120,7 +121,7 @@ export async function collectStoreAction(_previous: AdminFormState, form: FormDa
     try {
       await runDailyPipeline(getMarket(), new Date(), { supplierIds: [id], refreshSearches: false });
     } catch (error) {
-      console.error(`Collecting ${id} failed`, error);
+      await log.error("stores", "collect.failed", `Collecting ${id} failed`, { error, storeId: id, userId: admin.id });
     }
   });
   return { notice: "collecting" };

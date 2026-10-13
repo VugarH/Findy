@@ -12,6 +12,7 @@ import { messageContext } from "@/modules/telegram/context";
 import { newDealsMessage } from "@/modules/telegram/format";
 import { disconnectChat } from "@/modules/telegram/link";
 import { matchNewDeals, type FollowRef, type NewDeal } from "./match";
+import { log } from "@/modules/logs/logger";
 
 /**
  * The daily "new deals from what you follow" job (npm run follows:notify,
@@ -117,7 +118,7 @@ export async function notifyFollowers(market: MarketConfig, now = new Date()): P
         telegram++;
       } catch (error) {
         if (error instanceof TelegramError && error.chatGone) await disconnectChat(person.telegramChatId);
-        else console.error("Telegram new-deals message failed", error instanceof Error ? error.message : error);
+        else await log.warn("telegram", "follows.failed", "A new-deals message could not be sent on Telegram", { error });
       }
       await new Promise((resolve) => setTimeout(resolve, TELEGRAM_GAP_MS));
     }

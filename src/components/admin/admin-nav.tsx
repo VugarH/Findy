@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 import {
   Activity,
   ArrowUpDown,
+  BarChart3,
   FolderTree,
   LayoutDashboard,
   MessageCircle,
   Package,
   PlayCircle,
+  ScrollText,
   Send,
   Settings,
   ShoppingBag,
@@ -26,6 +28,7 @@ import { useAdminT } from "./admin-i18n";
  */
 const SECTIONS = [
   { path: "", key: "dashboard", icon: LayoutDashboard },
+  { path: "/analytics", key: "analytics", icon: BarChart3 },
   { path: "/stores", key: "stores", icon: Store },
   { path: "/products", key: "products", icon: Package },
   { path: "/categories", key: "categories", icon: FolderTree },
@@ -35,6 +38,7 @@ const SECTIONS = [
   { path: "/runs", key: "runs", icon: PlayCircle },
   { path: "/telegram", key: "telegram", icon: Send },
   { path: "/activity", key: "activity", icon: Activity },
+  { path: "/logs", key: "logs", icon: ScrollText },
   { path: "/users", key: "users", icon: Users },
   { path: "/settings", key: "settings", icon: Settings },
 ] as const;

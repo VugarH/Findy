@@ -6,6 +6,7 @@ import { createShopifyAdapter } from "./adapters/shopify/adapter";
 import { createStructuredDataAdapter } from "./adapters/structured-data/adapter";
 import { customConfigSchema, trustScoreFor, type CustomStore } from "./custom-config";
 import type { RawOffer, SupplierAdapter, SupplierDefinition } from "./types";
+import { log } from "@/modules/logs/logger";
 
 export * from "./custom-config";
 
@@ -116,7 +117,7 @@ export async function loadCustomAdapters(): Promise<SupplierAdapter[]> {
   return rows.flatMap((row) => {
     const store = toCustomStore(row);
     if (!store) {
-      console.warn(`Store ${row.id}: its admin settings are invalid; not collected.`);
+      void log.warn("stores", "settings.invalid", `Store ${row.id}: its admin settings are invalid; not collected.`, { storeId: row.id });
       return [];
     }
     const adapter = createCustomAdapter(store);

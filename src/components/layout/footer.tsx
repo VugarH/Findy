@@ -55,8 +55,16 @@ export async function Footer() {
       </Container>
       <Container className="border-t border-line py-5 text-xs text-muted">
         <p>{t.footer.disclaimer}</p>
-        <p className="mt-1">
-          © {new Date().getFullYear()} {siteConfig.name}
+        <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+          <span>
+            © {new Date().getFullYear()} {siteConfig.name}
+          </span>
+          <Link href={href("/terms")} className="hover:text-ink">
+            {t.footer.terms}
+          </Link>
+          <Link href={href("/privacy")} className="hover:text-ink">
+            {t.footer.privacy}
+          </Link>
         </p>
       </Container>
     </footer>

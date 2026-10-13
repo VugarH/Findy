@@ -5,6 +5,7 @@ import { followId } from "@/modules/follows/keys";
 import { listFollows } from "@/modules/follows/service";
 import { WatchProvider } from "@/components/alerts/watch-provider";
 import { FollowProvider } from "@/components/follows/follow-provider";
+import { PageTracker } from "@/components/analytics/page-tracker";
 import { BackButton } from "./back-button";
 import { Footer } from "./footer";
 import { Header } from "./header";
@@ -16,6 +17,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
   return (
     <WatchProvider initialIds={watchedIds}>
       <FollowProvider initialIds={followed.map((follow) => followId(follow.kind, follow.key))}>
+        <PageTracker />
         <Header />
         <main className="flex-1">
           <BackButton />

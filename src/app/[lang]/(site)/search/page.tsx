@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { after } from "next/server";
+import { recordSearchEvent, visitorOf } from "@/modules/analytics/record";
+import { getCurrentUser } from "@/modules/auth/session";
 import { Search, SearchX } from "lucide-react";
 import { Suspense } from "react";
 import { LOCALE_TAGS } from "@/i18n/config";
@@ -55,6 +59,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
   // while building the cards; everything else filters the finished list.
   const found = await searchCatalog(query, market, filters.scope);
   await recordSearch(query, market, found.length, false);
+  // Analytics: the search itself, not every filter click on its results.
+  if (Object.keys(params).every((key) => key === "q")) {
+    const visitor = visitorOf(await headers(), await getCurrentUser());
+    if (visitor) after(() => recordSearchEvent(visitor, query, found.length));
+  }
 
   const facets = facetsOfCards(found, filters.category, filters.stores);
   const matching = sortCards(filterCards(found, filters), sort);

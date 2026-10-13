@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, type ReactNode } from "react";
 import { useI18n } from "@/i18n/client";
 import { loginAction, registerAction, type AuthFormState } from "@/modules/auth/actions";
 import { PASSWORD_MIN } from "@/modules/auth/validation";
@@ -53,7 +53,7 @@ export function LoginForm({ next }: { next?: string }) {
 }
 
 export function RegisterForm({ next }: { next?: string }) {
-  const { t, locale } = useI18n();
+  const { t, locale, href } = useI18n();
   const [state, action, pending] = useActionState(registerAction, INITIAL);
   const error = (field: string) => (state.errors?.[field] ? t.auth.errors[state.errors[field]] : undefined);
 
@@ -116,7 +116,10 @@ export function RegisterForm({ next }: { next?: string }) {
 
       <div className="space-y-3 pt-1">
         <CheckField
-          label={t.auth.acceptTerms}
+          label={withLinks(t.auth.acceptTerms, {
+            terms: { href: href("/terms"), text: t.auth.termsLink },
+            privacy: { href: href("/privacy"), text: t.auth.privacyLink },
+          })}
           name="acceptTerms"
           defaultChecked={state.values?.acceptTerms === "on"}
           error={error("acceptTerms")}
@@ -130,4 +133,18 @@ export function RegisterForm({ next }: { next?: string }) {
       </Button>
     </form>
   );
+}
+
+/** "I agree to the {terms} and the {privacy}." with the placeholders as links (new tab, so the form keeps what was typed). */
+function withLinks(template: string, links: Record<string, { href: string; text: string }>): ReactNode {
+  return template.split(/(\{\w+\})/).map((part, index) => {
+    const link = links[part.slice(1, -1)];
+    return link ? (
+      <a key={index} href={link.href} target="_blank" rel="noopener" className="font-semibold text-brand-strong underline underline-offset-2">
+        {link.text}
+      </a>
+    ) : (
+      part
+    );
+  });
 }

@@ -3,6 +3,7 @@ import { loadMarket } from "@/modules/pricing/fx";
 import type { TelegramUpdate } from "@/modules/telegram/api";
 import { handleUpdate } from "@/modules/telegram/bot";
 import { webhookSecret } from "@/modules/telegram/config";
+import { log } from "@/modules/logs/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
       await handleUpdate(update, await loadMarket());
     } catch (error) {
       // Answer 200 anyway: Telegram would otherwise resend the same update again and again.
-      console.error(`Telegram update ${update.update_id} failed`, error);
+      await log.error("telegram", "update.failed", `Telegram update ${update.update_id} failed`, { error, updateId: update.update_id });
     }
   }
   return Response.json({ ok: true });

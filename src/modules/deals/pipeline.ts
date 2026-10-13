@@ -18,6 +18,9 @@ import { confirmManualOffers } from "@/modules/catalog/manual-offers";
 import { buildDailyDigest } from "@/modules/digest/service";
 import { postDigest } from "@/modules/telegram/channel";
 import { buildDeals } from "./build";
+import { log } from "@/modules/logs/logger";
+import { pruneLogs } from "@/modules/logs/service";
+import { saveDailyStatsAndPrune } from "@/modules/analytics/report";
 
 export interface PipelineResult {
   runId: string;
@@ -100,6 +103,27 @@ export async function runDailyPipeline(
     .update(pipelineRuns)
     .set({ status, stats, finishedAt: new Date() })
     .where(eq(pipelineRuns.id, run.id));
+
+  for (const store of supplierStats.filter((s) => !s.ok)) {
+    await log.warn("pipeline", "store.failed", `${store.supplierId}: ${store.error ?? "failed"}`, { runId: run.id, storeId: store.supplierId });
+  }
+  if (fx.error) await log.warn("pipeline", "fx.failed", `Exchange rates not refreshed: ${fx.error}`, { runId: run.id });
+  if (digest?.error) await log.warn("telegram", "digest.failed", `Top deals not posted: ${digest.error}`, { runId: run.id });
+  await log[status === "failed" ? "error" : "info"](
+    "pipeline",
+    "run.finished",
+    `Collected ${supplierStats.length - failed}/${supplierStats.length} stores, published ${dealCount} deals`,
+    { runId: run.id, status, stores: supplierStats.length, failedStores: failed, deals: dealCount, only: options.supplierIds, seconds: Math.round((Date.now() - now.getTime()) / 1000) },
+  );
+  // Old log entries go once a day, with the run.
+  const pruned = await pruneLogs(now);
+  if (pruned > 0) await log.info("logs", "pruned", `Deleted ${pruned} old log entries`);
+  // Analytics: the recent days' totals are kept for good, detailed events for 90 days.
+  try {
+    await saveDailyStatsAndPrune(market, now);
+  } catch (error) {
+    await log.warn("pipeline", "analytics.failed", "Daily analytics totals were not saved", { error, runId: run.id });
+  }
 
   return { runId: run.id, status, stats };
 }

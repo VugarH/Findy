@@ -2,6 +2,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { offers, outboundClicks } from "@/db/schema";
 import { getMarket } from "@/config/markets";
+import { visitorOf } from "@/modules/analytics/record";
+import { getCurrentUser } from "@/modules/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -11,13 +13,15 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * GET /go/{offerId} — records the click-out, then sends the visitor to the store.
  * This is where affiliate parameters get appended once programs are connected.
  */
-export async function GET(_request: Request, { params }: RouteContext<"/go/[offerId]">) {
+export async function GET(request: Request, { params }: RouteContext<"/go/[offerId]">) {
   const { offerId } = await params;
   if (!UUID.test(offerId)) return new Response("Not found", { status: 404 });
 
   const [offer] = await db.select({ url: offers.url }).from(offers).where(eq(offers.id, offerId)).limit(1);
   if (!offer) return new Response("Not found", { status: 404 });
 
-  await db.insert(outboundClicks).values({ offerId, marketCode: getMarket().code });
+  // Bots and admins still reach the store, but are not counted.
+  const visitor = visitorOf(request.headers, await getCurrentUser());
+  if (visitor) await db.insert(outboundClicks).values({ offerId, marketCode: getMarket().code, visitorId: visitor.id, userId: visitor.userId });
   return Response.redirect(offer.url, 302);
 }

@@ -295,10 +295,53 @@ export const outboundClicks = pgTable(
       .notNull()
       .references(() => offers.id, { onDelete: "cascade" }),
     marketCode: text("market_code").notNull(),
+    /** Anonymous id of the visitor for that day (see modules/analytics/visitor.ts); null for clicks before analytics. */
+    visitorId: text("visitor_id"),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("outbound_clicks_offer_idx").on(t.offerId)],
+  (t) => [index("outbound_clicks_offer_idx").on(t.offerId), index("outbound_clicks_created_idx").on(t.createdAt)],
 );
+
+export type SiteEventType = "view" | "search";
+
+/**
+ * Page views and searches, for Admin → Analytics. No cookies and no IP
+ * addresses: a visitor is an anonymous id that changes every day. Kept
+ * ANALYTICS_RETENTION_DAYS; the daily totals live on in daily_stats.
+ */
+export const siteEvents = pgTable(
+  "site_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    type: text("type").$type<SiteEventType>().notNull(),
+    visitorId: text("visitor_id").notNull(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    /** Page address without the query string, e.g. "/az/product/adidas-samba". */
+    path: text("path"),
+    /** Landing views only: where the visitor came from ("google", "telegram", "direct", a utm_source…). */
+    source: text("source"),
+    device: text("device").$type<"mobile" | "tablet" | "desktop">(),
+    locale: text("locale"),
+    /** Searches: what was searched and how many results it had. */
+    query: text("query"),
+    resultCount: integer("result_count"),
+  },
+  (t) => [index("site_events_created_idx").on(t.createdAt), index("site_events_type_idx").on(t.type, t.createdAt)],
+);
+
+/** One row per day of the main numbers, kept for good (the detailed events are not). */
+export const dailyStats = pgTable("daily_stats", {
+  day: date("day").primaryKey(),
+  visitors: integer("visitors").notNull(),
+  signedInUsers: integer("signed_in_users").notNull(),
+  pageViews: integer("page_views").notNull(),
+  storeClicks: integer("store_clicks").notNull(),
+  searches: integer("searches").notNull(),
+  signups: integer("signups").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export type Supplier = typeof suppliers.$inferSelect;
 export type Product = typeof products.$inferSelect;
@@ -392,6 +435,36 @@ export const orderRequests = pgTable(
     uniqueIndex("order_requests_reference_idx").on(t.reference),
     index("order_requests_user_idx").on(t.userId),
     index("order_requests_status_idx").on(t.status, t.createdAt),
+  ],
+);
+
+export type LogLevel = "info" | "warn" | "error";
+
+/**
+ * What happened on the site and in the jobs, for whoever runs it (Admin → Logs).
+ * Only events worth keeping: warnings, errors and notable actions, never every
+ * request. Entries older than LOG_RETENTION_DAYS are deleted by the daily job.
+ */
+export const appLogs = pgTable(
+  "app_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    level: text("level").$type<LogLevel>().notNull(),
+    /** Part of the system: "messages", "auth", "pipeline", "telegram", "request"… */
+    area: text("area").notNull(),
+    /** Short stable name of what happened, e.g. "message.sent", "store.failed". */
+    event: text("event").notNull(),
+    message: text("message").notNull(),
+    /** Who it was about, if anyone. */
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    /** Details: ids, counts, the error and its stack. Never passwords, tokens or message text. */
+    context: jsonb("context").$type<Record<string, unknown>>().notNull().default({}),
+  },
+  (t) => [
+    index("app_logs_created_idx").on(t.createdAt),
+    index("app_logs_level_idx").on(t.level, t.createdAt),
+    index("app_logs_area_idx").on(t.area, t.createdAt),
   ],
 );
 
@@ -609,6 +682,7 @@ export const followRuns = pgTable("follow_runs", {
 });
 export type Notification = typeof notifications.$inferSelect;
 export type OrderRequest = typeof orderRequests.$inferSelect;
+export type AppLog = typeof appLogs.$inferSelect;
 export type Conversation = typeof conversations.$inferSelect;
 export type ConversationMessage = typeof conversationMessages.$inferSelect;
 export type User = typeof users.$inferSelect;

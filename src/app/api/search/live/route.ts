@@ -1,6 +1,7 @@
 import { loadMarket } from "@/modules/pricing/fx";
 import { liveSearch } from "@/modules/search/live-search";
 import { MIN_QUERY_LENGTH, normalizeQuery } from "@/modules/search/normalize";
+import { log } from "@/modules/logs/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
         }
       } catch (error) {
-        if (!request.signal.aborted) console.error("Live search failed", error);
+        if (!request.signal.aborted) void log.warn("search", "live.failed", "Live search failed", { error });
       } finally {
         try {
           controller.close();

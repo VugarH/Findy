@@ -3,6 +3,8 @@ const en = {
     title: "Real discounts, real total price",
     description:
       "Daily verified deals from local and global stores, with delivery and customs included in the price.",
+    productPreview: "{price} at {store}. Total price with delivery and customs, compared across stores.",
+    productPreviewDeal: "{price} at {store} (−{pct}%). Total price with delivery and customs, compared across stores.",
   },
   demoBanner: "Demo mode — stores and prices are sample data.",
   nav: {
@@ -368,7 +370,9 @@ const en = {
     phone: "Phone number",
     optional: "optional",
     phoneHint: "For delivery updates later. Example: +994 50 123 45 67",
-    acceptTerms: "I agree to the terms of use and the privacy policy.",
+    acceptTerms: "I agree to the {terms} and the {privacy}.",
+    termsLink: "terms of use",
+    privacyLink: "privacy policy",
     dealAlerts: "Email me about big price drops and deals.",
     submitSignIn: "Sign in",
     submitRegister: "Create account",
@@ -693,6 +697,15 @@ const en = {
   footer: {
     tagline: "Verified discounts and the true total price, from local and global stores.",
     disclaimer: "Prices change quickly. Always check the final price in the store before you pay.",
+    terms: "Terms of use",
+    privacy: "Privacy policy",
+  },
+  errorPage: {
+    title: "Something went wrong",
+    text: "Sorry, this page didn't load. The problem has been recorded; please try again.",
+    retry: "Try again",
+    home: "Go to the home page",
+    code: "Error code",
   },
   notFound: {
     title: "Page not found",

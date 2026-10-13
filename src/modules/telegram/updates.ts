@@ -1,6 +1,7 @@
 import type { MarketConfig } from "@/config/markets";
 import { callTelegram, type TelegramUpdate } from "./api";
 import { handleUpdate } from "./bot";
+import { log } from "@/modules/logs/logger";
 
 /**
  * Fetching the bot's messages ourselves (getUpdates), for setups where
@@ -25,7 +26,7 @@ export async function handleWaitingUpdates(
     try {
       await handleUpdate(update, market);
     } catch (error) {
-      console.error(`Telegram update ${update.update_id} failed`, error);
+      await log.error("telegram", "update.failed", `Telegram update ${update.update_id} failed`, { error, updateId: update.update_id });
     }
   }
   const last = updates.at(-1);

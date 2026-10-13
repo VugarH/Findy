@@ -5,6 +5,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { BadgeCheck, ChevronRight, Info, Search, TrendingDown } from "lucide-react";
 import type { CategorySlug } from "@/config/categories";
 import { isSubcategoryOf } from "@/config/subcategories";
+import { siteConfig } from "@/config/site";
 import { fmt } from "@/i18n/format";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
@@ -25,9 +26,26 @@ import { Container } from "@/components/ui/container";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/product/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const { market } = await getI18n();
+  const { market, t, money } = await getI18n();
   const detail = await getProductDetail(slug, market);
-  return detail ? { title: detail.product.title } : {};
+  if (!detail) return {};
+  // What a shared link shows: the product photo, its best price and where.
+  const best = detail.summary?.best;
+  const deal = detail.summary?.deal;
+  const description = best
+    ? fmt(deal ? t.meta.productPreviewDeal : t.meta.productPreview, {
+        price: money(best.landed.totalMinor),
+        store: best.supplier.name,
+        pct: deal?.discountPct ?? 0,
+      })
+    : t.meta.description;
+  const image = usableImage(detail.product.imageUrl);
+  return {
+    title: detail.product.title,
+    description,
+    // A page's openGraph replaces the layout's, so the site-wide fields are repeated here.
+    openGraph: { siteName: siteConfig.name, type: "website", title: detail.product.title, description, ...(image ? { images: [{ url: image, alt: detail.product.title }] } : {}) },
+  };
 }
 
 export default async function ProductPage({ params }: PageProps<"/[lang]/product/[slug]">) {

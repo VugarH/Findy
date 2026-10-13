@@ -5,6 +5,7 @@ import { loadMarket } from "@/modules/pricing/fx";
 import { telegramEnabled, usesWebhook } from "./config";
 import { createStartLink, disconnectUser, telegramLinkOf } from "./link";
 import { handleWaitingUpdatesOnce } from "./updates";
+import { log } from "@/modules/logs/logger";
 
 export type StartLinkResult = { url: string } | { error: "signIn" | "unavailable" };
 
@@ -16,7 +17,7 @@ export async function startTelegramLinkAction(): Promise<StartLinkResult> {
   try {
     return { url: await createStartLink(user.id) };
   } catch (error) {
-    console.error("Could not create a Telegram link", error instanceof Error ? error.message : error);
+    await log.warn("telegram", "link.failed", "Could not create a Telegram link", { error });
     return { error: "unavailable" };
   }
 }
@@ -32,7 +33,7 @@ export async function telegramStatusAction(): Promise<TelegramStatus> {
   if (!user) return { linked: false, username: null };
   if (telegramEnabled() && !usesWebhook()) {
     await handleWaitingUpdatesOnce(await loadMarket()).catch((error) =>
-      console.error("Telegram updates failed", error instanceof Error ? error.message : error),
+      log.warn("telegram", "updates.failed", "Fetching Telegram updates failed", { error }),
     );
   }
   const link = await telegramLinkOf(user.id);

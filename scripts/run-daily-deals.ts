@@ -9,6 +9,7 @@
 import { closeDb } from "@/db/client";
 import { loadMarket } from "@/modules/pricing/fx";
 import { runDailyPipeline, type PipelineOptions } from "@/modules/deals/pipeline";
+import { log } from "@/modules/logs/logger";
 
 function parseOptions(args: string[]): PipelineOptions {
   const value = (flag: string) => {
@@ -41,8 +42,8 @@ async function main() {
 }
 
 main()
-  .catch((error) => {
-    console.error(error);
+  .catch(async (error) => {
+    await log.error("pipeline", "run.crashed", "The daily job stopped with an error", { error });
     process.exitCode = 1;
   })
   .finally(async () => {

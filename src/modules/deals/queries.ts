@@ -321,3 +321,15 @@ export async function getDealStats(market: MarketConfig): Promise<DealStats> {
     lastRunAt: lastRun?.finishedAt ?? null,
   };
 }
+
+/** Products that have a live deal, best first, for the sitemap. */
+export async function listSitemapProducts(market: MarketConfig, limit: number): Promise<{ slug: string; updatedAt: Date }[]> {
+  return db
+    .select({ slug: products.slug, updatedAt: deals.createdAt })
+    .from(deals)
+    .innerJoin(offers, eq(deals.offerId, offers.id))
+    .innerJoin(products, eq(deals.productId, products.id))
+    .where(liveDeals(market))
+    .orderBy(desc(deals.score))
+    .limit(limit);
+}

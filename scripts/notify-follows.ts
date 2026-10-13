@@ -9,6 +9,7 @@
 import { closeDb } from "@/db/client";
 import { notifyFollowers } from "@/modules/follows/notify";
 import { loadMarket } from "@/modules/pricing/fx";
+import { log } from "@/modules/logs/logger";
 
 async function main() {
   const result = await notifyFollowers(await loadMarket());
@@ -17,11 +18,17 @@ async function main() {
   console.log(
     `${result.follows} follows · ${result.people} people told · ${result.notifications} notifications · ${result.telegram} Telegram messages`,
   );
+  await log.info("follows", "run.finished", `${result.newDeals} new deals, ${result.people} people told`, {
+    newDeals: result.newDeals,
+    people: result.people,
+    notifications: result.notifications,
+    telegram: result.telegram,
+  });
 }
 
 main()
-  .catch((error) => {
-    console.error(error);
+  .catch(async (error) => {
+    await log.error("follows", "run.crashed", "The follow notifications job stopped with an error", { error });
     process.exitCode = 1;
   })
   .finally(closeDb);

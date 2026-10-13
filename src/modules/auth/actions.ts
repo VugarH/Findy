@@ -9,6 +9,7 @@ import { clearFailures, isBlocked, recordFailure } from "./rate-limit";
 import { authenticate, registerUser } from "./service";
 import { createSession, destroySession } from "./session";
 import { fieldErrors, loginSchema, registerSchema, type AuthErrorKey } from "./validation";
+import { log } from "@/modules/logs/logger";
 
 export interface AuthFormState {
   /** Error per field, as dictionary keys under `auth.errors`. */
@@ -60,8 +61,9 @@ export async function registerAction(_previous: AuthFormState, form: FormData): 
     if (!result.ok) return { errors: { email: "emailTaken" }, values };
     userId = result.userId;
     await createSession(userId);
+    await log.info("auth", "user.registered", "A new account was created", { userId });
   } catch (error) {
-    console.error("Registration failed", error);
+    await log.error("auth", "register.failed", "Registration failed", { error });
     return { formError: "unexpected", values };
   }
   redirect(safeNext(form, locale));
@@ -77,18 +79,22 @@ export async function loginAction(_previous: AuthFormState, form: FormData): Pro
 
   const ip = (await headers()).get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   const limitKey = `${ip}|${parsed.data.email}`;
-  if (isBlocked(limitKey)) return { formError: "tooManyAttempts", values };
+  if (isBlocked(limitKey)) {
+    await log.warn("auth", "signin.blocked", "Sign-in blocked after too many wrong passwords", { email: parsed.data.email, ip });
+    return { formError: "tooManyAttempts", values };
+  }
 
   try {
     const userId = await authenticate(parsed.data.email, parsed.data.password);
     if (!userId) {
       recordFailure(limitKey);
+      await log.warn("auth", "signin.failed", "Wrong email or password", { email: parsed.data.email, ip });
       return { formError: "invalidCredentials", values };
     }
     clearFailures(limitKey);
     await createSession(userId);
   } catch (error) {
-    console.error("Sign-in failed", error);
+    await log.error("auth", "signin.error", "Sign-in failed", { error });
     return { formError: "unexpected", values };
   }
   redirect(safeNext(form, locale));

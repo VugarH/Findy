@@ -7,6 +7,7 @@ import { messageContext } from "@/modules/telegram/context";
 import { conversationNotice } from "@/modules/telegram/format";
 import { disconnectChat } from "@/modules/telegram/link";
 import { adminTelegramChats, userTelegramChat } from "./service";
+import { log } from "@/modules/logs/logger";
 
 /**
  * Telegram heads-ups about new messages, for people who connected the bot.
@@ -17,7 +18,7 @@ async function send(chatId: string, html: string): Promise<void> {
     await sendMessage(chatId, html);
   } catch (error) {
     if (error instanceof TelegramError && error.chatGone) await disconnectChat(chatId);
-    else console.error("Telegram message notice failed", error instanceof Error ? error.message : error);
+    else await log.warn("telegram", "message-notice.failed", "A Telegram notice about a message could not be sent", { error });
   }
 }
 

@@ -164,7 +164,23 @@ export async function loadProductsWithOffers(
   }
 
   for (const entry of grouped.values()) {
-    entry.offers.sort((a, b) => a.landed.totalMinor - b.landed.totalMinor);
+    entry.offers = onePerStore(entry.offers.sort((a, b) => a.landed.totalMinor - b.landed.totalMinor));
   }
   return [...grouped.values()];
+}
+
+/**
+ * One offer per store. A store often lists each colour of a product as its own
+ * listing (Champion: navy, grey, red…); they are one product here, and a
+ * shopper compares stores, not colours. Keeps each store's cheapest offer that
+ * is in stock, else its cheapest. Expects offers sorted cheapest first.
+ */
+export function onePerStore<T extends { supplier: { id: string }; inStock: boolean }>(offers: T[]): T[] {
+  const kept = new Map<string, T>();
+  for (const offer of offers) {
+    const current = kept.get(offer.supplier.id);
+    if (!current || (!current.inStock && offer.inStock)) kept.set(offer.supplier.id, offer);
+  }
+  const keep = new Set(kept.values());
+  return offers.filter((offer) => keep.has(offer));
 }

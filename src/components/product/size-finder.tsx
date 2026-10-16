@@ -38,14 +38,14 @@ export function SizeFinder({ offers }: { offers: SizedOffer[] }) {
     : [];
 
   return (
-    <section className="rounded-2xl border border-line bg-surface p-5">
-      <h2 className="flex items-center gap-2 font-bold">
+    <div>
+      <p className="flex items-center gap-2 text-sm font-semibold">
         <Ruler className="size-4 text-brand" aria-hidden />
         {p.sizeFinderTitle}
-      </h2>
-      <p className="mt-1 text-sm text-muted">{p.sizeFinderHint}</p>
+      </p>
+      <p className="mt-0.5 text-xs text-muted">{p.sizeFinderHint}</p>
 
-      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={p.sizes}>
+      <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={p.sizes}>
         {sizes.map((size) => (
           <button
             key={size.label}
@@ -97,6 +97,6 @@ export function SizeFinder({ offers }: { offers: SizedOffer[] }) {
           </ul>
         </div>
       )}
-    </section>
+    </div>
   );
 }

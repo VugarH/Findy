@@ -97,9 +97,10 @@ export async function Header() {
               <span className="hidden max-w-28 truncate sm:inline">{user.fullName.trim().split(/\s+/)[0]}</span>
             </Link>
           ) : (
-            <ButtonLink href={href("/login")} size="sm">
+            // Icon only on small phones: the header row has no room for the text there.
+            <ButtonLink href={href("/login")} size="sm" aria-label={t.auth.signIn} title={t.auth.signIn}>
               <User className="size-4" aria-hidden />
-              {t.auth.signIn}
+              <span className="hidden sm:inline">{t.auth.signIn}</span>
             </ButtonLink>
           )}
         </div>

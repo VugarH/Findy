@@ -14,7 +14,6 @@ import { findMergeTargetSlug } from "@/modules/catalog/merge";
 import { getProductDetail } from "@/modules/catalog/queries";
 import { sameBrand } from "@/modules/catalog/normalizers/fashion";
 import { WatchButton } from "@/components/alerts/watch-button";
-import { CartButton } from "@/components/cart/cart-button";
 import { FollowButton } from "@/components/follows/follow-button";
 import { AssistCard } from "@/components/orders/assist-card";
 import { OfferPanel } from "@/components/product/offer-panel";
@@ -24,7 +23,6 @@ import { ShareButton } from "@/components/product/share-button";
 import { PriceHistoryChart } from "@/components/product/price-history-chart";
 import { ProductImage } from "@/components/product/product-image";
 import { SizeFinder, type SizedOffer } from "@/components/product/size-finder";
-import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { brandLabel } from "@/lib/text";
 
@@ -90,6 +88,32 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
       : [],
   );
 
+  const deal = summary?.deal ?? null;
+  const storeClaim = best && deal && !deal.verified;
+  const hasHistory = (best?.history.length ?? 0) >= 2;
+  const showAssist = Boolean(best && global);
+
+  // One short line under the price; the longer explanation sits with the price history.
+  const dealNote = !best ? null : deal?.verified ? (
+    <div className="space-y-1">
+      <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
+        <BadgeCheck className="size-4 shrink-0" aria-hidden />
+        {fmt(t.product.verified, { pct: deal.discountPct })} · {fmt(t.deal.save, { amount: money(deal.savingsMinor) })}
+      </p>
+      {best.verdict?.isLowest && (
+        <p className="flex items-center gap-1.5 text-sm font-semibold text-deal">
+          <TrendingDown className="size-4" aria-hidden />
+          {t.product.lowest}
+        </p>
+      )}
+    </div>
+  ) : (
+    <p className="flex items-center gap-1.5 text-xs text-muted">
+      <Info className="size-3.5 shrink-0" aria-hidden />
+      {deal ? t.deal.storeClaim : best.verdict ? t.product.notDeal : t.product.noHistory}
+    </p>
+  );
+
   return (
     <Container className="py-8">
       <nav className="flex items-center gap-1 text-sm text-muted">
@@ -110,24 +134,16 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
         )}
       </nav>
 
-      <div className="mt-5 grid gap-8 lg:grid-cols-[1fr_2fr]">
-        <div className="aspect-square overflow-hidden rounded-3xl border border-line lg:sticky lg:top-40 lg:self-start">
+      {/* First screen: the photo and everything needed to decide and buy. */}
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-8">
+        <div className="aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-white sm:aspect-square lg:sticky lg:top-40 lg:self-start">
           <ProductImage imageUrl={usableImage(product.imageUrl)} title={product.title} category={category} />
         </div>
 
-        <div className="min-w-0 space-y-8">
+        <div className="min-w-0 space-y-4">
           <header>
-            {product.brand && (
-              <p className="text-sm font-semibold tracking-wide text-muted">{brandLabel(product.brand)}</p>
-            )}
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight">{product.title}</h1>
-            {best && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <CartButton offerId={best.offerId} variant="button" />
-                <WatchButton productId={product.id} variant="button" />
-                <ShareButton title={product.title} />
-              </div>
-            )}
+            {product.brand && <p className="text-sm font-semibold tracking-wide text-muted">{brandLabel(product.brand)}</p>}
+            <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{product.title}</h1>
             {best && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <span className="text-xs text-muted">{t.follows.productLine}</span>
@@ -138,83 +154,26 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
                 )}
               </div>
             )}
-
-            {best && (
-              <div className="mt-4 space-y-2">
-                {summary?.deal?.verified ? (
-                  <>
-                    <p className="flex items-start gap-2 rounded-xl bg-brand-soft px-4 py-3 text-sm font-semibold text-brand-strong">
-                      <BadgeCheck className="mt-0.5 size-4 shrink-0" aria-hidden />
-                      {fmt(t.product.verified, { pct: summary.deal.discountPct })}
-                      {" · "}
-                      {fmt(t.deal.save, { amount: money(summary.deal.savingsMinor) })}
-                    </p>
-                    {best.verdict?.isLowest && (
-                      <p className="flex items-center gap-2 px-1 text-sm font-semibold text-deal">
-                        <TrendingDown className="size-4" aria-hidden />
-                        {t.product.lowest}
-                      </p>
-                    )}
-                  </>
-                ) : summary?.deal ? (
-                  <p className="flex items-start gap-2 rounded-xl bg-surface-2 px-4 py-3 text-sm text-muted">
-                    <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-                    {fmt(t.product.storeClaim, {
-                      store: best.supplier.name,
-                      pct: summary.deal.discountPct,
-                      days: best.verdict?.historyDays ?? 0,
-                      min: market.deals.minHistoryDays,
-                    })}
-                  </p>
-                ) : (
-                  <p className="flex items-start gap-2 rounded-xl bg-surface-2 px-4 py-3 text-sm text-muted">
-                    <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-                    {best.verdict ? t.product.notDeal : t.product.noHistory}
-                  </p>
-                )}
-              </div>
-            )}
           </header>
 
           {best ? (
             <>
-              {sizedOffers.length > 0 && <SizeFinder offers={sizedOffers} />}
-
-              <div className="space-y-3">
-                <OfferPanel title={t.product.bestOverall} offer={best} />
-                {bestIsLocal ? (
-                  <OtherSideLine title={t.product.bestGlobal} offer={global} emptyText={t.product.noGlobal} />
-                ) : (
-                  <OtherSideLine title={t.product.bestLocal} offer={local} emptyText={t.product.noLocal} />
-                )}
-              </div>
-
-              {global && <AssistCard offer={global} productSlug={product.slug} />}
-
-              {global && (
-                <p className="flex items-start gap-2 text-xs leading-5 text-muted">
-                  <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                  {fmt(t.product.customsNote, {
-                    threshold: money(toMinor(threshold.amount), threshold.currency),
-                  })}
-                </p>
-              )}
-
-              {best.history.length >= 2 && (
-                <section className="rounded-2xl border border-line bg-surface p-5">
-                  <h2 className="text-lg font-bold">{t.product.historyTitle}</h2>
-                  <p className="mb-4 text-sm text-muted">
-                    {fmt(t.product.historySubtitle, {
-                      store: best.supplier.name,
-                      days: market.deals.historyWindowDays,
-                    })}
-                  </p>
-                  <PriceHistoryChart
-                    points={best.history}
-                    currency={best.currency}
-                    usualMinor={best.verdict?.usualMinor ?? null}
-                  />
-                </section>
+              <OfferPanel
+                offer={best}
+                note={dealNote}
+                extraActions={
+                  <>
+                    <WatchButton productId={product.id} variant="button" />
+                    <ShareButton title={product.title} />
+                  </>
+                }
+              >
+                {sizedOffers.length > 0 && <SizeFinder offers={sizedOffers} />}
+              </OfferPanel>
+              {bestIsLocal ? (
+                <OtherSideLine title={t.product.bestGlobal} offer={global} emptyText={t.product.noGlobal} />
+              ) : (
+                <OtherSideLine title={t.product.bestLocal} offer={local} emptyText={t.product.noLocal} />
               )}
             </>
           ) : (
@@ -226,23 +185,58 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
                 : t.product.noOffers}
             </p>
           )}
-
-          <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-5">
-            <p className="max-w-md text-sm text-muted">{t.product.findElsewhereHint}</p>
-            <ButtonLink href={href(`/product/${product.slug}/similar`)} variant="secondary">
-              <Search className="size-4" aria-hidden />
-              {t.product.findElsewhere}
-            </ButtonLink>
-          </section>
-
-          {offers.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-lg font-bold">{t.product.allOffers}</h2>
-              <OffersTable offers={offers} />
-            </section>
-          )}
         </div>
       </div>
+
+      {/* Second: how the price moved, then ordering it through us. */}
+      {best && (hasHistory || showAssist) && (
+        <div className="mt-10 space-y-6">
+          {hasHistory && (
+            <section className="min-w-0 rounded-2xl border border-line bg-surface p-5">
+              <h2 className="text-lg font-bold">{t.product.historyTitle}</h2>
+              <p className="mb-4 text-sm text-muted">
+                {fmt(t.product.historySubtitle, { store: best.supplier.name, days: market.deals.historyWindowDays })}
+              </p>
+              <PriceHistoryChart points={best.history} currency={best.currency} usualMinor={best.verdict?.usualMinor ?? null} />
+              {storeClaim && deal && (
+                <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-muted">
+                  <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                  {fmt(t.product.storeClaim, {
+                    store: best.supplier.name,
+                    pct: deal.discountPct,
+                    days: best.verdict?.historyDays ?? 0,
+                    min: market.deals.minHistoryDays,
+                  })}
+                </p>
+              )}
+            </section>
+          )}
+          {showAssist && global && (
+            <div className="min-w-0 space-y-3">
+              <AssistCard offer={global} productSlug={product.slug} />
+              <p className="flex items-start gap-2 text-xs leading-5 text-muted">
+                <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                {fmt(t.product.customsNote, { threshold: money(toMinor(threshold.amount), threshold.currency) })}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Last: every store, when there is more than one; and the search for the same item elsewhere. */}
+      <section className="mt-10">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          {offers.length > 1 && <h2 className="text-lg font-bold">{t.product.allOffers}</h2>}
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+            <span>{t.product.findElsewhereHint}</span>
+            <Link href={href(`/product/${product.slug}/similar`)} className="inline-flex items-center gap-1.5 font-semibold text-brand-strong hover:underline">
+              <Search className="size-4" aria-hidden />
+              {t.product.findElsewhere}
+            </Link>
+          </p>
+        </div>
+        {offers.length > 1 && <OffersTable offers={offers} />}
+      </section>
     </Container>
   );
 }

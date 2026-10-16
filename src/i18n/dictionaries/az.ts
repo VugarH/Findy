@@ -307,7 +307,7 @@ const az: Dictionary = {
     delivery: "Çatdırılma",
     trust: "Etibar",
     historyTitle: "Qiymət tarixçəsi",
-    historySubtitle: "{store} mağazasında qiymət, son {days} gün",
+    historySubtitle: "Çatdırılma və gömrük daxil tam qiymət, son {days} gün (bugünkü məzənnə ilə)",
     usualPrice: "Adi qiymət",
     currentPrice: "Bu gün",
     date: "Tarix",

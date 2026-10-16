@@ -305,7 +305,7 @@ const en = {
     delivery: "Delivery",
     trust: "Trust",
     historyTitle: "Price history",
-    historySubtitle: "Store price at {store}, last {days} days",
+    historySubtitle: "Full price with delivery and customs, last {days} days (at today's exchange rate)",
     usualPrice: "Usual price",
     currentPrice: "Today",
     date: "Date",

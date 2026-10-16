@@ -307,7 +307,7 @@ const ru: Dictionary = {
     delivery: "Доставка",
     trust: "Доверие",
     historyTitle: "История цены",
-    historySubtitle: "Цена в магазине {store}, последние {days} дней",
+    historySubtitle: "Полная цена с доставкой и таможней, последние {days} дней (по сегодняшнему курсу)",
     usualPrice: "Обычная цена",
     currentPrice: "Сегодня",
     date: "Дата",

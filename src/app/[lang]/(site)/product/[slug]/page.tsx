@@ -11,6 +11,7 @@ import { LOCALE_TAGS } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { toMinor } from "@/lib/money";
 import { findMergeTargetSlug } from "@/modules/catalog/merge";
+import { landedHistory } from "@/modules/catalog/offer-view";
 import { getProductDetail } from "@/modules/catalog/queries";
 import { sameBrand } from "@/modules/catalog/normalizers/fashion";
 import { WatchButton } from "@/components/alerts/watch-button";
@@ -197,7 +198,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
               <p className="mb-4 text-sm text-muted">
                 {fmt(t.product.historySubtitle, { store: best.supplier.name, days: market.deals.historyWindowDays })}
               </p>
-              <PriceHistoryChart points={best.history} currency={best.currency} usualMinor={best.verdict?.usualMinor ?? null} />
+              <PriceHistoryChart points={landedHistory(best, market)} currency={market.currency} usualMinor={best.usualLandedMinor} />
               {storeClaim && deal && (
                 <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-muted">
                   <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />

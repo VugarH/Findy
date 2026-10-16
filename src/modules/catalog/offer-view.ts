@@ -193,3 +193,15 @@ export function onePerStore<T extends { supplier: { id: string }; inStock: boole
   const keep = new Set(kept.values());
   return offers.filter((offer) => keep.has(offer));
 }
+
+/**
+ * An offer's price history as full prices in the market currency (item,
+ * delivery, customs, fees), at today's exchange rates: the same basis as the
+ * price shown above it, whatever currency the store sells in.
+ */
+export function landedHistory(offer: OfferView, market: MarketConfig): PricePoint[] {
+  return offer.history.map((point) => ({
+    date: point.date,
+    priceMinor: computeLandedCost({ ...offer.costInput, priceMinor: point.priceMinor }, market).totalMinor,
+  }));
+}

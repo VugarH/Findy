@@ -75,7 +75,7 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
       </div>
       {extraActions && <div className="mt-2 flex flex-wrap gap-2">{extraActions}</div>}
 
-      <details className="group mt-4 border-t border-line pt-3">
+      <details open className="group mt-4 border-t border-line pt-3">
         <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-muted hover:text-ink [&::-webkit-details-marker]:hidden">
           {t.product.priceBreakdown}
           <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />

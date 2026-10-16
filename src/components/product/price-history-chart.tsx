@@ -145,7 +145,7 @@ export function PriceHistoryChart({ points, currency, usualMinor }: Props) {
             <thead className="sticky top-0 bg-surface-2 text-left text-xs text-muted">
               <tr>
                 <th className="px-3 py-2 font-semibold">{t.product.date}</th>
-                <th className="px-3 py-2 text-right font-semibold">{t.product.storePrice}</th>
+                <th className="px-3 py-2 text-right font-semibold">{t.product.totalPrice}</th>
               </tr>
             </thead>
             <tbody>

@@ -12,17 +12,20 @@ import { getI18n } from "@/i18n/server";
 import { toMinor } from "@/lib/money";
 import { findMergeTargetSlug } from "@/modules/catalog/merge";
 import { getProductDetail } from "@/modules/catalog/queries";
+import { sameBrand } from "@/modules/catalog/normalizers/fashion";
 import { WatchButton } from "@/components/alerts/watch-button";
 import { CartButton } from "@/components/cart/cart-button";
 import { FollowButton } from "@/components/follows/follow-button";
 import { AssistCard } from "@/components/orders/assist-card";
 import { OfferPanel } from "@/components/product/offer-panel";
 import { OffersTable } from "@/components/product/offers-table";
+import { OtherSideLine } from "@/components/product/other-side-line";
 import { PriceHistoryChart } from "@/components/product/price-history-chart";
 import { ProductImage } from "@/components/product/product-image";
 import { SizeFinder, type SizedOffer } from "@/components/product/size-finder";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
+import { brandLabel } from "@/lib/text";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/product/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -67,8 +70,8 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
   const local = summary?.bestLocal ?? null;
   const global = summary?.bestGlobal ?? null;
 
-  const gap = local && global ? Math.abs(local.landed.totalMinor - global.landed.totalMinor) : 0;
-  const winnerOf = (offer: typeof best) => (offer && offer === best ? { savingsMinor: gap } : null);
+  // The best offer gets the full box; the other side (local or abroad) a single line.
+  const bestIsLocal = best?.supplier.scope === "local";
   const threshold = market.customs.dutyFreeThreshold;
   // Clothes and shoes: the stores that list sizes, for "Find your size".
   const sizedOffers: SizedOffer[] = offers.flatMap((offer) =>
@@ -114,7 +117,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
         <div className="min-w-0 space-y-8">
           <header>
             {product.brand && (
-              <p className="text-sm font-semibold uppercase tracking-wide text-muted">{product.brand}</p>
+              <p className="text-sm font-semibold tracking-wide text-muted">{brandLabel(product.brand)}</p>
             )}
             <h1 className="mt-1 text-3xl font-extrabold tracking-tight">{product.title}</h1>
             {best && (
@@ -127,7 +130,10 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <span className="text-xs text-muted">{t.follows.productLine}</span>
                 {product.brand && <FollowButton kind="brand" value={product.brand} name={product.brand} />}
-                <FollowButton kind="store" value={best.supplier.id} name={best.supplier.name} />
+                {/* A brand's own store (Champion on champion.com) needs one button, not two. */}
+                {!(product.brand && sameBrand(product.brand, best.supplier.name)) && (
+                  <FollowButton kind="store" value={best.supplier.id} name={best.supplier.name} />
+                )}
               </div>
             )}
 
@@ -172,9 +178,13 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
             <>
               {sizedOffers.length > 0 && <SizeFinder offers={sizedOffers} />}
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <OfferPanel title={t.product.bestLocal} offer={local} emptyText={t.product.noLocal} winner={winnerOf(local)} />
-                <OfferPanel title={t.product.bestGlobal} offer={global} emptyText={t.product.noGlobal} winner={winnerOf(global)} />
+              <div className="space-y-3">
+                <OfferPanel title={t.product.bestOverall} offer={best} />
+                {bestIsLocal ? (
+                  <OtherSideLine title={t.product.bestGlobal} offer={global} emptyText={t.product.noGlobal} />
+                ) : (
+                  <OtherSideLine title={t.product.bestLocal} offer={local} emptyText={t.product.noLocal} />
+                )}
               </div>
 
               {global && <AssistCard offer={global} productSlug={product.slug} />}

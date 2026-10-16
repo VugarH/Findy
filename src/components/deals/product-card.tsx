@@ -8,6 +8,7 @@ import { WatchButton } from "@/components/alerts/watch-button";
 import { CartButton } from "@/components/cart/cart-button";
 import { ProductImage } from "@/components/product/product-image";
 import { ScopeTag } from "@/components/ui/scope-tag";
+import { brandLabel } from "@/lib/text";
 
 export interface CardLabels {
   t: Dictionary;
@@ -82,8 +83,8 @@ export function ProductCard({
 
       <div className={cn("flex flex-1 flex-col", compact ? "gap-2 p-3.5" : "gap-2 p-4")}>
         {card.brand && (
-          <p className={cn("truncate font-semibold uppercase tracking-wide text-muted", compact ? "text-[11px]" : "text-xs")}>
-            {card.brand}
+          <p className={cn("truncate font-semibold tracking-wide text-muted", compact ? "text-[11px]" : "text-xs")}>
+            {brandLabel(card.brand)}
           </p>
         )}
         <h3

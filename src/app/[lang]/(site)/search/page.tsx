@@ -66,7 +66,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
   }
 
   const facets = facetsOfCards(found, filters.category, filters.stores);
-  const matching = sortCards(filterCards(found, filters), sort);
+  const matching = sortCards(filterCards(found, filters), sort, query);
   const total = matching.length;
   const pages = Math.max(1, Math.ceil(total / filters.size));
   const page = Math.min(filters.page, pages);

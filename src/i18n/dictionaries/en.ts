@@ -287,7 +287,6 @@ const en = {
     bestGlobal: "Best price from abroad",
     noLocal: "No local store has this in stock.",
     noGlobal: "No international store has this in stock.",
-    cheaperBy: "{amount} cheaper than the other option",
     breakdownTitle: "What you pay",
     item: "Item price",
     shipping: "Delivery",
@@ -315,7 +314,6 @@ const en = {
     verified: "Verified discount: {pct}% below the usual price",
     lowest: "Lowest price in the last 90 days",
     notDeal: "No real discount right now — this is about the usual price.",
-    inflated: "{store} advertises −{claimed}%, but the price history shows about −{real}%.",
     noHistory: "We started tracking this recently, so there is no price history yet.",
     customsNote:
       "Customs and delivery from abroad are estimates based on the {threshold} monthly duty-free limit. The final amount is set by customs.",

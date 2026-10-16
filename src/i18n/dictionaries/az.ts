@@ -289,7 +289,6 @@ const az: Dictionary = {
     bestGlobal: "Xaricdən ən yaxşı qiymət",
     noLocal: "Heç bir yerli mağazada stokda yoxdur.",
     noGlobal: "Heç bir xarici mağazada stokda yoxdur.",
-    cheaperBy: "Digər variantdan {amount} ucuz",
     breakdownTitle: "Nə ödəyirsiniz",
     item: "Məhsulun qiyməti",
     shipping: "Çatdırılma",
@@ -317,7 +316,6 @@ const az: Dictionary = {
     verified: "Yoxlanılmış endirim: adi qiymətdən {pct}% aşağı",
     lowest: "Son 90 günün ən aşağı qiyməti",
     notDeal: "Hazırda real endirim yoxdur — bu, təxminən adi qiymətdir.",
-    inflated: "{store} −{claimed}% elan edir, amma qiymət tarixçəsi təxminən −{real}% göstərir.",
     noHistory: "Bu məhsulu yeni izləməyə başlamışıq, hələ qiymət tarixçəsi yoxdur.",
     customsNote:
       "Xaricdən gömrük və çatdırılma aylıq {threshold} rüsumsuz limitə əsaslanan təxmindir. Yekun məbləği gömrük müəyyən edir.",

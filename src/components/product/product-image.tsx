@@ -13,8 +13,9 @@ interface Props {
 export function ProductImage({ imageUrl, title, category, className }: Props) {
   if (imageUrl) {
     return (
+      // White behind the photo: store photos have white backgrounds, so a narrow one fills its frame without dark bars.
       // eslint-disable-next-line @next/next/no-img-element -- supplier images come from arbitrary hosts
-      <img src={imageUrl} alt={title} loading="lazy" className={cn("size-full object-contain", className)} />
+      <img src={imageUrl} alt={title} loading="lazy" className={cn("size-full bg-white object-contain", className)} />
     );
   }
   return (

@@ -1,5 +1,6 @@
 import { CURRENCIES, type CurrencyCode } from "@/config/currencies";
-import { LOCALE_TAGS, type Locale } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
+import { formatNumber } from "@/i18n/format";
 
 /**
  * All amounts in the system are integers in minor units (qəpik, cents).
@@ -21,10 +22,8 @@ export function toMinor(amount: number): number {
 
 export function formatMoney(amountMinor: number, currency: CurrencyCode, locale: Locale): string {
   const whole = amountMinor % 100 === 0;
-  const number = new Intl.NumberFormat(LOCALE_TAGS[locale], {
-    minimumFractionDigits: whole ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(amountMinor / 100);
+  // Not Intl: browsers lack full Azerbaijani data, and server and browser must agree.
+  const number = formatNumber(amountMinor / 100, locale, { minFraction: whole ? 0 : 2, maxFraction: 2 });
   const { symbol, symbolFirst } = CURRENCIES[currency];
   return symbolFirst ? `${symbol}${number}` : `${number}\u00a0${symbol}`;
 }

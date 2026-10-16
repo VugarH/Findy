@@ -5,8 +5,7 @@ import { useId, useState, type ReactNode } from "react";
 import { CATEGORY_SLUGS, type CategorySlug } from "@/config/categories";
 import { subcategoriesOf, type SubcategorySlug } from "@/config/subcategories";
 import { useI18n } from "@/i18n/client";
-import { LOCALE_TAGS } from "@/i18n/config";
-import { fmt } from "@/i18n/format";
+import { fmt, formatNumber } from "@/i18n/format";
 import { saveDisplayOrderAction } from "@/modules/admin/actions/settings";
 import type { OrderingCounts } from "@/modules/admin/ordering";
 import { brandKey } from "@/modules/catalog/brand";
@@ -51,7 +50,7 @@ export function DisplayOrderForm({ categories: savedCategories, subcategories: s
   const saved: DisplayOrder = { categories: savedCategories, subcategories: savedSubs, brands: savedBrands };
   const dirty = JSON.stringify(order) !== JSON.stringify(saved);
 
-  const number = (value: number) => value.toLocaleString(LOCALE_TAGS[locale]);
+  const number = (value: number) => formatNumber(value, locale);
   const dealsLabel = (value: number | undefined) => fmt(o.deals, { count: number(value ?? 0) });
   const brandInfo = new Map(counts.brands.map((brand) => [brand.key, brand]));
   const brandName = (key: string) => brandInfo.get(key)?.name ?? key;

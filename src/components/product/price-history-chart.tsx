@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CurrencyCode } from "@/config/currencies";
-import { LOCALE_TAGS } from "@/i18n/config";
 import { useI18n } from "@/i18n/client";
 import type { PricePoint } from "@/modules/catalog/offer-view";
+import { formatDay } from "@/i18n/format";
 
 interface Props {
   points: PricePoint[];
@@ -32,10 +32,7 @@ export function PriceHistoryChart({ points, currency, usualMinor }: Props) {
     return () => observer.disconnect();
   }, []);
 
-  const dateLabel = useMemo(() => {
-    const format = new Intl.DateTimeFormat(LOCALE_TAGS[locale], { day: "numeric", month: "short", timeZone: "UTC" });
-    return (iso: string) => format.format(new Date(`${iso}T00:00:00Z`));
-  }, [locale]);
+  const dateLabel = useMemo(() => (day: string) => formatDay(day, locale), [locale]);
 
   const scale = useMemo(() => {
     const values = points.map((p) => p.priceMinor);

@@ -4,7 +4,6 @@ import { getI18n } from "@/i18n/server";
 import { fmt } from "@/i18n/format";
 import { CartButton } from "@/components/cart/cart-button";
 import { ScopeTag } from "@/components/ui/scope-tag";
-import { SizeList } from "./size-list";
 
 export async function OffersTable({ offers }: { offers: OfferView[] }) {
   const { t, money } = await getI18n();
@@ -34,18 +33,6 @@ export async function OffersTable({ offers }: { offers: OfferView[] }) {
                   />
                 </div>
                 <p className="mt-0.5 max-w-xs truncate text-xs text-muted">{offer.title}</p>
-                {offer.sizes && (
-                  <SizeList sizes={offer.sizes} soldOutLabel={t.product.soldOut} compact className="mt-1.5 max-w-xs" />
-                )}
-                {offer.verdict?.inflatedClaim && (
-                  <p className="mt-1 max-w-xs text-xs text-muted">
-                    {fmt(t.product.inflated, {
-                      store: offer.supplier.name,
-                      claimed: Math.round(offer.verdict.claimedDiscountPct ?? 0),
-                      real: Math.max(0, Math.round(offer.verdict.realDiscountPct)),
-                    })}
-                  </p>
-                )}
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-muted">
                 {offer.listPriceMinor !== null && offer.listPriceMinor > offer.priceMinor && (

@@ -40,8 +40,17 @@ export interface DealFilters {
   offset?: number;
 }
 
-const ORDER_BY: Record<DealSort, SQL[]> = {
-  best: [desc(deals.score), desc(deals.savingsMinor)],
+/**
+ * "Best deals": the score, with each further deal from the same store counting
+ * a little less (market.deals.storeRepeatFactor), so the lists mix stores. A
+ * window function, so it follows whatever filters the query has.
+ */
+function bestOrder(market: MarketConfig): SQL[] {
+  const repeat = sql`row_number() over (partition by ${offers.supplierId} order by ${deals.score} desc, ${products.slug}) - 1`;
+  return [desc(sql`${deals.score} * power(${market.deals.storeRepeatFactor}::float8, ${repeat})`), desc(deals.score)];
+}
+
+const ORDER_BY: Record<Exclude<DealSort, "best">, SQL[]> = {
   discount: [desc(deals.realDiscountPct), desc(deals.score)],
   savings: [desc(deals.savingsMinor)],
   price_asc: [asc(deals.landedMinor)],
@@ -98,7 +107,7 @@ export async function listDeals(
       .innerJoin(offers, eq(deals.offerId, offers.id))
       .innerJoin(suppliers, eq(offers.supplierId, suppliers.id))
       .where(where)
-      .orderBy(...ORDER_BY[filters.sort ?? "best"], asc(products.slug))
+      .orderBy(...(!filters.sort || filters.sort === "best" ? bestOrder(market) : ORDER_BY[filters.sort]), asc(products.slug))
       .limit(filters.limit ?? 20)
       .offset(filters.offset ?? 0),
     db

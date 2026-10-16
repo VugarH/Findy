@@ -12,3 +12,12 @@ export function foldForMatching(text: string): string {
     .toLowerCase()
     .replace(/[çşğöüıə]/g, (ch) => FOLDED[ch]);
 }
+
+/**
+ * A brand as a small capitalised label. Not CSS `uppercase`: that follows the
+ * page language, and Azerbaijani or Turkish capitalise "i" as "İ" ("ADİDAS").
+ * Brand names are proper names, so capitalise them without language rules.
+ */
+export function brandLabel(brand: string): string {
+  return brand.toUpperCase();
+}

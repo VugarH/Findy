@@ -4,9 +4,8 @@ import Link from "next/link";
 import { AlertTriangle, ArrowUpRight, Loader2, Minus, PackageCheck, Plus, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { CategorySlug } from "@/config/categories";
-import { LOCALE_TAGS } from "@/i18n/config";
 import { useI18n } from "@/i18n/client";
-import { fmt } from "@/i18n/format";
+import { fmt, formatNumber } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 import { flag } from "@/lib/flag";
 import { priceCartAction } from "@/modules/cart/actions";
@@ -16,6 +15,7 @@ import { ProductImage } from "@/components/product/product-image";
 import { ButtonLink } from "@/components/ui/button";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { cart, useCartItems, useHydrated } from "./cart-store";
+import { brandLabel } from "@/lib/text";
 
 /** Waits this long after the last change before re-pricing, so quick +/+/+ clicks make one request. */
 const REPRICE_DELAY_MS = 250;
@@ -108,7 +108,7 @@ function ParcelCard({ parcel }: { parcel: Parcel }) {
   const { t, money, locale } = useI18n();
   const c = t.cart;
   const { store, cost, customs } = parcel;
-  const kg = new Intl.NumberFormat(LOCALE_TAGS[locale], { maximumFractionDigits: 1 }).format(parcel.weightKg);
+  const kg = formatNumber(parcel.weightKg, locale, { maxFraction: 1 });
   const rows = [
     { label: c.items, value: cost.itemMinor },
     { label: cost.shippingEstimated ? c.shippingEstimated : c.shipping, value: cost.shippingMinor },
@@ -218,7 +218,7 @@ function LineRow({ line }: { line: PlannedLine }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            {product.brand && <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-muted">{product.brand}</p>}
+            {product.brand && <p className="truncate text-[11px] font-semibold tracking-wide text-muted">{brandLabel(product.brand)}</p>}
             <Link href={href(`/product/${product.slug}`)} className="line-clamp-2 text-sm font-semibold hover:underline">
               {product.title}
             </Link>

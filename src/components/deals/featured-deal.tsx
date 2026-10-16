@@ -6,14 +6,19 @@ import { fmt } from "@/i18n/format";
 import { ProductImage } from "@/components/product/product-image";
 import { buttonClass } from "@/components/ui/button";
 import { ScopeTag } from "@/components/ui/scope-tag";
+import { brandLabel } from "@/lib/text";
 
 /** The day's highest-scoring deal, given the most room on the home page. */
 export async function FeaturedDeal({ card }: { card: ProductCardData }) {
   const { t, money, href } = await getI18n();
-  const compare = [
-    { label: t.product.bestLocal, value: card.bestLocalLandedMinor },
-    { label: t.product.bestGlobal, value: card.bestGlobalLandedMinor },
-  ];
+  // Local vs abroad is worth a row only when both exist.
+  const compare =
+    card.bestLocalLandedMinor !== null && card.bestGlobalLandedMinor !== null
+      ? [
+          { label: t.product.bestLocal, value: card.bestLocalLandedMinor },
+          { label: t.product.bestGlobal, value: card.bestGlobalLandedMinor },
+        ]
+      : [];
 
   return (
     <Link
@@ -33,7 +38,7 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
           {t.home.dealOfDay}
         </p>
         <div>
-          {card.brand && <p className="text-xs font-semibold uppercase tracking-wide text-muted">{card.brand}</p>}
+          {card.brand && <p className="text-xs font-semibold tracking-wide text-muted">{brandLabel(card.brand)}</p>}
           <h3 className="mt-1 text-2xl font-bold tracking-tight group-hover:underline">{card.title}</h3>
         </div>
 
@@ -65,14 +70,16 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
           </span>
         </div>
 
-        <dl className="grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm">
-          {compare.map((row) => (
-            <div key={row.label}>
-              <dt className="text-muted">{row.label}</dt>
-              <dd className="mt-0.5 font-bold tabular-nums">{row.value !== null ? money(row.value) : "—"}</dd>
-            </div>
-          ))}
-        </dl>
+        {compare.length > 0 && (
+          <dl className="grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm">
+            {compare.map((row) => (
+              <div key={row.label}>
+                <dt className="text-muted">{row.label}</dt>
+                <dd className="mt-0.5 font-bold tabular-nums">{money(row.value)}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
 
         <span className={buttonClass({}, "mt-auto self-start")}>
           {t.deal.view}

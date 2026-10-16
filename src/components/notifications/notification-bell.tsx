@@ -5,7 +5,7 @@ import { Bell, Flame, Loader2, Send, Sparkles, TrendingDown } from "lucide-react
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { LOCALE_TAGS, type Locale } from "@/i18n/config";
 import { useI18n } from "@/i18n/client";
-import { fmt } from "@/i18n/format";
+import { fmt, formatDay, formatWeekday } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 import { markNotificationsReadAction, notificationFeedAction, type NotificationFeed } from "@/modules/alerts/actions";
 import type { DigestSummary } from "@/modules/digest/pick";
@@ -56,7 +56,7 @@ function timeAgo(iso: string, now: number, locale: Locale): string {
   if (seconds > -3_600) return relative.format(Math.min(0, Math.round(seconds / 60)), "minute");
   if (seconds > -86_400) return relative.format(Math.round(seconds / 3_600), "hour");
   if (seconds > -7 * 86_400) return relative.format(Math.round(seconds / 86_400), "day");
-  return new Intl.DateTimeFormat(LOCALE_TAGS[locale], { day: "numeric", month: "long" }).format(new Date(iso));
+  return formatDay(iso.slice(0, 10), locale, "long");
 }
 
 /**
@@ -182,19 +182,12 @@ export function NotificationBell({ signedIn, unread: initialUnread, digest, chan
                     {digest.isToday
                       ? fmt(n.topTitle, { count: digest.count })
                       : fmt(t.top.titleOn, {
-                          date: new Intl.DateTimeFormat(LOCALE_TAGS[locale], {
-                            day: "numeric",
-                            month: "long",
-                            timeZone: "UTC",
-                          }).format(new Date(`${digest.day}T12:00:00Z`)),
+                          date: formatDay(digest.day, locale, "long"),
                         })}
                   </span>
                   <span className="block text-xs text-muted">
                     {fmt(n.topLine, {
-                      date: new Intl.DateTimeFormat(LOCALE_TAGS[locale], {
-                        weekday: "long",
-                        timeZone: "UTC",
-                      }).format(new Date(`${digest.day}T12:00:00Z`)),
+                      date: formatWeekday(digest.day, locale),
                       pct: digest.maxPct,
                     })}
                   </span>

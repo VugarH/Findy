@@ -9,6 +9,7 @@ import { isSizedCategory, type CategorySlug } from "@/config/categories";
 import { sizeFacets, type BrandFacet, type DealFacets, type DealFilters, type StoreFacet } from "@/modules/deals/queries";
 import { brandKey } from "@/modules/catalog/brand";
 import type { SupplierScope } from "@/modules/suppliers/types";
+import { relevanceScorer } from "./relevance";
 import { expandQuery } from "./synonyms";
 
 /**
@@ -24,9 +25,14 @@ export function parseSearchSort(value: string | undefined): SearchSort {
   return (SEARCH_SORTS as readonly string[]).includes(value ?? "") ? (value as SearchSort) : "relevance";
 }
 
-/** Orders result cards. "relevance" keeps the order they came in. */
-export function sortCards(cards: ProductCardData[], sort: SearchSort): ProductCardData[] {
+/** Orders result cards. "relevance" puts what was asked for first (./relevance.ts); ties keep their order. */
+export function sortCards(cards: ProductCardData[], sort: SearchSort, query = ""): ProductCardData[] {
   const sorted = [...cards];
+  if (sort === "relevance" && query) {
+    const score = relevanceScorer(query);
+    const scores = new Map(sorted.map((card) => [card, score(card)]));
+    sorted.sort((a, b) => scores.get(b)! - scores.get(a)!);
+  }
   if (sort === "price_asc") sorted.sort((a, b) => a.landedMinor - b.landedMinor);
   if (sort === "price_desc") sorted.sort((a, b) => b.landedMinor - a.landedMinor);
   // ISO timestamps sort correctly as text; a stable sort keeps the deal-first order for ties.

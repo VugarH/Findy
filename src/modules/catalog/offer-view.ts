@@ -71,6 +71,8 @@ export function hasFreshOffer(market: MarketConfig, now = new Date()): SQL {
   return sql`${products.active} and exists (select 1 from ${offers} where ${eq(offers.productId, products.id)} and ${offerIsLive(freshSince(market, now))})`;
 }
 
+const OBSERVATION_BATCH = 20_000;
+
 export async function loadProductsWithOffers(
   market: MarketConfig,
   now: Date,
@@ -95,16 +97,23 @@ export async function loadProductsWithOffers(
 
   const windowStart = new Date(now.getTime() - market.deals.historyWindowDays * DAY_MS).toISOString().slice(0, 10);
   const today = now.toISOString().slice(0, 10);
-  const observations = await db
-    .select()
-    .from(priceObservations)
-    .where(
-      and(
-        inArray(priceObservations.offerId, rows.map((r) => r.offer.id)),
-        gte(priceObservations.observedOn, windowStart),
-      ),
-    )
-    .orderBy(priceObservations.observedOn);
+  // In batches: PostgreSQL allows at most 65,535 parameters per query, and a full catalog has more offers.
+  const offerIds = rows.map((r) => r.offer.id);
+  const observations: (typeof priceObservations.$inferSelect)[] = [];
+  for (let i = 0; i < offerIds.length; i += OBSERVATION_BATCH) {
+    observations.push(
+      ...(await db
+        .select()
+        .from(priceObservations)
+        .where(
+          and(
+            inArray(priceObservations.offerId, offerIds.slice(i, i + OBSERVATION_BATCH)),
+            gte(priceObservations.observedOn, windowStart),
+          ),
+        )
+        .orderBy(priceObservations.observedOn)),
+    );
+  }
 
   const historyByOffer = new Map<string, PricePoint[]>();
   for (const obs of observations) {

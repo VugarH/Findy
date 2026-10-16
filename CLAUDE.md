@@ -33,8 +33,8 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Freshness (live = seen < 48 h and not removed) | `catalog/offer-view.ts` (`freshSince`, `offerIsLive`, `hasFreshOffer`); a successful read of a store's *whole* listing (adapter calls `ctx.listedEverything()`; Shopify under 500 products — never sitemap samples) marks offers it no longer lists (`offers.removed_at`, `ingest.ts` `markUnlistedOffers`) |
 | Is it a deal? | `catalog/summary.ts`; deals table built by `deals/build.ts` |
 | Daily pipeline | `deals/pipeline.ts` (stores collected in lanes, `planLanes`: Shopify shares one queue, 4 at a time; all other stores start at once, biggest first); publish/patch deals `deals/publish.ts` |
-| Deal list queries + filters | `deals/queries.ts`, `deals/filters.ts` |
-| Search (+ az/ru/en synonyms) | `search/catalog-search.ts`, `search/synonyms.ts` |
+| Deal list queries + filters | `deals/queries.ts` ("Best deals" mixes stores: `bestOrder`, `market.deals.storeRepeatFactor`), `deals/filters.ts` |
+| Search (+ az/ru/en synonyms) | `search/catalog-search.ts`, `search/synonyms.ts`; default order `search/relevance.ts` (query read by the subcategory rules: "iphone 16" = phone before its cases; then words in the title) |
 | Cart / parcel planner | `modules/cart/plan.ts` (pure: parcels per store), `cart/service.ts`; cost `pricing/landed-cost.ts` `computeParcelCost`; browser cart `components/cart/cart-store.ts` (localStorage); page `(site)/cart` |
 | Follow brand/store/category → new deals | `modules/follows/*` (`match.ts` pure, `notify.ts` = daily 10:00 job); `deals.deal_since` kept across rebuilds in `deals/build.ts` |
 | Messages (customer ↔ team, "buy this for me") | `modules/messages/*` (`rules.ts` pure, `service.ts`, `actions.ts`, `notify.ts` Telegram heads-ups); pages `(site)/messages`, `admin/messages`; UI `components/messages/*`; replies show to customers as "Admin" (`t.messages.adminName`) |
@@ -88,6 +88,7 @@ docker exec -i serfeli-db psql -U serfeli -d serfeli   # SQL (note -i for heredo
   (value imports). Keep shared lists in client-safe files (`custom-config.ts`, `list-price.ts`).
 - React resets a form after its action and `<select>` falls back to its first default: use
   `useAdminForm` and put its `key` on the `<form>`.
+- Browsers lack full Azerbaijani locale data: in client components format with `formatNumber` / `formatDay` / `formatWeekday` (`i18n/format.ts`, money via `formatMoney`), never `Intl` / `toLocaleString`, or server and browser disagree (hydration errors, "M10 15").
 - Text matching uses `foldForMatching` (Turkish/Azerbaijani letters → ASCII); write rules in ASCII.
 - Shopify serves prices in the visitor's currency: read `cart_currency` (`servedCurrency`).
 - Background shell commands get killed on long runs; long jobs go to the user's terminal.

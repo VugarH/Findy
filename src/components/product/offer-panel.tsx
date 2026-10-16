@@ -3,32 +3,13 @@ import type { OfferView } from "@/modules/catalog/offer-view";
 import { priceBeforeDiscount } from "@/modules/catalog/summary";
 import { getI18n } from "@/i18n/server";
 import { fmt } from "@/i18n/format";
-import { cn } from "@/lib/cn";
 import { CartButton } from "@/components/cart/cart-button";
 import { buttonClass } from "@/components/ui/button";
 import { ScopeTag } from "@/components/ui/scope-tag";
-import { SizeList } from "./size-list";
 
-interface Props {
-  title: string;
-  offer: OfferView | null;
-  emptyText: string;
-  /** Set on the cheaper of the two panels. */
-  winner?: { savingsMinor: number } | null;
-}
-
-/** One side of the local-vs-abroad comparison, with the full cost breakdown. */
-export async function OfferPanel({ title, offer, emptyText, winner }: Props) {
+/** The best offer for a product, with the full cost breakdown and the way to the store. */
+export async function OfferPanel({ title, offer }: { title: string; offer: OfferView }) {
   const { t, money, market } = await getI18n();
-
-  if (!offer) {
-    return (
-      <section className="flex flex-col rounded-2xl border border-dashed border-line p-5">
-        <h2 className="text-sm font-semibold text-muted">{title}</h2>
-        <p className="my-auto py-8 text-center text-sm text-muted">{emptyText}</p>
-      </section>
-    );
-  }
 
   const { landed, supplier } = offer;
   const before = priceBeforeDiscount(offer, market);
@@ -42,20 +23,8 @@ export async function OfferPanel({ title, offer, emptyText, winner }: Props) {
   ].filter((line) => line.always || line.value > 0);
 
   return (
-    <section
-      className={cn(
-        "flex flex-col rounded-2xl border bg-surface p-5",
-        winner ? "border-brand shadow-card ring-1 ring-brand" : "border-line",
-      )}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-muted">{title}</h2>
-        {winner && (
-          <span className="rounded-full bg-brand px-2.5 py-0.5 text-xs font-bold text-on-brand">
-            {t.product.bestOverall}
-          </span>
-        )}
-      </div>
+    <section className="flex flex-col rounded-2xl border border-brand bg-surface p-5 shadow-card ring-1 ring-brand">
+      <h2 className="text-sm font-semibold text-muted">{title}</h2>
 
       <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <p className="text-3xl font-extrabold tracking-tight text-ink">{money(landed.totalMinor)}</p>
@@ -71,11 +40,6 @@ export async function OfferPanel({ title, offer, emptyText, winner }: Props) {
           {before.verified ? t.product.wasUsual : fmt(t.product.wasStore, { store: supplier.name })}
         </p>
       )}
-      {winner && winner.savingsMinor > 0 && (
-        <p className="mt-1 text-sm font-medium text-brand-strong">
-          {fmt(t.product.cheaperBy, { amount: money(winner.savingsMinor) })}
-        </p>
-      )}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
         <span className="font-semibold text-ink">{supplier.name}</span>
@@ -89,21 +53,6 @@ export async function OfferPanel({ title, offer, emptyText, winner }: Props) {
           {fmt(t.product.deliveryRange, offer.delivery)}
         </span>
       </div>
-
-      {offer.sizes && (
-        <div className="mt-4">
-          <p className="mb-2 flex flex-wrap justify-between gap-x-3 text-xs text-muted">
-            <span className="font-semibold text-ink">{fmt(t.product.sizesAt, { store: supplier.name })}</span>
-            <span>
-              {fmt(t.product.sizesInStock, {
-                count: offer.sizes.filter((size) => size.inStock).length,
-                total: offer.sizes.length,
-              })}
-            </span>
-          </p>
-          <SizeList sizes={offer.sizes} soldOutLabel={t.product.soldOut} />
-        </div>
-      )}
 
       <dl className="mt-4 space-y-1.5 border-t border-line pt-4 text-sm">
         <div className="flex justify-between gap-4">
@@ -131,7 +80,7 @@ export async function OfferPanel({ title, offer, emptyText, winner }: Props) {
         href={`/go/${offer.offerId}`}
         target="_blank"
         rel="nofollow sponsored noopener"
-        className={buttonClass({ variant: winner ? "primary" : "secondary" }, "mt-5 w-full")}
+        className={buttonClass({}, "mt-5 w-full")}
       >
         {t.product.goToStore}
         <ArrowUpRight className="size-4" aria-hidden />

@@ -20,12 +20,12 @@ interface Rule {
 
 const RULES = {
   electronics: [
-    { slug: "cases-protection", match: /\bcases?\b|cover|screen protector|tempered glass|lens protector|\bskin\b|sleeve|bumper|folio|wallet|\bstraps?\b|\bbands?\b|kilif|qoruyucu/ },
-    { slug: "charging-power", match: /charger|charging|power ?bank|\bcables?\b|adapter|\bhub\b|\bdock|magsafe|battery pack|\bgan\b|\bpower\b|powerstation/ },
+    { slug: "cases-protection", match: /\bcases?\b|cover|screen protector|tempered glass|lens protector|\bskin\b|sleeve|bumper|folio|wallet|\bstraps?\b|\bbands?\b|kilif|qoruyucu|koruyucu|temperli|\bcam\b/ },
+    { slug: "charging-power", match: /charger|charging|juice ?pack|power ?bank|\bcables?\b|adapter|\bhub\b|\bdock|magsafe|battery pack|\bgan\b|\bpower\b|powerstation/ },
     { slug: "smart-home", match: /vacuum|robot|\bmop\b|doorbell|purifier|humidifier|thermostat|curtain|smart (plug|lock|bulb|home)|floor clean|roller brush|tozsoran/ },
     { slug: "mounts-photo", match: /\bmounts?\b|holder|\bstands?\b|\bgrip\b|tripod|gimbal|\blens(es)?\b|\bfilter|backpack|\bbags?\b|sling|light\b/ },
     { slug: "keyboards-gaming", match: /keyboard|keycap|\bswitch(es)?\b|\bmouse\b|\bmice\b|mousepad|palm rest|trackpad|deskmat|desk mat/ },
-    { slug: "audio", match: /headphone|earbud|earphone|headset|speaker|\biems?\b|in-ear|\bdac\b|\bamp\b|amplifier|soundbar|microphone|\bmic\b|turntable|audio|in-ear monitor|eartips?|\bplayer\b|hearing|qulaqliq/ },
+    { slug: "audio", match: /headphone|earbud|earphone|headset|speaker|\biems?\b|in-ear|\bdac\b|\bamp\b|amplifier|soundbar|microphone|\bmic\b|turntable|audio|in-ear monitor|eartips?|\bplayer\b|hearing|qulaqliq|airpods?|\bbuds\b/ },
     { slug: "wearables", match: /watch|fitness|tracker|\bring\b/ },
     { slug: "tablets-computers", match: /tablet|\bipad\b|\bpad\b|e-?reader|e-?ink|kindle|planset/ },
     { slug: "tablets-computers", match: /laptop|notebook|noutbuk|mini pc|\bpc\b|desktop|monitor|\bnas\b|\bssd\b|macbook/ },

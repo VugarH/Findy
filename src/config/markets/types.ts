@@ -87,6 +87,12 @@ export interface MarketConfig {
      * advertised discount, clearly labelled as unverified and ranked lower.
      */
     showStoreClaims: boolean;
+    /**
+     * "Best deals" order: each further deal from the same store counts this
+     * share of its score (0.9 → 2nd 90 %, 3rd 81 %…), so one big store cannot
+     * fill whole pages. 1 turns the mixing off.
+     */
+    storeRepeatFactor: number;
     /** Offers not re-seen within this window are treated as gone. */
     staleAfterHours: number;
     /** How many popular user searches the daily job refreshes. */

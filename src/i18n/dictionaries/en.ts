@@ -19,6 +19,7 @@ const en = {
     theme: "Switch theme",
   },
   search: {
+    dealsOnly: "Discounts only",
     market: "Show results from",
     localMarket: "Local stores",
     globalMarket: "Stores abroad",
@@ -272,6 +273,7 @@ const en = {
     page: "Page {page} of {pages}",
   },
   product: {
+    share: { button: "Share", copy: "Copy link", copied: "Link copied" },
     sizes: "Sizes",
     sizesAt: "Sizes at {store}",
     sizesInStock: "{count} of {total} in stock",
@@ -453,10 +455,6 @@ const en = {
     step4Text: "We keep you informed, help with the customs declaration and get the parcel to you.",
     feeTitle: "What it costs",
     feeText: "The item, delivery and customs at cost, plus a service fee of {rate}% of the total (at least {min}). You always see the estimate before you ask, and the exact amount before you pay.",
-    goodToKnowTitle: "Good to know",
-    goodToKnow1: "Customs duty applies when your parcels from abroad exceed the monthly duty-free limit. Our estimate already includes it.",
-    goodToKnow2: "Delivery usually takes one to three weeks, depending on the country.",
-    goodToKnow3: "You can always buy directly from the store instead — every product page shows the full price either way.",
     browseAbroad: "Browse deals from abroad",
     homeTitle: "Never ordered from abroad? We’ll do it for you.",
     homeText: "Found a better price in a foreign store? We buy it, arrange the delivery and guide you through customs.",
@@ -469,6 +467,15 @@ const en = {
       offerGone: "This offer is no longer available. Go back to the product and try again.",
       unexpected: "Something went wrong on our side. Please try again.",
     },
+    faqTitle: "Questions people ask",
+    faq: [
+      { q: "How much is customs?", a: "Parcels from abroad are duty-free up to {threshold} a month per person. Above that limit, customs duty and VAT apply. Our estimates already include them; customs decides the final amount." },
+      { q: "How long does delivery take?", a: "Usually {tr} days from Turkey, {eu} days from Europe, {us} days from the US and UK, and {cn} days from China, counted from when the store ships." },
+      { q: "When and how do I pay?", a: "Nothing upfront. We first confirm the exact price and delivery time with you; you pay only after you agree, and then we place the order." },
+      { q: "Is the price on the site final?", a: "It is an estimate: store prices and exchange rates change. We tell you the exact amount before you pay, and you can still say no." },
+      { q: "Can I return an item?", a: "Returns follow the selling store's rules, and sending an item back abroad takes time and costs extra delivery. Check the size and details before ordering; ask us if you're not sure." },
+      { q: "Can you order something that isn't on the site?", a: "Yes. Send us the link through Messages and we'll tell you the full price with delivery." },
+    ],
   },
   alerts: {
     nav: "Price alerts",

@@ -1,7 +1,5 @@
-import Link from "next/link";
-import { Check } from "lucide-react";
-import { cn } from "@/lib/cn";
 import type { SupplierScope } from "@/modules/suppliers/types";
+import { CheckLink } from "./check-link";
 
 interface Props {
   /** The market currently shown; undefined means both. */
@@ -29,25 +27,9 @@ export function MarketFilter({ scope, hrefFor, labels }: Props) {
     <div role="group" aria-label={labels.title} className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
       <span className="text-muted">{labels.title}</span>
       {boxes.map((box) => (
-        <Link
-          key={box.value}
-          href={box.href}
-          role="checkbox"
-          aria-checked={box.checked}
-          scroll={false}
-          className="group inline-flex items-center gap-2 font-medium text-ink"
-        >
-          <span
-            aria-hidden
-            className={cn(
-              "grid size-[18px] place-items-center rounded-[5px] border transition-colors",
-              box.checked ? "border-brand bg-brand text-on-brand" : "border-muted/60 bg-surface group-hover:border-muted",
-            )}
-          >
-            {box.checked && <Check className="size-3.5" strokeWidth={3} />}
-          </span>
+        <CheckLink key={box.value} href={box.href} checked={box.checked}>
           {box.label}
-        </Link>
+        </CheckLink>
       ))}
     </div>
   );

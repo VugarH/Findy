@@ -21,6 +21,7 @@ const az: Dictionary = {
     theme: "Görünüşü dəyiş",
   },
   search: {
+    dealsOnly: "Yalnız endirimlər",
     market: "Nəticələri göstər",
     localMarket: "Yerli mağazalar",
     globalMarket: "Xarici mağazalar",
@@ -274,6 +275,7 @@ const az: Dictionary = {
     page: "Səhifə {page} / {pages}",
   },
   product: {
+    share: { button: "Paylaş", copy: "Linki kopyala", copied: "Link kopyalandı" },
     sizes: "Ölçülər",
     sizesAt: "{store} mağazasında ölçülər",
     sizesInStock: "{total} ölçüdən {count} stokda",
@@ -455,10 +457,6 @@ const az: Dictionary = {
     step4Text: "Sizi məlumatlandırır, gömrük bəyannaməsində kömək edir və bağlamanı sizə çatdırırıq.",
     feeTitle: "Qiyməti",
     feeText: "Məhsul, çatdırılma və gömrük öz dəyəri ilə, üstəgəl yekun məbləğin {rate}%-i həcmində xidmət haqqı (ən azı {min}). Sorğudan əvvəl təxmini, ödənişdən əvvəl isə dəqiq məbləği görürsünüz.",
-    goodToKnowTitle: "Bilmək faydalıdır",
-    goodToKnow1: "Xaricdən gələn bağlamalarınız aylıq rüsumsuz limiti keçdikdə gömrük rüsumu tətbiq olunur. Təxminimizə bu artıq daxildir.",
-    goodToKnow2: "Çatdırılma ölkədən asılı olaraq adətən bir-üç həftə çəkir.",
-    goodToKnow3: "İstəsəniz, birbaşa mağazadan özünüz ala bilərsiniz — hər məhsul səhifəsində tam qiymət göstərilir.",
     browseAbroad: "Xaricdən endirimlərə bax",
     homeTitle: "Xaricdən heç sifariş etməmisiniz? Biz edərik.",
     homeText: "Xarici mağazada daha yaxşı qiymət tapdınız? Biz alır, çatdırılmanı təşkil edir və gömrükdə yol göstəririk.",
@@ -471,6 +469,15 @@ const az: Dictionary = {
       offerGone: "Bu təklif artıq mövcud deyil. Məhsula qayıdıb yenidən cəhd edin.",
       unexpected: "Bizim tərəfdə xəta baş verdi. Yenidən cəhd edin.",
     },
+    faqTitle: "Tez-tez verilən suallar",
+    faq: [
+      { q: "Gömrük nə qədərdir?", a: "Xaricdən gələn bağlamalar bir nəfər üçün ayda {threshold}-a qədər rüsumsuzdur. Bu limitdən yuxarı gömrük rüsumu və ƏDV tətbiq olunur. Təxminlərimizə artıq daxildir; yekun məbləği gömrük müəyyən edir." },
+      { q: "Çatdırılma nə qədər çəkir?", a: "Adətən Türkiyədən {tr} gün, Avropadan {eu} gün, ABŞ və Böyük Britaniyadan {us} gün, Çindən {cn} gün, mağaza göndərdiyi andan hesablanır." },
+      { q: "Nə vaxt və necə ödəyirəm?", a: "Əvvəlcədən heç nə ödəmirsiniz. Əvvəl dəqiq qiyməti və çatdırılma müddətini sizinlə təsdiqləyirik; yalnız razılaşdıqdan sonra ödəyirsiniz, sonra sifarişi veririk." },
+      { q: "Saytdakı qiymət yekundurmu?", a: "Bu, təxmindir: mağaza qiymətləri və valyuta məzənnələri dəyişir. Ödəmədən əvvəl dəqiq məbləği deyirik və hələ də imtina edə bilərsiniz." },
+      { q: "Məhsulu qaytara bilərəmmi?", a: "Qaytarma satıcı mağazanın qaydalarına tabedir və məhsulu xaricə geri göndərmək vaxt aparır və əlavə çatdırılma xərci tələb edir. Sifarişdən əvvəl ölçünü və detalları yoxlayın; əmin deyilsinizsə, bizdən soruşun." },
+      { q: "Saytda olmayan məhsulu sifariş edə bilərsinizmi?", a: "Bəli. Linki Mesajlar bölməsindən göndərin, çatdırılma daxil tam qiyməti deyək." },
+    ],
   },
   alerts: {
     nav: "Qiymət bildirişləri",

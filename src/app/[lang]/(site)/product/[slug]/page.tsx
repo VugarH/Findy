@@ -20,6 +20,7 @@ import { AssistCard } from "@/components/orders/assist-card";
 import { OfferPanel } from "@/components/product/offer-panel";
 import { OffersTable } from "@/components/product/offers-table";
 import { OtherSideLine } from "@/components/product/other-side-line";
+import { ShareButton } from "@/components/product/share-button";
 import { PriceHistoryChart } from "@/components/product/price-history-chart";
 import { ProductImage } from "@/components/product/product-image";
 import { SizeFinder, type SizedOffer } from "@/components/product/size-finder";
@@ -124,6 +125,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
               <div className="mt-4 flex flex-wrap gap-2">
                 <CartButton offerId={best.offerId} variant="button" />
                 <WatchButton productId={product.id} variant="button" />
+                <ShareButton title={product.title} />
               </div>
             )}
             {best && (

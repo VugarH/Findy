@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Check, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
 import { toMinor } from "@/lib/money";
+import { OrderFaq } from "@/components/orders/faq";
 import { OrderSteps } from "@/components/orders/steps";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -15,7 +16,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function OrderingAbroadPage() {
   const { t, href, money, market } = await getI18n();
   const { feeRate, minFee } = market.assistedOrder;
-  const notes = [t.order.goodToKnow1, t.order.goodToKnow2, t.order.goodToKnow3];
 
   return (
     <Container className="space-y-10 py-10">
@@ -40,25 +40,14 @@ export default async function OrderingAbroadPage() {
         <OrderSteps t={t} />
       </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <section className="rounded-2xl border border-line bg-surface p-6">
-          <h2 className="text-xl font-bold">{t.order.feeTitle}</h2>
-          <p className="mt-2 leading-7 text-muted">
-            {fmt(t.order.feeText, { rate: Math.round(feeRate * 1000) / 10, min: money(toMinor(minFee)) })}
-          </p>
-        </section>
-        <section className="rounded-2xl border border-line bg-surface p-6">
-          <h2 className="text-xl font-bold">{t.order.goodToKnowTitle}</h2>
-          <ul className="mt-3 space-y-2.5">
-            {notes.map((note) => (
-              <li key={note} className="flex items-start gap-2.5 text-sm leading-6 text-muted">
-                <Check className="mt-1 size-4 shrink-0 text-brand" aria-hidden />
-                {note}
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+      <section className="rounded-2xl border border-line bg-surface p-6">
+        <h2 className="text-xl font-bold">{t.order.feeTitle}</h2>
+        <p className="mt-2 max-w-3xl leading-7 text-muted">
+          {fmt(t.order.feeText, { rate: Math.round(feeRate * 1000) / 10, min: money(toMinor(minFee)) })}
+        </p>
+      </section>
+
+      <OrderFaq t={t} market={market} money={money} />
 
       <ButtonLink href={`${href("/deals")}?scope=global`} variant="secondary">
         {t.order.browseAbroad}

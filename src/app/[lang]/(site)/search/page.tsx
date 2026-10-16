@@ -28,6 +28,7 @@ import { Pagination } from "@/components/deals/pagination";
 import { ProductGrid } from "@/components/deals/product-grid";
 import { ParamSelect } from "@/components/deals/sort-select";
 import { LiveSearch } from "@/components/search/live-search";
+import { CheckLink } from "@/components/search/check-link";
 import { MarketFilter } from "@/components/search/market-filter";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -65,16 +66,20 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
     if (visitor) after(() => recordSearchEvent(visitor, query, found.length));
   }
 
-  const facets = facetsOfCards(found, filters.category, filters.stores);
-  const matching = sortCards(filterCards(found, filters), sort, query);
+  // "Discounts only": results, counts and filters all come from the discounted products.
+  const dealsOnly = first(params.deals) === "1";
+  const pool = dealsOnly ? found.filter((card) => card.discountPct !== null) : found;
+  const facets = facetsOfCards(pool, filters.category, filters.stores);
+  const matching = sortCards(filterCards(pool, filters), sort, query);
   const total = matching.length;
   const pages = Math.max(1, Math.ceil(total / filters.size));
   const page = Math.min(filters.page, pages);
   const items = matching.slice((page - 1) * filters.size, page * filters.size);
 
   // Params that belong to the search itself and must survive every filter change.
-  const extra = { q: query, sort: sort === "relevance" ? undefined : sort };
+  const extra = { q: query, sort: sort === "relevance" ? undefined : sort, deals: dealsOnly ? "1" : undefined };
   const link: FilterLink = (patch) => href("/search") + filterQuery(filters, true, patch, extra);
+  const dealsOnlyHref = href("/search") + filterQuery(filters, true, {}, { ...extra, deals: dealsOnly ? undefined : "1" });
   const carried = filterParams(filters, true, extra);
   const resetHref = `${href("/search")}?${new URLSearchParams({ q: query })}`;
   const activeCount = countActiveFilters(filters, true, false);
@@ -132,8 +137,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
 
           <div className="min-w-0 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
                 <FilterDrawerButton label={t.filters.filters} activeCount={activeCount} />
+                <CheckLink href={dealsOnlyHref} checked={dealsOnly}>
+                  {t.search.dealsOnly}
+                </CheckLink>
                 <MarketFilter
                   scope={filters.scope}
                   hrefFor={(scope: SupplierScope | undefined) => link({ scope })}

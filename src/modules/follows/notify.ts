@@ -68,7 +68,7 @@ export async function notifyFollowers(market: MarketConfig, now = new Date()): P
   // The first run has no previous window: nothing older than the oldest follow can be new anyway.
   const windowStart =
     previous?.windowEnd ??
-    (followers.length ? new Date(Math.min(...followers.map((f) => f.createdAt.getTime()))) : null);
+    (followers.length ? new Date(followers.reduce((earliest, f) => Math.min(earliest, f.createdAt.getTime()), Infinity)) : null);
   const newDeals = followers.length && windowStart ? await loadNewDeals(market, windowStart, now) : [];
   const byUser = matchNewDeals(followers, newDeals);
 

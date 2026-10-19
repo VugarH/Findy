@@ -157,7 +157,8 @@ async function listProductPages(client: PoliteClient, store: StructuredDataStore
   const children = root.entries.filter((e) => !store.productSitemaps || store.productSitemaps.test(e.url)).slice(0, MAX_SITEMAPS);
   const entries: SitemapEntry[] = [];
   for (const child of children) {
-    entries.push(...readSitemap(await client.getText(child.url)).entries);
+    // Not push(...entries): one sitemap may list 50,000 pages, too many arguments for one call.
+    for (const entry of readSitemap(await client.getText(child.url)).entries) entries.push(entry);
   }
   return entries;
 }

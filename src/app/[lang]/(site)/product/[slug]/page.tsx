@@ -11,7 +11,7 @@ import { LOCALE_TAGS } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { toMinor } from "@/lib/money";
 import { findMergeTargetSlug } from "@/modules/catalog/merge";
-import { landedHistory } from "@/modules/catalog/offer-view";
+import { historyInMarketCurrency, toMarketCurrency } from "@/modules/catalog/offer-view";
 import { getProductDetail } from "@/modules/catalog/queries";
 import { sameBrand } from "@/modules/catalog/normalizers/fashion";
 import { WatchButton } from "@/components/alerts/watch-button";
@@ -93,6 +93,19 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
   const storeClaim = best && deal && !deal.verified;
   const hasHistory = (best?.history.length ?? 0) >= 2;
   const showAssist = Boolean(best && global);
+  // "Usual price 70,13 ₼ ($41,25) at Champion": the store's own usual price, in manat and in its currency.
+  const usualStore = best?.verdict?.usualMinor ?? null;
+  const usual =
+    best && usualStore !== null
+      ? {
+          minor: toMarketCurrency(usualStore, best, market),
+          label: fmt(t.product.usualPriceAt, {
+            price: money(toMarketCurrency(usualStore, best, market)),
+            original: best.currency === market.currency ? "" : ` (${money(usualStore, best.currency)})`,
+            store: best.supplier.name,
+          }),
+        }
+      : null;
 
   // One short line under the price; the longer explanation sits with the price history.
   const dealNote = !best ? null : deal?.verified ? (
@@ -198,7 +211,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
               <p className="mb-4 text-sm text-muted">
                 {fmt(t.product.historySubtitle, { store: best.supplier.name, days: market.deals.historyWindowDays })}
               </p>
-              <PriceHistoryChart points={landedHistory(best, market)} currency={market.currency} usualMinor={best.usualLandedMinor} />
+              <PriceHistoryChart points={historyInMarketCurrency(best, market)} currency={market.currency} usual={usual} />
               {storeClaim && deal && (
                 <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-muted">
                   <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />

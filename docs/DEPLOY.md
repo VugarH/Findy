@@ -98,6 +98,25 @@ GitHub → **Actions → Daily deals → Run workflow** (leave the store list em
 25 minutes; the log shows the same table as in your terminal. After that it runs every day at
 07:00 Baku time, and "Follow notifications" at 10:00. GitHub e-mails you when a run fails.
 
+## 6. "Run now" in the admin panel (optional)
+
+Admin → Daily runs can start the daily job and the follow notifications. They still run on GitHub
+Actions (a Vercel request can't run 35 minutes); the panel asks GitHub to start them and shows
+their recent runs. It needs a token that may only start this repository's workflows:
+
+1. GitHub → your picture → **Settings → Developer settings → Personal access tokens →
+   Fine-grained tokens → Generate new token**.
+2. Name `findy-admin-jobs`; expiration as you like (e.g. 1 year — note the date).
+3. **Repository access → Only select repositories → Findy**.
+4. **Permissions → Repository permissions → Actions: Read and write** (Metadata: read is added by itself).
+5. Generate, copy the token (starts with `github_pat_`).
+6. Vercel → Settings → Environment Variables (Production):
+   - `GITHUB_REPO` = `VugarH/Findy`
+   - `GITHUB_ACTIONS_TOKEN` = the token
+   then **Redeploy**.
+
+Every start is recorded under Admin → Activity; a refused start is in Admin → Logs.
+
 ## Random values
 
 ```bash

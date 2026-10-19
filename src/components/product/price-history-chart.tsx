@@ -9,15 +9,16 @@ import { formatDay } from "@/i18n/format";
 interface Props {
   points: PricePoint[];
   currency: CurrencyCode;
-  /** Median price over the window, drawn as a reference line. */
-  usualMinor: number | null;
+  /** The usual (median) price, drawn as a reference line, and how to say it ("Usual price 70 ₼ ($41) at Champion"). */
+  usual: { minor: number; label: string } | null;
 }
 
 const HEIGHT = 220;
 const PAD = { top: 16, right: 16, bottom: 28, left: 56 };
 
 /** Single-series step line: a price holds until the day it changes. */
-export function PriceHistoryChart({ points, currency, usualMinor }: Props) {
+export function PriceHistoryChart({ points, currency, usual }: Props) {
+  const usualMinor = usual?.minor ?? null;
   const { t, money, locale } = useI18n();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(640);
@@ -72,11 +73,10 @@ export function PriceHistoryChart({ points, currency, usualMinor }: Props) {
 
   return (
     <div>
-      {usualMinor !== null && (
+      {usual && (
         <p className="mb-2 flex items-center gap-2 text-xs text-muted">
           <span aria-hidden className="h-px w-5 bg-muted" />
-          {t.product.usualPrice}
-          <span className="font-semibold text-ink">{money(usualMinor, currency)}</span>
+          {usual.label}
         </p>
       )}
       <div ref={wrapRef} className="relative">
@@ -145,7 +145,7 @@ export function PriceHistoryChart({ points, currency, usualMinor }: Props) {
             <thead className="sticky top-0 bg-surface-2 text-left text-xs text-muted">
               <tr>
                 <th className="px-3 py-2 font-semibold">{t.product.date}</th>
-                <th className="px-3 py-2 text-right font-semibold">{t.product.totalPrice}</th>
+                <th className="px-3 py-2 text-right font-semibold">{t.product.storePrice}</th>
               </tr>
             </thead>
             <tbody>

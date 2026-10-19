@@ -4,6 +4,7 @@ import { offers, priceObservations, products, suppliers, type Product } from "@/
 import { getCategory, type CategorySlug } from "@/config/categories";
 import type { CurrencyCode } from "@/config/currencies";
 import type { MarketConfig } from "@/config/markets";
+import { convertMinor } from "@/lib/money";
 import { verifyDiscount, type DiscountVerdict } from "@/modules/deals/discount";
 import {
   computeLandedCost,
@@ -97,29 +98,27 @@ export async function loadProductsWithOffers(
 
   const windowStart = new Date(now.getTime() - market.deals.historyWindowDays * DAY_MS).toISOString().slice(0, 10);
   const today = now.toISOString().slice(0, 10);
-  // In batches: PostgreSQL allows at most 65,535 parameters per query, and a full catalog has more offers.
+  // In batches: PostgreSQL allows at most 65,535 parameters per query, and a full catalog has more
+  // offers. Each batch goes straight into the per-offer history, row by row: a full catalog has
+  // millions of observations, too many to gather in one array or spread into one call.
   const offerIds = rows.map((r) => r.offer.id);
-  const observations: (typeof priceObservations.$inferSelect)[] = [];
-  for (let i = 0; i < offerIds.length; i += OBSERVATION_BATCH) {
-    observations.push(
-      ...(await db
-        .select()
-        .from(priceObservations)
-        .where(
-          and(
-            inArray(priceObservations.offerId, offerIds.slice(i, i + OBSERVATION_BATCH)),
-            gte(priceObservations.observedOn, windowStart),
-          ),
-        )
-        .orderBy(priceObservations.observedOn)),
-    );
-  }
-
   const historyByOffer = new Map<string, PricePoint[]>();
-  for (const obs of observations) {
-    const list = historyByOffer.get(obs.offerId) ?? [];
-    list.push({ date: obs.observedOn, priceMinor: obs.priceMinor });
-    historyByOffer.set(obs.offerId, list);
+  for (let i = 0; i < offerIds.length; i += OBSERVATION_BATCH) {
+    const batch = await db
+      .select({ offerId: priceObservations.offerId, date: priceObservations.observedOn, priceMinor: priceObservations.priceMinor })
+      .from(priceObservations)
+      .where(
+        and(
+          inArray(priceObservations.offerId, offerIds.slice(i, i + OBSERVATION_BATCH)),
+          gte(priceObservations.observedOn, windowStart),
+        ),
+      )
+      .orderBy(priceObservations.observedOn);
+    for (const { offerId, date, priceMinor } of batch) {
+      const list = historyByOffer.get(offerId);
+      if (list) list.push({ date, priceMinor });
+      else historyByOffer.set(offerId, [{ date, priceMinor }]);
+    }
   }
 
   const grouped = new Map<string, ProductWithOffers>();
@@ -195,13 +194,15 @@ export function onePerStore<T extends { supplier: { id: string }; inStock: boole
 }
 
 /**
- * An offer's price history as full prices in the market currency (item,
- * delivery, customs, fees), at today's exchange rates: the same basis as the
- * price shown above it, whatever currency the store sells in.
+ * An offer's price history in the market currency: the store's own price,
+ * converted at today's exchange rate (no delivery or customs), so every
+ * product's chart reads in the same money whatever the store charges in.
  */
-export function landedHistory(offer: OfferView, market: MarketConfig): PricePoint[] {
-  return offer.history.map((point) => ({
-    date: point.date,
-    priceMinor: computeLandedCost({ ...offer.costInput, priceMinor: point.priceMinor }, market).totalMinor,
-  }));
+export function historyInMarketCurrency(offer: OfferView, market: MarketConfig): PricePoint[] {
+  return offer.history.map((point) => ({ date: point.date, priceMinor: toMarketCurrency(point.priceMinor, offer, market) }));
+}
+
+/** A store-currency amount of this offer in the market currency, at today's rate. */
+export function toMarketCurrency(amountMinor: number, offer: Pick<OfferView, "currency">, market: MarketConfig): number {
+  return convertMinor(amountMinor, offer.currency, market.currency, market.fxRates);
 }

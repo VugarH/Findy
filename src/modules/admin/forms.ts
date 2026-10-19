@@ -27,6 +27,8 @@ export type AdminErrorKey =
   | "alreadyPosted"
   | "telegramFailed"
   | "telegramOff"
+  | "jobsOff"
+  | "jobFailed"
   | "unexpected";
 
 export type AdminNoticeKey =
@@ -39,7 +41,8 @@ export type AdminNoticeKey =
   | "previewOk"
   | "digestPicked"
   | "digestPosted"
-  | "sent";
+  | "sent"
+  | "jobStarted";
 
 export interface AdminFormState {
   /** Error per field. */

@@ -45,6 +45,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Telegram (channel post, bot, account link) | `modules/telegram/*` (`format.ts` = all message text, pure); webhook `app/api/telegram/webhook` |
 | Site settings (admin → Settings) | `modules/settings/*` (`site_settings` table); deal-filter switches `filter-switches.ts` (client-safe defaults), applied in `parseDealFilters` + `FilterSidebar` |
 | Display order (admin → Order) | `modules/settings/display-order.ts` (client-safe: `orderedCategories`, `orderedSubcategories`, `orderedBrands`); used by header, footer, home, `FilterSidebar`; editor `components/admin/display-order-form.tsx`, counts `modules/admin/ordering.ts`. List categories via `orderedCategories(await getDisplayOrder())`, not `CATEGORIES` |
+| "Run now" (Admin → Daily runs) | `modules/admin/jobs.ts` starts the GitHub Actions workflows (`daily-deals.yml` with `only`, `follows.yml`) and lists their runs; env `GITHUB_REPO` + `GITHUB_ACTIONS_TOKEN` (docs/DEPLOY.md §6); action `admin/actions/jobs.ts`, form `components/admin/job-runner.tsx` |
 | Admin services / actions / text | `src/modules/admin/*`, `modules/admin/actions/*`, `src/i18n/dictionaries/admin/{en,az,ru}.ts` |
 | Admin UI | `src/components/admin/*` (ui.tsx primitives, fields.tsx `useAdminForm`), pages `src/app/[lang]/admin/` |
 | Public pages | `src/app/[lang]/(site)/…` (route group; URLs have no "(site)") |

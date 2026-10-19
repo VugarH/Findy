@@ -28,6 +28,7 @@ export const ADMIN_ACTIONS = [
   "offer.delete",
   "order.status",
   "conversation.status",
+  "job.run",
   "user.role",
   "deals.publish",
   "digest.pick",
@@ -38,7 +39,7 @@ export const ADMIN_ACTIONS = [
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 
 /** What a change was made to. Prices entered by hand are logged on their product. */
-export const ADMIN_ENTITIES = ["store", "product", "order", "conversation", "user", "deals", "digest", "settings"] as const;
+export const ADMIN_ENTITIES = ["store", "product", "order", "conversation", "user", "deals", "digest", "settings", "job"] as const;
 export type AdminEntity = (typeof ADMIN_ENTITIES)[number];
 
 export function isAdminEntity(value: string): value is AdminEntity {

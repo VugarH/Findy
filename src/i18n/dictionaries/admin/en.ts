@@ -62,8 +62,11 @@ const adminEn = {
     digestPicked: "Picked {count} deals.",
     digestPosted: "Posted to the channel.",
     sent: "Sent.",
+    jobStarted: "Started on GitHub. It appears under “Recent runs” within a minute.",
   },
   errors: {
+    jobsOff: "Starting jobs from here is not set up yet: add GITHUB_REPO and GITHUB_ACTIONS_TOKEN in Vercel (docs/DEPLOY.md).",
+    jobFailed: "GitHub did not start the job. Details are in Admin → Logs.",
     required: "Required.",
     tooLong: "Too long.",
     invalid: "Not a valid value.",
@@ -448,6 +451,26 @@ const adminEn = {
     feeLine: "incl. {fee} service fee",
   },
   runs: {
+    jobs: {
+      title: "Run now",
+      intro: "The jobs run on GitHub Actions, as on their daily schedule. Starting one here is the same as Actions → Run workflow.",
+      dailyTitle: "Daily deals",
+      dailyText: "Collects the stores, rebuilds the deals, sends price alerts and the day's Top 10. All stores take about 35 minutes; a short list, a few.",
+      followsTitle: "Follow notifications",
+      followsText: "Tells people about new deals from the brands, stores and categories they follow (bell and Telegram). A few minutes; safe to run again.",
+      storesLabel: "Only these stores",
+      storesPlaceholder: "Store ids, e.g. superstep, allbeauty (empty = all)",
+      storesInvalid: "Use store ids separated by commas, like superstep, allbeauty.",
+      run: "Run now",
+      starting: "Starting…",
+      recent: "Recent runs",
+      none: "No runs yet.",
+      open: "Log",
+      scheduled: "on schedule",
+      manual: "by hand",
+      notConfigured: "To start jobs from here, add two settings in Vercel: GITHUB_REPO (VugarH/Findy) and GITHUB_ACTIONS_TOKEN. Steps are in docs/DEPLOY.md.",
+      states: { queued: "Waiting", running: "Running", success: "Succeeded", failure: "Failed", cancelled: "Cancelled" },
+    },
     intro:
       "Each run of the daily job: which stores answered, how many offers they gave and how many deals were published.",
     statuses: {
@@ -483,7 +506,7 @@ const adminEn = {
   activity: {
     intro: "Every change made in the admin panel, newest first.",
     anyEntity: "Everything",
-    entities: { store: "Stores", product: "Products", order: "Order requests", conversation: "Messages", user: "Users", deals: "Publishing", digest: "Top deals", settings: "Settings" },
+    entities: { store: "Stores", product: "Products", order: "Order requests", conversation: "Messages", job: "Jobs", user: "Users", deals: "Publishing", digest: "Top deals", settings: "Settings" },
     actions: {
       "store.create": "added the store",
       "store.update": "changed the settings of",
@@ -503,6 +526,7 @@ const adminEn = {
       "offer.delete": "removed a price from",
       "order.status": "changed the status of",
       "conversation.status": "changed the status of",
+      "job.run": "started the job",
       "user.role": "changed the role of",
       "deals.publish": "published the deals",
       "digest.pick": "picked the day’s top deals:",

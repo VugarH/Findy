@@ -50,6 +50,7 @@ export async function getDashboard(): Promise<Dashboard> {
       total: stores.length,
       ok: byStatus("ok"),
       failing: byStatus("failing"),
+      paused: byStatus("paused"),
       waiting: byStatus("waiting"),
       off: byStatus("off"),
       retired: byStatus("retired"),

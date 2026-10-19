@@ -15,9 +15,10 @@ import { slugify } from "@/lib/slug";
  * Stores as the admin panel sees them: the ones defined in code (whether or
  * not they have returned data yet) and the ones added in the panel.
  */
-export const STORE_STATUSES = ["ok", "failing", "waiting", "off", "retired"] as const;
+export const STORE_STATUSES = ["ok", "failing", "paused", "waiting", "off", "retired"] as const;
 /**
  * ok: collected fine last time · failing: the last collection failed ·
+ * paused: failed several days in a row, now tried once a week (suppliers/health.ts) ·
  * waiting: never collected yet · off: switched off · retired: removed from code.
  */
 export type StoreStatus = (typeof STORE_STATUSES)[number];
@@ -41,6 +42,9 @@ export interface AdminStore {
   lastError: string | null;
   lastErrorAt: Date | null;
   lastOfferCount: number;
+  /** Store health: set when it was paused for failing several days in a row. */
+  pausedAt: Date | null;
+  failingDays: number;
   offers: number;
   liveOffers: number;
   manualOffers: number;
@@ -48,10 +52,11 @@ export interface AdminStore {
 }
 
 export function storeStatus(
-  store: Pick<AdminStore, "active" | "lastSuccessAt" | "lastErrorAt"> & { retired: boolean },
+  store: Pick<AdminStore, "active" | "lastSuccessAt" | "lastErrorAt" | "pausedAt"> & { retired: boolean },
 ): StoreStatus {
   if (!store.active) return "off";
   if (store.retired) return "retired";
+  if (store.pausedAt) return "paused";
   if (store.lastErrorAt && (!store.lastSuccessAt || store.lastErrorAt >= store.lastSuccessAt)) return "failing";
   if (!store.lastSuccessAt) return "waiting";
   return "ok";
@@ -86,7 +91,7 @@ function toAdminStore(
     websiteUrl: row?.websiteUrl ?? definition!.websiteUrl,
     source,
     connection: definition?.access.kind ?? row?.accessMethod?.kind ?? "unknown",
-    status: storeStatus({ active, lastSuccessAt, lastErrorAt, retired: source === "code" && !definition }),
+    status: storeStatus({ active, lastSuccessAt, lastErrorAt, pausedAt: row?.pausedAt ?? null, retired: source === "code" && !definition }),
     active,
     registered: !!row,
     scope: (row?.scope ?? definition!.scope) as "local" | "global",
@@ -97,6 +102,8 @@ function toAdminStore(
     lastError: row?.lastError ?? null,
     lastErrorAt,
     lastOfferCount: row?.lastOfferCount ?? 0,
+    pausedAt: row?.pausedAt ?? null,
+    failingDays: row?.failingDays ?? 0,
     offers: counts?.total ?? 0,
     liveOffers: counts?.live ?? 0,
     manualOffers: counts?.manual ?? 0,

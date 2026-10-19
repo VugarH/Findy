@@ -32,11 +32,12 @@ export default async function AdminDashboardPage() {
           value={`${d.stores.ok}/${d.stores.total}`}
           line={fmt(a.dashboard.storesLine, {
             failing: d.stores.failing,
+            paused: d.stores.paused,
             off: d.stores.off,
             waiting: d.stores.waiting,
           })}
           href={href("/admin/stores")}
-          tone={d.stores.failing > 0 ? "warn" : undefined}
+          tone={d.stores.failing + d.stores.paused > 0 ? "warn" : undefined}
         />
         <StatCard
           label={a.dashboard.newOrders}

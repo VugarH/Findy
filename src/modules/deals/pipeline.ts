@@ -18,6 +18,8 @@ import { confirmManualOffers } from "@/modules/catalog/manual-offers";
 import { buildDailyDigest } from "@/modules/digest/service";
 import { postDigest } from "@/modules/telegram/channel";
 import { buildDeals } from "./build";
+import { pausedStoresToSkip, updateStoreHealth } from "@/modules/suppliers/health";
+import { marketDay } from "@/modules/digest/pick";
 import { log } from "@/modules/logs/logger";
 import { pruneLogs } from "@/modules/logs/service";
 import { saveDailyStatsAndPrune } from "@/modules/analytics/report";
@@ -56,11 +58,14 @@ export async function runDailyPipeline(
   // Landed prices depend on exchange rates, so refresh those first.
   const fx = await refreshFxRates(baseMarket, now);
   const market = await loadMarket(baseMarket.code);
-  // Stores switched off in the database (suppliers.active = false) are not contacted at all.
+  // Stores switched off in the database (suppliers.active = false) are not contacted at all; paused
+  // ones (failing for days, see suppliers/health.ts) only once a week — or when a run names them.
   const disabled = await disabledSupplierIds();
+  const paused = options.supplierIds ? new Set<string>() : await pausedStoresToSkip(now);
   const adapters = (await getAllAdapters()).filter(
     ({ definition }) =>
       !disabled.has(definition.id) &&
+      !paused.has(definition.id) &&
       (!options.scope || definition.scope === options.scope) &&
       (!options.supplierIds || options.supplierIds.includes(definition.id)),
   );
@@ -72,6 +77,7 @@ export async function runDailyPipeline(
     .returning({ id: pipelineRuns.id });
 
   const supplierStats = await collectCatalogs(adapters, ctx);
+  await updateStoreHealth(supplierStats, marketDay(now, market.timeZone), now);
   await confirmManualOffers(now);
   const refreshedSearches =
     options.refreshSearches === false

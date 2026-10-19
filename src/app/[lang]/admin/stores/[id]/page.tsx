@@ -3,10 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { fmt } from "@/i18n/format";
-import { setStoreActiveAction } from "@/modules/admin/actions/stores";
+import { setStoreActiveAction, resumeStoreAction } from "@/modules/admin/actions/stores";
 import { param } from "@/modules/admin/forms";
 import { getAdminI18n } from "@/modules/admin/i18n";
 import { getAdminStore } from "@/modules/admin/stores";
+import { STORE_HEALTH } from "@/modules/suppliers/health";
 import { ActionButton } from "@/components/admin/action-button";
 import { StoreStatusBadge } from "@/components/admin/status-badges";
 import { CollectButton, StoreNotes } from "@/components/admin/store-controls";
@@ -59,6 +60,11 @@ export default async function AdminStorePage({ params, searchParams }: PageProps
             >
               {d.viewProducts}
             </Link>
+            {store.status === "paused" && (
+              <ActionButton action={resumeStoreAction} fields={{ id: store.id }} variant="primary">
+                {d.resume}
+              </ActionButton>
+            )}
             <ActionButton
               action={setStoreActiveAction}
               fields={{ id: store.id, active: String(!store.active) }}
@@ -87,7 +93,19 @@ export default async function AdminStorePage({ params, searchParams }: PageProps
                     (store.manualOffers ? ` · ${fmt(d.manualLine, { count: store.manualOffers })}` : ""),
                 },
                 { label: d.collected, value: store.lastSuccessAt ? dateTime(store.lastSuccessAt) : a.common.never },
-                ...(store.status === "failing" && store.lastError
+                ...(store.status === "paused" && store.pausedAt
+                  ? [
+                      {
+                        label: d.paused,
+                        value: (
+                          <span className="text-deal">
+                            {fmt(d.pausedLine, { date: dateTime(store.pausedAt), days: store.failingDays, every: STORE_HEALTH.retryEveryDays })}
+                          </span>
+                        ),
+                      },
+                    ]
+                  : []),
+                ...((store.status === "failing" || store.status === "paused") && store.lastError
                   ? [
                       {
                         label: d.lastError,

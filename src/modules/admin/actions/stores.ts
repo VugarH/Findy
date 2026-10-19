@@ -15,6 +15,7 @@ import { requireAdmin } from "../guard";
 import { createCustomStore, setStoreActive, setStoreNotes, updateCustomStore } from "../stores";
 import { parseStoreForm } from "../validation";
 import { log } from "@/modules/logs/logger";
+import { resumeStore } from "@/modules/suppliers/health";
 
 /** Switches a store on or off. Off: the daily job stops contacting it and its offers leave the site at once. */
 export async function setStoreActiveAction(form: FormData): Promise<void> {
@@ -32,6 +33,16 @@ export async function setStoreActiveAction(form: FormData): Promise<void> {
     // Switching on brings the store's offers back only with the next publish.
     needsPublish: active,
   });
+  refresh();
+}
+
+/** A paused store (failing several days in a row) is tried again in the next run. */
+export async function resumeStoreAction(form: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const id = text(form, "id");
+  const store = await resumeStore(id);
+  if (!store) return;
+  await recordAdminEvent(admin, { action: "store.resume", entityType: "store", entityId: id, entityLabel: store.name });
   refresh();
 }
 

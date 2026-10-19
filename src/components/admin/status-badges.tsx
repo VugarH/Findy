@@ -5,6 +5,7 @@ import { Badge, type BadgeTone } from "./ui";
 const STORE_TONES: Record<StoreStatus, BadgeTone> = {
   ok: "good",
   failing: "bad",
+  paused: "bad",
   waiting: "info",
   off: "neutral",
   retired: "neutral",

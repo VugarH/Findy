@@ -67,6 +67,11 @@ export const suppliers = pgTable("suppliers", {
   lastOfferCount: integer("last_offer_count").notNull().default(0),
   lastError: text("last_error"),
   lastErrorAt: timestamp("last_error_at", { withTimezone: true }),
+  /** Store health (modules/suppliers/health.ts): calendar days in a row whose collection failed, and the last one. */
+  failingDays: integer("failing_days").notNull().default(0),
+  lastFailedOn: date("last_failed_on"),
+  /** Set after STORE_HEALTH.pauseAfterDays failed days: the daily job then tries it only once a week. */
+  pausedAt: timestamp("paused_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

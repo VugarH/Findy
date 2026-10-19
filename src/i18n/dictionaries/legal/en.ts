@@ -97,7 +97,7 @@ const legalEn = {
       {
         heading: "Who handles your data",
         paragraphs: [
-          "We don't sell your data or share it for advertising. It is stored with the companies that run the site for us: Vercel (hosting, in the EU) and Neon (database, in Frankfurt), and Telegram if you connect our bot.",
+          "We don't sell your data or share it for advertising. It is stored with the companies that run the site for us: Vercel (hosting, in the EU), Neon (database, in Frankfurt) and Resend (account emails such as address confirmation and password reset), and Telegram if you connect our bot.",
           "When you go to a store, that store's own privacy policy applies.",
         ],
       },

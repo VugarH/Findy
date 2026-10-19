@@ -117,6 +117,21 @@ their recent runs. It needs a token that may only start this repository's workfl
 
 Every start is recorded under Admin → Activity; a refused start is in Admin → Logs.
 
+## 7. Email (Resend): address confirmation and password reset (optional)
+
+Without these settings the site works as before (no emails, "Forgot your password?" says email is
+not available). Needs your own domain.
+
+1. resend.com → **Domains → Add domain** (region Ireland) → add the DNS records it shows at your
+   registrar → wait for **Verified**.
+2. **API Keys → Create** — "Sending access", your domain. Copy it (starts with `re_`).
+3. Vercel → Environment Variables (Production), then **Redeploy**:
+   - `RESEND_API_KEY` = the key
+   - `EMAIL_FROM` = `Findy <noreply@your-domain>`
+   - optional `EMAIL_REPLY_TO` = an inbox that receives replies
+
+Sent and failed emails appear in Admin → Logs (`auth/email.sent`, `auth/email.failed`).
+
 ## Random values
 
 ```bash

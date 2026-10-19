@@ -94,7 +94,7 @@ const legalAz: LegalDictionary = {
       {
         heading: "Məlumatlarınızı kim emal edir",
         paragraphs: [
-          "Məlumatlarınızı satmırıq və reklam üçün paylaşmırıq. Onlar saytı bizim üçün işlədən şirkətlərdə saxlanılır: Vercel (hostinq, Aİ) və Neon (verilənlər bazası, Frankfurt), həmçinin botumuzu qoşsanız, Telegram.",
+          "Məlumatlarınızı satmırıq və reklam üçün paylaşmırıq. Onlar saytı bizim üçün işlədən şirkətlərdə saxlanılır: Vercel (hostinq, Aİ), Neon (verilənlər bazası, Frankfurt) və Resend (ünvan təsdiqi və şifrə yeniləmə kimi hesab məktubları), həmçinin botumuzu qoşsanız, Telegram.",
           "Mağazaya keçdikdə həmin mağazanın öz məxfilik siyasəti tətbiq olunur.",
         ],
       },

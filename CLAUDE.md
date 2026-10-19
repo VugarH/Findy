@@ -20,7 +20,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Subcategory rules (≤10/category) | `src/config/subcategories.ts` (`classifyProduct`) |
 | Audience (women/men/kids/unisex) | `src/config/audience.ts` |
 | Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts` |
-| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0019) |
+| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0020) |
 | Store adapters | `src/modules/suppliers/adapters/{shopify,structured-data,akinon}/{adapter,stores}.ts` (akinon = category pages, cart prices, discounted-only + `RawOffer.updateOnly`) |
 | Code store list → daily job | `suppliers/registry.ts` (`getAdapters`, `getAllAdapters` = code + admin stores) |
 | Stores added in the panel | `suppliers/custom-config.ts` (zod, client-safe), `suppliers/custom.ts` (adapters, preview) |
@@ -38,6 +38,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Search (+ az/ru/en synonyms) | `search/catalog-search.ts`, `search/synonyms.ts`; default order `search/relevance.ts` (query read by the subcategory rules: "iphone 16" = phone before its cases; then words in the title) |
 | Cart / parcel planner | `modules/cart/plan.ts` (pure: parcels per store), `cart/service.ts`; cost `pricing/landed-cost.ts` `computeParcelCost`; browser cart `components/cart/cart-store.ts` (localStorage); page `(site)/cart` |
 | Follow brand/store/category → new deals | `modules/follows/*` (`match.ts` pure, `notify.ts` = daily 10:00 job); `deals.deal_since` kept across rebuilds in `deals/build.ts` |
+| Email (Resend), confirm address, reset password | `modules/email/send.ts` (Resend HTTP API; off without `RESEND_API_KEY` + `EMAIL_FROM`, docs/DEPLOY.md §7), `email/layout.ts` (one design, pure); `auth/email-links.ts` (single-use hashed links in `auth_tokens`: verify 24 h, reset 1 h, ≤3/hour; reset signs out everywhere); pages `(site)/forgot-password`, `reset-password`, `verify-email`; texts `t.email` |
 | Messages (customer ↔ team, "buy this for me") | `modules/messages/*` (`rules.ts` pure, `service.ts`, `actions.ts`, `notify.ts` Telegram heads-ups); pages `(site)/messages`, `admin/messages`; UI `components/messages/*`; replies show to customers as "Admin" (`t.messages.adminName`) |
 | Logging (Admin → Logs) | `modules/logs/logger.ts` — `log.info/warn/error(area, event, message, { userId, error, …})`: console + `app_logs` table, secrets stripped (`sanitize.ts`), ≤30/min per event; server crashes via `src/instrumentation.ts` `onRequestError`; pruned by the daily job (`service.ts` `pruneLogs`: info 14 d, warn/error 30 d). Use it instead of `console.error` |
 | Analytics (Admin → Analytics) | `modules/analytics/*`: `visitor.ts` (cookieless daily visitor id, bots, device, source), `record.ts` (views via `POST /api/track` from `components/analytics/page-tracker.tsx`, searches from the search page, clicks in `app/go/[offerId]`), `report.ts` (queries; `saveDailyStatsAndPrune` in the daily job: `daily_stats` forever, `site_events` 90 days). Admins and bots are not counted |

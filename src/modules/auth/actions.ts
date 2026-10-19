@@ -2,14 +2,16 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { getMarket } from "@/config/markets";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { localePath } from "@/i18n/format";
+import { log } from "@/modules/logs/logger";
+import { resetPassword, sendPasswordReset, sendVerificationEmail, sendVerificationEmailTo } from "./email-links";
 import { clearFailures, isBlocked, recordFailure } from "./rate-limit";
 import { authenticate, registerUser } from "./service";
-import { createSession, destroySession } from "./session";
-import { fieldErrors, loginSchema, registerSchema, type AuthErrorKey } from "./validation";
-import { log } from "@/modules/logs/logger";
+import { createSession, destroySession, getCurrentUser } from "./session";
+import { fieldErrors, forgotSchema, loginSchema, registerSchema, resetSchema, type AuthErrorKey } from "./validation";
 
 export interface AuthFormState {
   /** Error per field, as dictionary keys under `auth.errors`. */
@@ -18,6 +20,8 @@ export interface AuthFormState {
   formError?: AuthErrorKey;
   /** What was typed, so the form is not wiped on an error. Never includes passwords. */
   values?: Record<string, string>;
+  /** The request went through (e.g. "we've sent you a link"). */
+  done?: boolean;
 }
 
 const text = (form: FormData, name: string) => String(form.get(name) ?? "");
@@ -62,6 +66,9 @@ export async function registerAction(_previous: AuthFormState, form: FormData): 
     userId = result.userId;
     await createSession(userId);
     await log.info("auth", "user.registered", "A new account was created", { userId });
+    // The confirmation email goes out after the response, so signing up stays quick.
+    const recipient = { id: userId, email: parsed.data.email, fullName: parsed.data.fullName, locale };
+    after(() => sendVerificationEmail(recipient));
   } catch (error) {
     await log.error("auth", "register.failed", "Registration failed", { error });
     return { formError: "unexpected", values };
@@ -98,6 +105,52 @@ export async function loginAction(_previous: AuthFormState, form: FormData): Pro
     return { formError: "unexpected", values };
   }
   redirect(safeNext(form, locale));
+}
+
+/** "Forgot your password?": the same answer whether or not the address has an account. */
+export async function forgotPasswordAction(_previous: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const values = { email: text(form, "email") };
+  const parsed = forgotSchema.safeParse(values);
+  if (!parsed.success) return { errors: fieldErrors(parsed.error), values };
+  try {
+    if ((await sendPasswordReset(parsed.data.email)) === "unavailable") return { formError: "emailUnavailable", values };
+  } catch (error) {
+    await log.error("auth", "reset.request-failed", "A password reset could not be requested", { error });
+    return { formError: "unexpected", values };
+  }
+  return { done: true };
+}
+
+/** The emailed reset link's form: sets the new password, then signs in on this browser only. */
+export async function resetPasswordAction(_previous: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const locale = localeOf(form);
+  const parsed = resetSchema.safeParse({
+    token: text(form, "token"),
+    password: text(form, "password"),
+    confirmPassword: text(form, "confirmPassword"),
+  });
+  if (!parsed.success) return { errors: fieldErrors(parsed.error) };
+  let userId: string | null;
+  try {
+    userId = await resetPassword(parsed.data.token, parsed.data.password);
+    if (!userId) return { formError: "linkInvalid" };
+    await createSession(userId);
+    await log.info("auth", "password.reset", "A password was reset through the emailed link", { userId });
+  } catch (error) {
+    await log.error("auth", "reset.failed", "A password reset failed", { error });
+    return { formError: "unexpected" };
+  }
+  redirect(localePath(locale, "/account"));
+}
+
+/** "Send the confirmation email again" on the account page. */
+export async function resendVerificationAction(): Promise<AuthFormState> {
+  const user = await getCurrentUser();
+  if (!user || user.emailVerifiedAt) return {};
+  const result = await sendVerificationEmailTo(user.id);
+  if (result === "tooMany") return { formError: "tooManyEmails" };
+  if (result === "unavailable") return { formError: "emailUnavailable" };
+  return { done: true };
 }
 
 export async function logoutAction(form: FormData): Promise<void> {

@@ -1,8 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, type ReactNode } from "react";
 import { useI18n } from "@/i18n/client";
-import { loginAction, registerAction, type AuthFormState } from "@/modules/auth/actions";
+import {
+  forgotPasswordAction,
+  loginAction,
+  registerAction,
+  resendVerificationAction,
+  resetPasswordAction,
+  type AuthFormState,
+} from "@/modules/auth/actions";
 import { PASSWORD_MIN } from "@/modules/auth/validation";
 import { Button } from "@/components/ui/button";
 import { CheckField, FormField } from "./form-field";
@@ -19,7 +27,7 @@ function FormError({ message }: { message?: string }) {
 }
 
 export function LoginForm({ next }: { next?: string }) {
-  const { t, locale } = useI18n();
+  const { t, locale, href } = useI18n();
   const [state, action, pending] = useActionState(loginAction, INITIAL);
 
   return (
@@ -45,6 +53,11 @@ export function LoginForm({ next }: { next?: string }) {
         reveal={{ show: t.auth.showPassword, hide: t.auth.hidePassword }}
         required
       />
+      <p className="-mt-1 text-right">
+        <Link href={href("/forgot-password")} className="text-sm font-semibold text-brand-strong hover:underline">
+          {t.auth.forgotLink}
+        </Link>
+      </p>
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? t.auth.working : t.auth.submitSignIn}
       </Button>
@@ -147,4 +160,87 @@ function withLinks(template: string, links: Record<string, { href: string; text:
       part
     );
   });
+}
+
+/** "Forgot your password?": asks for the email, then says a link is on its way (whether or not the account exists). */
+export function ForgotPasswordForm() {
+  const { t, locale } = useI18n();
+  const [state, action, pending] = useActionState(forgotPasswordAction, INITIAL);
+  if (state.done) {
+    return (
+      <p role="status" className="rounded-xl bg-brand-soft px-4 py-3 text-sm font-medium text-brand-strong">
+        {t.auth.forgotSent}
+      </p>
+    );
+  }
+  return (
+    <form action={action} className="space-y-4" noValidate>
+      <input type="hidden" name="locale" value={locale} />
+      <FormError message={state.formError && t.auth.errors[state.formError]} />
+      <FormField
+        label={t.auth.email}
+        name="email"
+        type="email"
+        autoComplete="email"
+        inputMode="email"
+        defaultValue={state.values?.email}
+        error={state.errors?.email && t.auth.errors[state.errors.email]}
+        required
+      />
+      <Button type="submit" disabled={pending} className="w-full">
+        {pending ? t.auth.working : t.auth.forgotSubmit}
+      </Button>
+    </form>
+  );
+}
+
+/** The emailed reset link's form: a new password, twice. */
+export function ResetPasswordForm({ token }: { token: string }) {
+  const { t, locale } = useI18n();
+  const [state, action, pending] = useActionState(resetPasswordAction, INITIAL);
+  const error = (field: string) => (state.errors?.[field] ? t.auth.errors[state.errors[field]] : undefined);
+  return (
+    <form action={action} className="space-y-4" noValidate>
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="token" value={token} />
+      <FormError message={state.formError && t.auth.errors[state.formError]} />
+      <FormField
+        label={t.auth.newPassword}
+        name="password"
+        type="password"
+        autoComplete="new-password"
+        hint={t.auth.passwordHint}
+        error={error("password")}
+        reveal={{ show: t.auth.showPassword, hide: t.auth.hidePassword }}
+        required
+      />
+      <FormField
+        label={t.auth.confirmPassword}
+        name="confirmPassword"
+        type="password"
+        autoComplete="new-password"
+        error={error("confirmPassword")}
+        reveal={{ show: t.auth.showPassword, hide: t.auth.hidePassword }}
+        required
+      />
+      <Button type="submit" disabled={pending} className="w-full">
+        {pending ? t.auth.working : t.auth.resetSubmit}
+      </Button>
+    </form>
+  );
+}
+
+/** On the account page while the address is not confirmed: sends the confirmation email again. */
+export function ResendVerificationButton() {
+  const { t } = useI18n();
+  const [state, action, pending] = useActionState(resendVerificationAction, INITIAL);
+  if (state.done) return <p className="text-xs font-medium text-brand-strong">{t.auth.verificationSent}</p>;
+  return (
+    <form action={action} className="space-y-1">
+      <button type="submit" disabled={pending} className="text-xs font-semibold text-brand-strong hover:underline disabled:opacity-60">
+        {t.auth.resendVerification}
+      </button>
+      {state.formError && <p className="text-xs font-medium text-deal">{t.auth.errors[state.formError]}</p>}
+    </form>
+  );
 }

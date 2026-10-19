@@ -4,6 +4,8 @@ import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
 import { logoutAction } from "@/modules/auth/actions";
+import { emailLinksEnabled } from "@/modules/auth/email-links";
+import { ResendVerificationButton } from "@/components/auth/auth-forms";
 import { getCurrentUser } from "@/modules/auth/session";
 import { listUserOrderRequests } from "@/modules/orders/service";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -24,7 +26,19 @@ export default async function AccountPage() {
   const requests = await listUserOrderRequests(user.id);
   const rows = [
     { label: t.auth.fullName, value: user.fullName },
-    { label: t.auth.email, value: user.email, note: user.emailVerifiedAt ? undefined : t.auth.emailNotVerified },
+    {
+      label: t.auth.email,
+      value: user.email,
+      // Not confirmed yet: with email set up, a way to get the confirmation email again.
+      note: user.emailVerifiedAt ? undefined : emailLinksEnabled() ? (
+        <span className="mt-1 block space-y-1 text-right">
+          <span className="block">{t.auth.unverifiedHint}</span>
+          <ResendVerificationButton />
+        </span>
+      ) : (
+        t.auth.emailNotVerified
+      ),
+    },
     { label: t.auth.phone, value: user.phone ?? t.auth.noPhone },
   ];
 

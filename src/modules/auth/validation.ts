@@ -17,6 +17,9 @@ export type AuthErrorKey =
   | "emailTaken"
   | "invalidCredentials"
   | "tooManyAttempts"
+  | "linkInvalid"
+  | "emailUnavailable"
+  | "tooManyEmails"
   | "unexpected";
 
 export const PASSWORD_MIN = 8;
@@ -36,16 +39,19 @@ export function normalizePhone(input: string, defaultCountryCode = "994"): strin
 
 const email = z.string().trim().toLowerCase().pipe(z.email(key("emailInvalid")).max(254, key("emailInvalid")));
 
+/** A new password: at least PASSWORD_MIN characters, with a letter and a digit. */
+const newPassword = z
+  .string()
+  .min(PASSWORD_MIN, key("passwordShort"))
+  .max(128, key("passwordLong"))
+  .regex(/\p{L}/u, key("passwordWeak"))
+  .regex(/\d/, key("passwordWeak"));
+
 export const registerSchema = z
   .object({
     fullName: z.string().trim().min(2, key("nameRequired")).max(100, key("nameRequired")),
     email,
-    password: z
-      .string()
-      .min(PASSWORD_MIN, key("passwordShort"))
-      .max(128, key("passwordLong"))
-      .regex(/\p{L}/u, key("passwordWeak"))
-      .regex(/\d/, key("passwordWeak")),
+    password: newPassword,
     confirmPassword: z.string(),
     // Optional: empty is fine, but if something is typed it must be a real number.
     phone: z
@@ -59,6 +65,12 @@ export const registerSchema = z
     path: ["confirmPassword"],
     message: key("passwordMismatch"),
   });
+
+export const forgotSchema = z.object({ email });
+
+export const resetSchema = z
+  .object({ token: z.string().min(1, key("linkInvalid")), password: newPassword, confirmPassword: z.string() })
+  .refine((data) => data.password === data.confirmPassword, { path: ["confirmPassword"], message: key("passwordMismatch") });
 
 export const loginSchema = z.object({
   email,

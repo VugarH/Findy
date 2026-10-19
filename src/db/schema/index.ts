@@ -403,6 +403,29 @@ export const sessions = pgTable(
   (t) => [uniqueIndex("sessions_token_idx").on(t.tokenHash), index("sessions_user_idx").on(t.userId)],
 );
 
+export type AuthTokenPurpose = "verify-email" | "reset-password";
+
+/**
+ * Single-use links sent by email (confirm the address, reset the password).
+ * Only a hash of the token is stored, like sessions; a link works once and
+ * until it expires.
+ */
+export const authTokens = pgTable(
+  "auth_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    purpose: text("purpose").$type<AuthTokenPurpose>().notNull(),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("auth_tokens_hash_idx").on(t.tokenHash), index("auth_tokens_user_idx").on(t.userId, t.purpose, t.createdAt)],
+);
+
 export type OrderRequestStatus = "new" | "contacted" | "confirmed" | "cancelled";
 
 /**

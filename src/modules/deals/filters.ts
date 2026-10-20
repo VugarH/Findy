@@ -55,6 +55,7 @@ function withoutSwitchedOff(filters: ParsedDealFilters, switches: FilterSwitches
   const off = (name: keyof FilterSwitches) => !switches[name];
   return {
     ...filters,
+    freshOnly: off("verified") ? undefined : filters.freshOnly,
     // A category page's own category is not a filter: it always applies.
     category: off("category") && !locked ? undefined : filters.category,
     subcategory: off("subcategory") ? undefined : filters.subcategory,

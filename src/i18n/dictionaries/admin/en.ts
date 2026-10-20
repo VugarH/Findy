@@ -617,6 +617,7 @@ const adminEn = {
     filtersIntro:
       "Which filters visitors see beside the deal lists and search results. A switched-off filter disappears, and links that still use it show the list without it.",
     filters: {
+      verified: { label: "Verified discounts", hint: "The “Only verified discounts” checkbox on All deals and category pages." },
       category: { label: "Category", hint: "On All deals and search; category pages are always their own category." },
       subcategory: { label: "Type", hint: "Subcategories inside a category." },
       audience: { label: "For whom", hint: "Women, men, kids, unisex." },

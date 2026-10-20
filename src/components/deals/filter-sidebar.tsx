@@ -101,7 +101,7 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
 
   return (
     <>
-      {showVerified && (facets.fresh > 0 || filters.freshOnly) && (
+      {showVerified && on.verified && (facets.fresh > 0 || filters.freshOnly) && (
         <FilterGroup title={t.fresh.nav}>
           <FilterToggle
             href={link({ verified: filters.freshOnly ? undefined : "1" })}

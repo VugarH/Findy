@@ -5,6 +5,7 @@
  */
 
 export const FILTER_NAMES = [
+  "verified",
   "category",
   "subcategory",
   "audience",
@@ -25,6 +26,7 @@ export type FilterSwitches = Record<FilterName, boolean>;
  * publish no sizes disappear, which is misleading until most stores have them.
  */
 export const DEFAULT_FILTER_SWITCHES: FilterSwitches = {
+  verified: true,
   category: true,
   subcategory: true,
   audience: true,

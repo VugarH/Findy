@@ -36,6 +36,7 @@ export const ADMIN_ACTIONS = [
   "digest.post",
   "settings.filters",
   "settings.order",
+  "settings.deal-rules",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 

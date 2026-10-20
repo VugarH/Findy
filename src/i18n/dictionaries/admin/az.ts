@@ -561,6 +561,7 @@ const adminAz: AdminDictionary = {
       "digest.post": "Telegram kanalında paylaşdı:",
       "settings.filters": "endirim filtrlərini dəyişdi",
       "settings.order": "göstərilmə sırasını dəyişdi",
+      "settings.deal-rules": "endirim qaydalarını dəyişdi",
     },
     notPublished: "hələ dərc olunmayıb",
     empty: "Hələ dəyişiklik yoxdur.",
@@ -636,6 +637,9 @@ const adminAz: AdminDictionary = {
   },
   settings: {
     intro: "Bütün sayta aid ayarlar.",
+    dealRulesTitle: "Endirim qaydaları",
+    dealRulesIntro: "Hansı endirimlər siyahıya düşür. Dəyişikliklər siyahı yenidən qurulanda tətbiq olunur: gündəlik işdə və ya Gündəlik işlərdə “İndi işə sal”.",
+    keepStoreClaims: { label: "14 gündən sonra da mağaza endirimlərini saxla", hint: "Açıq: mağazanın üstündən xətt çəkilmiş qiyməti qiymət tarixçəmiz təsdiqləməsə də siyahıda qalır (mağaza endirimi kimi, aşağıda sıralanır). Bağlı: 14 günlük tarixçədən sonra yalnız tarixçəmizin təsdiqlədiyi endirimlər qalır." },
     filtersTitle: "Endirim filtrləri",
     filtersIntro:
       "Ziyarətçilərin endirim siyahıları və axtarış nəticələrinin yanında hansı filtrləri görəcəyi. Söndürülmüş filtr görünmür, onu hələ də istifadə edən linklər siyahını filtrsiz göstərir.",

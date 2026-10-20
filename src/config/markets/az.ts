@@ -54,6 +54,7 @@ export const azMarket: MarketConfig = {
     minHistoryDays: 14,
     minRealDiscountPct: 5,
     showStoreClaims: true,
+    keepStoreClaims: true,
     storeRepeatFactor: 0.9,
     staleAfterHours: 48,
     refreshTopSearches: 20,

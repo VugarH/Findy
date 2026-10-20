@@ -3,7 +3,7 @@
 import { refresh } from "next/cache";
 import { FILTER_NAMES, type FilterSwitches } from "@/modules/settings/filter-switches";
 import { toDisplayOrder } from "@/modules/settings/display-order";
-import { getDisplayOrder, getFilterSwitches, saveDisplayOrder, saveFilterSwitches } from "@/modules/settings/service";
+import { getDealRules, getDisplayOrder, getFilterSwitches, saveDealRules, saveDisplayOrder, saveFilterSwitches } from "@/modules/settings/service";
 import { recordAdminEvent } from "../audit";
 import { checked, type AdminFormState } from "../forms";
 import { requireAdmin } from "../guard";
@@ -57,6 +57,25 @@ export async function saveDisplayOrderAction(_previous: AdminFormState, form: Fo
       details: Object.fromEntries(
         changed.map((part) => [part, part === "subcategories" ? Object.keys(order.subcategories).join(", ") : order[part].join(", ")]),
       ),
+    });
+  }
+  refresh();
+  return { notice: "saved" };
+}
+
+/** Which discounts count as deals. Applies when the deal list is next rebuilt (daily run, or Run now). */
+export async function saveDealRulesAction(_previous: AdminFormState, form: FormData): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const before = await getDealRules();
+  const rules = { keepStoreClaims: checked(form, "keepStoreClaims") };
+  await saveDealRules(rules, admin.email);
+  if (before.keepStoreClaims !== rules.keepStoreClaims) {
+    await recordAdminEvent(admin, {
+      action: "settings.deal-rules",
+      entityType: "settings",
+      entityId: "deal-rules",
+      entityLabel: "Deal rules",
+      details: { keepStoreClaims: rules.keepStoreClaims ? "on" : "off" },
     });
   }
   refresh();

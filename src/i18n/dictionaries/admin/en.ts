@@ -538,6 +538,7 @@ const adminEn = {
       "digest.post": "posted to the Telegram channel:",
       "settings.filters": "changed the deal filters",
       "settings.order": "changed the display order",
+      "settings.deal-rules": "changed the deal rules",
     },
     notPublished: "not published yet",
     empty: "No changes yet.",
@@ -613,6 +614,9 @@ const adminEn = {
   },
   settings: {
     intro: "Settings that apply to the whole site.",
+    dealRulesTitle: "Deal rules",
+    dealRulesIntro: "Which discounts are listed as deals. Changes apply when the deal list is next rebuilt: the daily run, or Run now in Daily runs.",
+    keepStoreClaims: { label: "Keep store discounts after 14 days", hint: "On: a store's crossed-out price stays listed even when our price history does not confirm it (marked as the store's discount, ranked lower). Off: after 14 days of history only discounts our history confirms are listed." },
     filtersTitle: "Deal filters",
     filtersIntro:
       "Which filters visitors see beside the deal lists and search results. A switched-off filter disappears, and links that still use it show the list without it.",

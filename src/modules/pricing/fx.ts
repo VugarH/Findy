@@ -3,6 +3,7 @@ import { db } from "@/db/client";
 import { fxRates } from "@/db/schema";
 import type { CurrencyCode } from "@/config/currencies";
 import { getMarket, type MarketConfig } from "@/config/markets";
+import { getDealRules } from "@/modules/settings/service";
 import { parseCbarRates } from "./cbar";
 
 const CACHE_MS = 10 * 60_000;
@@ -52,7 +53,9 @@ export async function loadMarket(code?: string): Promise<MarketConfig> {
   for (const row of stored) {
     if (row.currency in fxRatesNow && row.currency !== base.currency) fxRatesNow[row.currency as CurrencyCode] = row.rate;
   }
-  const market = { ...base, fxRates: fxRatesNow };
+  // Admins' deal rules (Settings → Deal rules) override the market's defaults.
+  const rules = await getDealRules();
+  const market = { ...base, fxRates: fxRatesNow, deals: { ...base.deals, keepStoreClaims: rules.keepStoreClaims } };
   cache = { code: base.code, at: Date.now(), market };
   return market;
 }

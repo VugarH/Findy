@@ -44,6 +44,12 @@ export function summarizeProduct(entry: ProductWithOffers, market: MarketConfig)
 
 /** Unverified store claims rank below verified discounts of the same size. */
 const STORE_CLAIM_SCORE_FACTOR = 0.7;
+/**
+ * A store discount our long history does not confirm (the "was" price is not
+ * what the item usually costs) ranks lower still. Only listed while the market
+ * keeps store claims (market.deals.keepStoreClaims).
+ */
+const STANDING_CLAIM_SCORE_FACTOR = 0.5;
 
 interface DiscountBasis {
   /** Landed price the offer is discounted from. */
@@ -52,28 +58,35 @@ interface DiscountBasis {
   discountBasisPct: number;
   /** True when the reference is our own price history, false when it is the store's crossed-out price. */
   verified: boolean;
+  /** A store's price that our long history does not confirm (see STANDING_CLAIM_SCORE_FACTOR). */
+  standing?: boolean;
 }
 
 /**
- * What an offer's price is compared with. With enough history, only the
- * history counts — whatever the store claims; before that, the store's own
- * crossed-out price (when the market allows showing store claims).
+ * What an offer's price is compared with. With enough history, our history —
+ * and when it does not confirm a discount, the store's own crossed-out price
+ * only if the market keeps store claims (ranked lower). Before that, the
+ * store's price (when the market allows showing store claims).
  */
 function discountBasis(offer: OfferView, market: MarketConfig): DiscountBasis | null {
   const { verdict } = offer;
+  const storeClaim =
+    market.deals.showStoreClaims && offer.listLandedMinor !== null && offer.listPriceMinor
+      ? {
+          usualLandedMinor: offer.listLandedMinor,
+          discountBasisPct: ((offer.listPriceMinor - offer.priceMinor) / offer.listPriceMinor) * 100,
+          verified: false,
+        }
+      : null;
   if (verdict !== null && verdict.historyDays >= market.deals.minHistoryDays) {
-    return offer.usualLandedMinor === null
-      ? null
-      : { usualLandedMinor: offer.usualLandedMinor, discountBasisPct: verdict.realDiscountPct, verified: true };
+    const history =
+      offer.usualLandedMinor === null
+        ? null
+        : { usualLandedMinor: offer.usualLandedMinor, discountBasisPct: verdict.realDiscountPct, verified: true };
+    if (history && history.discountBasisPct >= market.deals.minRealDiscountPct) return history;
+    return market.deals.keepStoreClaims && storeClaim ? { ...storeClaim, standing: true } : history;
   }
-  if (market.deals.showStoreClaims && offer.listLandedMinor !== null && offer.listPriceMinor) {
-    return {
-      usualLandedMinor: offer.listLandedMinor,
-      discountBasisPct: ((offer.listPriceMinor - offer.priceMinor) / offer.listPriceMinor) * 100,
-      verified: false,
-    };
-  }
-  return null;
+  return storeClaim;
 }
 
 function judgeDeal(best: OfferView, nextBest: OfferView | undefined, market: MarketConfig): DealVerdict | null {
@@ -92,7 +105,8 @@ function judgeDeal(best: OfferView, nextBest: OfferView | undefined, market: Mar
     deliveryMaxDays: best.delivery.max,
     isLowest: hasHistory && best.verdict !== null && best.verdict.isLowest,
   };
-  const score = Math.round(scoreDeal(signals) * (hasHistory ? 1 : STORE_CLAIM_SCORE_FACTOR));
+  const factor = hasHistory ? 1 : basis.standing ? STANDING_CLAIM_SCORE_FACTOR : STORE_CLAIM_SCORE_FACTOR;
+  const score = Math.round(scoreDeal(signals) * factor);
 
   return {
     usualLandedMinor,

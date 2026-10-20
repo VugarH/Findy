@@ -2,12 +2,14 @@ import { eq } from "drizzle-orm";
 import { cache } from "react";
 import { db } from "@/db/client";
 import { siteSettings } from "@/db/schema";
+import { toDealRules, type DealRules } from "./deal-rules";
 import { toDisplayOrder, type DisplayOrder } from "./display-order";
 import { toFilterSwitches, type FilterSwitches } from "./filter-switches";
 
 /** Settings stored in site_settings, by key. */
 const FILTERS_KEY = "deal-filters";
 const ORDER_KEY = "display-order";
+const DEAL_RULES_KEY = "deal-rules";
 
 async function read(key: string): Promise<unknown> {
   const [row] = await db.select({ value: siteSettings.value }).from(siteSettings).where(eq(siteSettings.key, key));
@@ -33,4 +35,13 @@ export const getDisplayOrder = cache(async (): Promise<DisplayOrder> => toDispla
 
 export async function saveDisplayOrder(order: DisplayOrder, by: string): Promise<void> {
   await write(ORDER_KEY, toDisplayOrder(order), by);
+}
+
+/** Which discounts count as deals. Not cached per request: loadMarket and scripts read it too. */
+export async function getDealRules(): Promise<DealRules> {
+  return toDealRules(await read(DEAL_RULES_KEY));
+}
+
+export async function saveDealRules(rules: DealRules, by: string): Promise<void> {
+  await write(DEAL_RULES_KEY, toDealRules(rules), by);
 }

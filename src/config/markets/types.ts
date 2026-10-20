@@ -88,6 +88,12 @@ export interface MarketConfig {
      */
     showStoreClaims: boolean;
     /**
+     * Keep listing a store's own discount after `minHistoryDays`, when our
+     * history does not confirm it (marked unverified and ranked lower).
+     * Admins switch it in the panel (Settings → Deal rules), applied by loadMarket.
+     */
+    keepStoreClaims: boolean;
+    /**
      * "Best deals" order: each further deal from the same store counts this
      * share of its score (0.9 → 2nd 90 %, 3rd 81 %…), so one big store cannot
      * fill whole pages. 1 turns the mixing off.

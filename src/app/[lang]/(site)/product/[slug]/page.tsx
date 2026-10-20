@@ -109,7 +109,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
         }
       : null;
 
-  // A recent drop measured by our own checks (Fresh real deals) leads the note.
+  // A recent drop by our own checks (Verified discounts): shown only when there is no verified-discount line.
   const fresh = best ? offerFreshDrop(best, market) : null;
   const freshLine = fresh && (
     <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
@@ -123,7 +123,6 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
     freshLine
   ) : deal?.verified ? (
     <div className="space-y-1">
-      {freshLine}
       <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
         <BadgeCheck className="size-4 shrink-0" aria-hidden />
         {fmt(t.product.verified, { pct: deal.discountPct })} · {fmt(t.deal.save, { amount: money(deal.savingsMinor) })}

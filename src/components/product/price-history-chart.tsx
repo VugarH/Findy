@@ -13,16 +13,24 @@ interface Props {
   usual: { minor: number; label: string } | null;
 }
 
-const HEIGHT = 220;
-const PAD = { top: 16, right: 16, bottom: 28, left: 56 };
+const HEIGHT = 240;
+const PAD = { top: 20, right: 16, bottom: 28, left: 60 };
+const DAY_MS = 86_400_000;
 
-/** Single-series step line: a price holds until the day it changes. */
+const dayNumber = (date: string) => Date.parse(`${date}T00:00:00Z`) / DAY_MS;
+const dayString = (day: number) => new Date(day * DAY_MS).toISOString().slice(0, 10);
+
+/**
+ * Step line on a real date axis: a price holds until the day it changes, and
+ * days without a check keep the last price. Hovering (or dragging a finger)
+ * anywhere shows that day's price; the dots mark the days the price changed.
+ */
 export function PriceHistoryChart({ points, currency, usual }: Props) {
   const usualMinor = usual?.minor ?? null;
   const { t, money, locale } = useI18n();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(640);
-  const [active, setActive] = useState<number | null>(null);
+  const [hoverDay, setHoverDay] = useState<number | null>(null);
   const [showTable, setShowTable] = useState(false);
 
   useEffect(() => {
@@ -33,49 +41,59 @@ export function PriceHistoryChart({ points, currency, usual }: Props) {
     return () => observer.disconnect();
   }, []);
 
-  const dateLabel = useMemo(() => (day: string) => formatDay(day, locale), [locale]);
-
-  const scale = useMemo(() => {
+  const chart = useMemo(() => {
+    const days = points.map((p) => dayNumber(p.date));
+    const first = days[0] ?? 0;
+    const last = days[days.length - 1] ?? 0;
     const values = points.map((p) => p.priceMinor);
     if (usualMinor !== null) values.push(usualMinor);
+    // Room below the lowest price, so a drop reads as a step down rather than the floor of the chart.
     const lo = Math.min(...values);
     const hi = Math.max(...values);
-    const ticks = niceTicks(lo, hi);
+    const ticks = niceTicks(Math.max(0, lo - Math.max((hi - lo) * 0.35, hi * 0.04)), hi);
     const min = ticks[0];
     const max = ticks[ticks.length - 1];
     const innerW = width - PAD.left - PAD.right;
     const innerH = HEIGHT - PAD.top - PAD.bottom;
-    const x = (i: number) => PAD.left + (points.length === 1 ? innerW / 2 : (i / (points.length - 1)) * innerW);
+    const x = (day: number) => PAD.left + (last === first ? innerW / 2 : ((day - first) / (last - first)) * innerW);
     const y = (v: number) => PAD.top + innerH - ((v - min) / (max - min || 1)) * innerH;
-    return { x, y, ticks, innerW };
+    // The price in effect on a day: the latest check on or before it.
+    const priceOn = (day: number) => {
+      let index = 0;
+      for (let i = 0; i < days.length && days[i] <= day; i++) index = i;
+      return points[index].priceMinor;
+    };
+    const changes = points.filter((p, i) => i === 0 || p.priceMinor !== points[i - 1].priceMinor);
+    const lowest = Math.min(...points.map((p) => p.priceMinor));
+    return { days, first, last, ticks, innerW, x, y, priceOn, changes, lowest };
   }, [points, usualMinor, width]);
 
   if (points.length < 2) return null;
 
-  const { x, y, ticks, innerW } = scale;
-  const line = points
-    .map((p, i) => (i === 0 ? `M${x(0)},${y(p.priceMinor)}` : `H${x(i)}V${y(p.priceMinor)}`))
-    .join("");
+  const { first, last, ticks, innerW, x, y, priceOn, changes, lowest } = chart;
   const baseline = HEIGHT - PAD.bottom;
-  const area = `${line}V${baseline}H${x(0)}Z`;
-  const last = points.length - 1;
-  // With two or three points the middle label coincides with an end one.
-  const xLabels = [...new Set([0, Math.floor(last / 2), last])];
+  const line = points
+    .map((p, i) => (i === 0 ? `M${x(chart.days[0])},${y(p.priceMinor)}` : `H${x(chart.days[i])}V${y(p.priceMinor)}`))
+    .join("");
+  const area = `${line}V${baseline}H${x(first)}Z`;
+  const span = last - first;
+  const xLabels = [...new Set([first, Math.round(first + span / 2), last])];
 
-  function onMove(event: React.PointerEvent<SVGSVGElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const ratio = (event.clientX - rect.left - PAD.left) / innerW;
-    setActive(Math.min(last, Math.max(0, Math.round(ratio * last))));
+  function dayAt(clientX: number, rect: DOMRect) {
+    const ratio = (clientX - rect.left - PAD.left) / innerW;
+    return Math.round(first + Math.min(1, Math.max(0, ratio)) * span);
   }
 
-  const shown = active ?? last;
-  const tooltipLeft = Math.min(Math.max(x(shown), 70), width - 70);
+  const shownDay = hoverDay ?? last;
+  const shownPrice = priceOn(shownDay);
+  const previousPrice = hoverDay !== null ? priceOn(shownDay - 1) : null;
+  const tooltipLeft = Math.min(Math.max(x(shownDay), 80), width - 80);
 
   return (
     <div>
       {usual && (
         <p className="mb-2 flex items-center gap-2 text-xs text-muted">
-          <span aria-hidden className="h-px w-5 bg-muted" />
+          <span aria-hidden className="w-5 border-t border-dashed border-muted" />
           {usual.label}
         </p>
       )}
@@ -85,10 +103,19 @@ export function PriceHistoryChart({ points, currency, usual }: Props) {
           height={HEIGHT}
           role="img"
           aria-label={t.product.historyTitle}
-          onPointerMove={onMove}
-          onPointerLeave={() => setActive(null)}
-          className="block touch-pan-y select-none"
+          onPointerMove={(event) => setHoverDay(dayAt(event.clientX, event.currentTarget.getBoundingClientRect()))}
+          onPointerDown={(event) => setHoverDay(dayAt(event.clientX, event.currentTarget.getBoundingClientRect()))}
+          onPointerLeave={() => setHoverDay(null)}
+          className="block cursor-crosshair touch-pan-y select-none"
         >
+          <defs>
+            {/* Fixed to the plot area, so a low stretch still gets a visible fill. */}
+            <linearGradient id="price-area" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1={PAD.top} y2={baseline}>
+              <stop offset="0%" className="[stop-color:var(--chart-line)]" stopOpacity={0.2} />
+              <stop offset="100%" className="[stop-color:var(--chart-line)]" stopOpacity={0.08} />
+            </linearGradient>
+          </defs>
+
           {ticks.map((tick) => (
             <g key={tick}>
               <line x1={PAD.left} x2={width - PAD.right} y1={y(tick)} y2={y(tick)} className="stroke-line" />
@@ -97,37 +124,64 @@ export function PriceHistoryChart({ points, currency, usual }: Props) {
               </text>
             </g>
           ))}
-          {xLabels.map((i) => (
+          {xLabels.map((day) => (
             <text
-              key={i}
-              x={x(i)}
+              key={day}
+              x={x(day)}
               y={HEIGHT - 8}
-              textAnchor={i === 0 ? "start" : i === last ? "end" : "middle"}
+              textAnchor={day === first ? "start" : day === last ? "end" : "middle"}
               className="fill-muted text-[11px]"
             >
-              {dateLabel(points[i].date)}
+              {formatDay(dayString(day), locale)}
             </text>
           ))}
 
-          <path d={area} className="fill-chart-line/10" />
+          <path d={area} fill="url(#price-area)" />
           {usualMinor !== null && (
-            <line x1={PAD.left} x2={width - PAD.right} y1={y(usualMinor)} y2={y(usualMinor)} className="stroke-muted" />
+            <line
+              x1={PAD.left}
+              x2={width - PAD.right}
+              y1={y(usualMinor)}
+              y2={y(usualMinor)}
+              strokeDasharray="4 4"
+              className="stroke-muted"
+            />
           )}
-          <path d={line} fill="none" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" className="stroke-chart-line" />
+          <path d={line} fill="none" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" className="stroke-chart-line" />
 
-          {active !== null && (
-            <line x1={x(active)} x2={x(active)} y1={PAD.top} y2={baseline} className="stroke-muted" />
+          {/* The days the price changed; the lowest price in deal colour. */}
+          {changes.map((p) => (
+            <circle
+              key={p.date}
+              cx={x(dayNumber(p.date))}
+              cy={y(p.priceMinor)}
+              r={3.5}
+              strokeWidth={2}
+              className={p.priceMinor === lowest ? "fill-deal stroke-surface" : "fill-chart-line stroke-surface"}
+            />
+          ))}
+
+          {hoverDay !== null && (
+            <line x1={x(shownDay)} x2={x(shownDay)} y1={PAD.top} y2={baseline} strokeDasharray="3 3" className="stroke-muted" />
           )}
-          <circle cx={x(shown)} cy={y(points[shown].priceMinor)} r={5} strokeWidth={2} className="fill-chart-line stroke-surface" />
+          <circle cx={x(shownDay)} cy={y(shownPrice)} r={6} strokeWidth={2.5} className="fill-chart-line stroke-surface" />
         </svg>
 
         <div
-          aria-hidden={active === null}
-          className="pointer-events-none absolute top-0 -translate-x-1/2 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-center shadow-card transition-opacity"
-          style={{ left: tooltipLeft, opacity: active === null ? 0 : 1 }}
+          aria-hidden={hoverDay === null}
+          className="pointer-events-none absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-lg border border-line bg-surface px-3 py-1.5 text-center shadow-card transition-opacity duration-150"
+          style={{ left: tooltipLeft, opacity: hoverDay === null ? 0 : 1 }}
         >
-          <p className="text-sm font-bold text-ink">{money(points[shown].priceMinor, currency)}</p>
-          <p className="text-[11px] text-muted">{dateLabel(points[shown].date)}</p>
+          <p className="text-sm font-bold tabular-nums text-ink">
+            {money(shownPrice, currency)}
+            {previousPrice !== null && previousPrice !== shownPrice && (
+              <span className={shownPrice < previousPrice ? "ml-1.5 text-xs text-brand-strong" : "ml-1.5 text-xs text-deal"}>
+                {shownPrice < previousPrice ? "↓" : "↑"}
+                {Math.abs(Math.round(((shownPrice - previousPrice) / previousPrice) * 100))}%
+              </span>
+            )}
+          </p>
+          <p className="text-[11px] text-muted">{formatDay(dayString(shownDay), locale, "long")}</p>
         </div>
       </div>
 
@@ -151,7 +205,7 @@ export function PriceHistoryChart({ points, currency, usual }: Props) {
             <tbody>
               {[...points].reverse().map((point) => (
                 <tr key={point.date} className="border-t border-line">
-                  <td className="px-3 py-1.5">{dateLabel(point.date)}</td>
+                  <td className="px-3 py-1.5">{formatDay(point.date, locale)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{money(point.priceMinor, currency)}</td>
                 </tr>
               ))}

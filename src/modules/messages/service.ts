@@ -248,17 +248,28 @@ export async function countUnreadForAdmins(): Promise<number> {
 export const ADMIN_CONVERSATIONS_PAGE_SIZE = 30;
 
 export interface AdminConversationRow extends ConversationSummary {
+  /** A new request, or the person wrote after our last reply. */
+  needsReply: boolean;
   customer: { id: string; name: string; email: string };
   contactPhone: string | null;
 }
 
-/** For the admin inbox: unread first, then the most recent. */
+/**
+ * What waits for the team: a new request, or an open conversation where the
+ * person wrote after our last reply (read or not).
+ */
+const needsReply = sql`(${conversations.status} = 'waiting' or (${conversations.status} = 'open' and ${conversations.lastUserMessageAt} > coalesce(${conversations.lastAdminMessageAt}, 'epoch'::timestamptz)))`;
+
+/**
+ * For the admin inbox: unread first, then the most recent. The "waiting" tab
+ * is everything that needs a reply (see needsReply), not only new requests.
+ */
 export async function listAdminConversations(
   status: ConversationStatus | undefined,
   page: number,
 ): Promise<{ rows: AdminConversationRow[]; total: number; byStatus: Record<ConversationStatus, number> }> {
-  const where: SQL | undefined = status ? eq(conversations.status, status) : undefined;
-  const [rows, [{ total }], counts] = await Promise.all([
+  const where: SQL | undefined = status === "waiting" ? needsReply : status ? eq(conversations.status, status) : undefined;
+  const [rows, [{ total }], counts, [waiting]] = await Promise.all([
     db
       .select({ conversation: conversations, name: users.fullName, email: users.email })
       .from(conversations)
@@ -269,10 +280,12 @@ export async function listAdminConversations(
       .offset((page - 1) * ADMIN_CONVERSATIONS_PAGE_SIZE),
     db.select({ total: count() }).from(conversations).where(where),
     db.select({ status: conversations.status, total: count() }).from(conversations).groupBy(conversations.status),
+    db.select({ total: count() }).from(conversations).where(needsReply),
   ]);
   const last = await previews(rows.map((row) => row.conversation.id));
   const byStatus: Record<ConversationStatus, number> = { waiting: 0, open: 0, closed: 0 };
   for (const row of counts) byStatus[row.status] = row.total;
+  byStatus.waiting = waiting.total;
 
   return {
     rows: rows.map(({ conversation, name, email }) => ({
@@ -282,6 +295,9 @@ export async function listAdminConversations(
       lastMessageAt: conversation.lastMessageAt,
       preview: last.get(conversation.id) ?? null,
       unread: isUnread(conversation.lastUserMessageAt, conversation.adminReadAt),
+      needsReply:
+        conversation.status === "waiting" ||
+        (conversation.status === "open" && isUnread(conversation.lastUserMessageAt, conversation.lastAdminMessageAt)),
       customer: { id: conversation.userId, name, email },
       contactPhone: conversation.contactPhone,
     })),

@@ -82,7 +82,11 @@ export default async function AdminMessagesPage({ searchParams }: PageProps<"/[l
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-1">
                     {row.unread && <Badge tone="bad">{m.unread}</Badge>}
-                    {row.status !== "open" && <Badge tone={row.status === "waiting" ? "info" : "neutral"}>{m.status[row.status]}</Badge>}
+                    {row.needsReply ? (
+                      <Badge tone="info">{m.status.waiting}</Badge>
+                    ) : (
+                      row.status === "closed" && <Badge>{m.status.closed}</Badge>
+                    )}
                   </span>
                 </Link>
               </li>

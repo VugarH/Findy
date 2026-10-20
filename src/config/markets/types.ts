@@ -97,5 +97,12 @@ export interface MarketConfig {
     staleAfterHours: number;
     /** How many popular user searches the daily job refreshes. */
     refreshTopSearches: number;
+    /**
+     * "Fresh real deals" (modules/deals/fresh-drop.ts): store-discounted items
+     * at least `minDropPct` cheaper than the highest price we recorded in the
+     * `windowDays` before (or the last check within `lookbackDays`). At most
+     * `limit` are shown.
+     */
+    freshDrop: { windowDays: number; lookbackDays: number; minDropPct: number; limit: number };
   };
 }

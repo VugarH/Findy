@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, inArray, max } from "drizzle-orm";
 import { db } from "@/db/client";
-import { deals, offers } from "@/db/schema";
+import { deals, freshDeals, offers } from "@/db/schema";
 import { classifyProducts } from "@/modules/catalog/classify";
 import { loadMarket } from "@/modules/pricing/fx";
 import { buildDeals } from "./build";
@@ -33,19 +33,14 @@ export async function lastPublishedAt(): Promise<Date | null> {
 export async function withdrawProductDeals(productIds: string[]): Promise<void> {
   if (productIds.length === 0) return;
   await db.delete(deals).where(inArray(deals.productId, productIds));
+  await db.delete(freshDeals).where(inArray(freshDeals.productId, productIds));
 }
 
 /** Takes a store's offers off the deal pages right away. Its products may return with another store's offer after publishDeals. */
 export async function withdrawSupplierDeals(supplierId: string): Promise<void> {
-  await db.delete(deals).where(
-    inArray(
-      deals.offerId,
-      db
-        .select({ id: offers.id })
-        .from(offers)
-        .where(eq(offers.supplierId, supplierId)),
-    ),
-  );
+  const storeOffers = db.select({ id: offers.id }).from(offers).where(eq(offers.supplierId, supplierId));
+  await db.delete(deals).where(inArray(deals.offerId, storeOffers));
+  await db.delete(freshDeals).where(inArray(freshDeals.offerId, storeOffers));
 }
 
 /** Copies a product's new placement to its published deal, so filters and category pages agree at once. */
@@ -55,4 +50,7 @@ export async function patchProductDeals(
 ): Promise<void> {
   if (productIds.length === 0 || Object.keys(placement).length === 0) return;
   await db.update(deals).set(placement).where(inArray(deals.productId, productIds));
+  if (placement.categorySlug) {
+    await db.update(freshDeals).set({ categorySlug: placement.categorySlug }).where(inArray(freshDeals.productId, productIds));
+  }
 }

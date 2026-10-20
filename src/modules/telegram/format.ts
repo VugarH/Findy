@@ -27,7 +27,7 @@ export function shorten(text: string, max: number): string {
 export interface MessageContext {
   t: Dictionary;
   money: (amountMinor: number) => string;
-  /** Absolute URL of a site path in the message's language: "/top" → "https://serfeli.az/az/top". */
+  /** Absolute URL of a site path in the message's language: "/top" → "https://findy.az/az/top". */
   url: (path: string) => string;
 }
 

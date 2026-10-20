@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
  */
 
 /** Crawlers, link previews, scripts and our own store reader. */
-const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|headless|lighthouse|pagespeed|python|curl|wget|httpclient|axios|node-fetch|go-http|java\/|serfeli/i;
+const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|headless|lighthouse|pagespeed|python|curl|wget|httpclient|axios|node-fetch|go-http|java\/|serfeli|findy/i;
 
 export function isBot(userAgent: string | null | undefined): boolean {
   return !userAgent || BOT.test(userAgent);

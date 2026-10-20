@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Store, TrendingDown, Truck } from "lucide-react";
+import { BadgeCheck, Store, TrendingDown, Truck } from "lucide-react";
 import type { ProductCardData } from "@/modules/catalog/card";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { fmt } from "@/i18n/format";
@@ -27,13 +27,25 @@ export interface CardNote {
 }
 
 export function ProductCard({
-  card,
+  card: listed,
   note,
   compact = false,
+  freshFocus = false,
   t,
   money,
   href,
-}: { card: ProductCardData; note?: CardNote | null; compact?: boolean } & CardLabels) {
+}: {
+  card: ProductCardData;
+  note?: CardNote | null;
+  compact?: boolean;
+  /** On "Fresh real deals" lists: the badge and crossed-out price are our measured drop. */
+  freshFocus?: boolean;
+} & CardLabels) {
+  const fresh = listed.fresh ?? null;
+  const card =
+    freshFocus && fresh
+      ? { ...listed, discountPct: fresh.dropPct, usualLandedMinor: fresh.fromLandedMinor, verified: true }
+      : listed;
   const isDeal = card.discountPct !== null && card.usualLandedMinor !== null;
   const lowest = card.badges.includes("lowest_price");
   // Sold locally and abroad: say so, and show both prices instead of only the cheaper one.
@@ -129,8 +141,18 @@ export function ProductCard({
           </p>
         )}
 
-        {isDeal && !card.verified && (
-          <p className={cn("text-muted", "text-xs")}>{t.deal.storeClaim}</p>
+        {fresh ? (
+          <div className="space-y-0.5 text-xs">
+            <p className="flex items-center gap-1.5 font-semibold text-brand-strong">
+              <BadgeCheck className="size-3.5 shrink-0" aria-hidden />
+              {fmt(t.fresh.cardDrop, { pct: fresh.dropPct, days: fresh.windowDays })}
+            </p>
+            {freshFocus && fresh.storeDiscountPct > 0 && (
+              <p className="text-muted">{fmt(t.fresh.storeDiscount, { pct: fresh.storeDiscountPct })}</p>
+            )}
+          </div>
+        ) : (
+          isDeal && !card.verified && <p className={cn("text-muted", "text-xs")}>{t.deal.storeClaim}</p>
         )}
 
         {lowest && (

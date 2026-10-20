@@ -9,7 +9,7 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
     <html lang="az">
       <body style={{ fontFamily: "system-ui, sans-serif", display: "grid", placeItems: "center", minHeight: "100vh", margin: 0, padding: 16, textAlign: "center" }}>
         <main style={{ maxWidth: 420 }}>
-          <title>Sərfəli</title>
+          <title>Findy</title>
           <h1 style={{ fontSize: 22 }}>Nəsə alınmadı · Something went wrong · Что-то пошло не так</h1>
           <p style={{ color: "#666" }}>Yenidən cəhd edin. · Please try again. · Попробуйте ещё раз.</p>
           <p style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>

@@ -6,7 +6,7 @@ import { digestPost, dropAlertMessage, newDealsMessage, escapeHtml, flag, MESSAG
 const ctx: MessageContext = {
   t: en,
   money: (minor) => `${(minor / 100).toFixed(2)} ₼`,
-  url: (path) => `https://serfeli.az/en${path}`,
+  url: (path) => `https://findy.az/en${path}`,
 };
 
 const item = (overrides: Partial<DigestItem> = {}): DigestItem => ({
@@ -49,12 +49,12 @@ describe("digestPost", () => {
   it("lists each deal with its link, price, old price, discount and store", () => {
     const post = digestPost([item(), item({ productId: "p2", slug: "b", title: "<Bag>", verified: false })], day, ctx);
     expect(post.html).toContain("Today's top 2 deals");
-    expect(post.html).toContain('1. <a href="https://serfeli.az/en/product/nike-pegasus">Nike Air Zoom Pegasus 41</a>');
+    expect(post.html).toContain('1. <a href="https://findy.az/en/product/nike-pegasus">Nike Air Zoom Pegasus 41</a>');
     expect(post.html).toContain("<b>129.00 ₼</b> <s>189.00 ₼</s> · −32% · 🇹🇷 Nike TR");
     expect(post.html).toContain("&lt;Bag&gt;");
     expect(post.html).toContain("−32% (store's discount)");
     expect(post.previewUrl).toBe("https://cdn.example.com/pegasus.jpg");
-    expect(post.button.url).toBe("https://serfeli.az/en/top?day=2026-10-06");
+    expect(post.button.url).toBe("https://findy.az/en/top?day=2026-10-06");
   });
 
   it("always fits in one message", () => {
@@ -70,7 +70,7 @@ describe("dropAlertMessage", () => {
     const html = dropAlertMessage([drop], ctx);
     expect(html).toContain("<b>Price dropped 20%</b>");
     expect(html).toContain("Dropped 20%: now 120.00 ₼ at Nike TR, was 150.00 ₼.");
-    expect(html).toContain('<a href="https://serfeli.az/en/alerts">Your price alerts</a>');
+    expect(html).toContain('<a href="https://findy.az/en/alerts">Your price alerts</a>');
   });
 
   it("groups many drops into one message and points to the site for the rest", () => {
@@ -97,9 +97,9 @@ describe("newDealsMessage", () => {
       ctx,
     );
     expect(html).toContain("New deals from what you follow");
-    expect(html).toContain("<b>adidas</b>\n• <a href=\"https://serfeli.az/en/product/tee\">Adibreak Tee</a>");
+    expect(html).toContain("<b>adidas</b>\n• <a href=\"https://findy.az/en/product/tee\">Adibreak Tee</a>");
     expect(html).toContain("<b>38.28 ₼</b> <s>71.47 ₼</s> · −46% · Sneaks Up");
     expect(html).toContain("<b>Shoes &amp; &lt;more&gt;</b>");
-    expect(html).toContain('href="https://serfeli.az/en/alerts#follows"');
+    expect(html).toContain('href="https://findy.az/en/alerts#follows"');
   });
 });

@@ -6,13 +6,14 @@ import { BadgeCheck, ChevronRight, Info, Search, TrendingDown } from "lucide-rea
 import type { CategorySlug } from "@/config/categories";
 import { isSubcategoryOf } from "@/config/subcategories";
 import { siteConfig } from "@/config/site";
-import { fmt } from "@/i18n/format";
+import { fmt, formatDay } from "@/i18n/format";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { toMinor } from "@/lib/money";
 import { findMergeTargetSlug } from "@/modules/catalog/merge";
 import { historyInMarketCurrency, toMarketCurrency } from "@/modules/catalog/offer-view";
 import { getProductDetail } from "@/modules/catalog/queries";
+import { offerFreshDrop } from "@/modules/deals/fresh-drop";
 import { sameBrand } from "@/modules/catalog/normalizers/fashion";
 import { WatchButton } from "@/components/alerts/watch-button";
 import { FollowButton } from "@/components/follows/follow-button";
@@ -107,9 +108,21 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
         }
       : null;
 
+  // A recent drop measured by our own checks (Fresh real deals) leads the note.
+  const fresh = best ? offerFreshDrop(best, market) : null;
+  const freshLine = fresh && (
+    <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
+      <BadgeCheck className="size-4 shrink-0" aria-hidden />
+      {fmt(t.fresh.productNote, { pct: fresh.dropPct, date: formatDay(fresh.fromOn, locale, "long") })}
+    </p>
+  );
+
   // One short line under the price; the longer explanation sits with the price history.
-  const dealNote = !best ? null : deal?.verified ? (
+  const dealNote = !best ? null : fresh && !deal?.verified ? (
+    freshLine
+  ) : deal?.verified ? (
     <div className="space-y-1">
+      {freshLine}
       <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
         <BadgeCheck className="size-4 shrink-0" aria-hidden />
         {fmt(t.product.verified, { pct: deal.discountPct })} · {fmt(t.deal.save, { amount: money(deal.savingsMinor) })}

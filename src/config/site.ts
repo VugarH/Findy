@@ -1,10 +1,12 @@
 /**
- * Brand-level settings. The name is a working title ("sərfəli" = "good value"
- * in Azerbaijani) — change it here and it updates everywhere.
+ * Brand-level settings. Change the name here and it updates everywhere.
+ * (Browser storage keys and the analytics salt still say "serfeli", the old
+ * working title: renaming them would empty carts and reset visitor counts.)
  */
 export const siteConfig = {
-  name: "Sərfəli",
-  domain: "serfeli.az",
+  name: "Findy",
+  /** Only a fallback: production sets SITE_URL. */
+  domain: "findy.az",
   /**
    * Sample stores and prices instead of the real ones — only when switched on
    * explicitly, so a deployment or a scheduled job that lacks the setting

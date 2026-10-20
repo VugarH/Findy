@@ -9,7 +9,7 @@ self.addEventListener("push", (event) => {
     // A push without a readable payload still deserves a generic notice.
   }
   event.waitUntil(
-    self.registration.showNotification(message.title || "Sərfəli", {
+    self.registration.showNotification(message.title || "Findy", {
       body: message.body || "",
       icon: "/favicon.ico",
       data: { url: message.url || "/" },

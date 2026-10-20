@@ -10,7 +10,7 @@ Ground rules we follow for every store:
 - Read `robots.txt` first and stay inside it. Never call endpoints it disallows.
 - Never work around bot protection (Cloudflare challenges, CAPTCHAs). A blocked store needs a
   partnership or a feed, not a workaround.
-- Identify ourselves honestly (`SerfeliBot`, plus `BOT_CONTACT` from `.env`), one request at a
+- Identify ourselves honestly (`FindyBot`, plus `BOT_CONTACT` from `.env`), one request at a
   time per store, with a delay and a per-run request cap.
 - Prefer an official API or affiliate feed whenever one exists.
 

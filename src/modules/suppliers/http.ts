@@ -7,7 +7,7 @@ import { gunzipSync } from "node:zlib";
  * that says no is recorded as failed.
  */
 const CONTACT = process.env.BOT_CONTACT?.trim();
-export const BOT_USER_AGENT = `SerfeliBot/0.1 (price comparison${CONTACT ? `; ${CONTACT}` : ""})`;
+export const BOT_USER_AGENT = `FindyBot/0.1 (price comparison${CONTACT ? `; ${CONTACT}` : ""})`;
 
 const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_RETRY_AFTER_MS = 90_000;

@@ -1,8 +1,7 @@
-# Sərfəli
+# Findy
 
 Verified discounts and the true landed price (item + delivery + customs + fees) from local and
-global stores. First market: Azerbaijan. "Sərfəli" is a working name — change it in
-`src/config/site.ts`.
+global stores. First market: Azerbaijan. The name lives in `src/config/site.ts`.
 
 > Real prices come from the stores listed in `docs/SUPPLIERS.md`: two Azerbaijani stores
 > (smartphones) and about 90 official brand stores and retailers abroad. Set `NEXT_PUBLIC_DEMO_DATA=true` to run on fictional stores instead.

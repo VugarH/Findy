@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame, MessageCircle, Shield, User } from "lucide-react";
+import { BadgeCheck, Flame, MessageCircle, Shield, User } from "lucide-react";
 import { Suspense } from "react";
 import { siteConfig } from "@/config/site";
 import { orderedCategories } from "@/modules/settings/display-order";
@@ -110,12 +110,12 @@ export async function Header() {
             {t.nav.deals}
           </Link>
           <Link
-            href={href("/top")}
+            href={href("/fresh")}
             className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-ink hover:bg-surface-2"
           >
-            <Flame className="size-4 text-deal" aria-hidden />
-            <span className="hidden sm:inline">{t.top.nav}</span>
-            <span className="sm:hidden">{t.top.short}</span>
+            <BadgeCheck className="size-4 text-brand" aria-hidden />
+            <span className="hidden sm:inline">{t.fresh.nav}</span>
+            <span className="sm:hidden">{t.fresh.short}</span>
           </Link>
           <CategorySlider
             items={categories.map((category) => ({
@@ -126,16 +126,18 @@ export async function Header() {
             labels={{ previous: t.nav.scrollBack, next: t.nav.scrollMore }}
           />
           <Link
+            href={href("/top")}
+            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-ink hover:bg-surface-2"
+          >
+            <Flame className="size-4 text-deal" aria-hidden />
+            <span className="hidden sm:inline">{t.top.nav}</span>
+            <span className="sm:hidden">{t.top.short}</span>
+          </Link>
+          <Link
             href={href("/ordering-abroad")}
             className="hidden shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-ink lg:block"
           >
             {t.order.navHelp}
-          </Link>
-          <Link
-            href={href("/stores")}
-            className="hidden shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-ink lg:block"
-          >
-            {t.nav.stores}
           </Link>
         </nav>
       </Container>

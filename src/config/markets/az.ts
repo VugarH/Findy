@@ -57,5 +57,6 @@ export const azMarket: MarketConfig = {
     storeRepeatFactor: 0.9,
     staleAfterHours: 48,
     refreshTopSearches: 20,
+    freshDrop: { windowDays: 3, lookbackDays: 10, minDropPct: 5, limit: 100 },
   },
 };

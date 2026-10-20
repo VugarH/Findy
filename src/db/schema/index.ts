@@ -237,6 +237,41 @@ export const deals = pgTable(
   ],
 );
 
+/**
+ * "Fresh real deals": store-discounted products whose price, by our own checks,
+ * fell in the last few days (modules/deals/fresh-drop.ts). Rebuilt with deals.
+ * A product here need not be in `deals`: the drop is measured against recent
+ * prices, not the usual one.
+ */
+export const freshDeals = pgTable(
+  "fresh_deals",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    marketCode: text("market_code").notNull(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    offerId: uuid("offer_id")
+      .notNull()
+      .references(() => offers.id, { onDelete: "cascade" }),
+    categorySlug: text("category_slug").notNull(),
+    /** Whole percent, against the price compared with. */
+    dropPct: integer("drop_pct").notNull(),
+    /** Landed total at the price compared with, in the market currency. */
+    fromLandedMinor: integer("from_landed_minor").notNull(),
+    /** The day we recorded that price. */
+    fromOn: date("from_on", { mode: "string" }).notNull(),
+    storeDiscountPct: integer("store_discount_pct").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("fresh_deals_market_product_idx").on(t.marketCode, t.productId),
+    index("fresh_deals_market_drop_idx").on(t.marketCode, t.dropPct),
+  ],
+);
+
+export type FreshDeal = typeof freshDeals.$inferSelect;
+
 export interface SupplierRunStat {
   supplierId: string;
   ok: boolean;

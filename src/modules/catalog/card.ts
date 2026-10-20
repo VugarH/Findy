@@ -39,6 +39,19 @@ export interface ProductCardData {
   bestGlobalLandedMinor: number | null;
   /** Sizes in stock at the best offer's store (sizeKey form); null when it lists none. */
   sizes: string[] | null;
+  /** A recent price drop measured by our own checks (modules/deals/fresh-drop.ts); absent when none. */
+  fresh?: CardFresh | null;
+}
+
+export interface CardFresh {
+  dropPct: number;
+  /** Landed total at the price we compared with. */
+  fromLandedMinor: number;
+  /** The day we recorded that price (YYYY-MM-DD). */
+  fromOn: string;
+  storeDiscountPct: number;
+  /** The days the drop is measured over (market.deals.freshDrop.windowDays), for "−20% in 3 days". */
+  windowDays: number;
 }
 
 export function toCard(product: Product, summary: ProductSummary): ProductCardData {

@@ -10,7 +10,7 @@ describe("parseCommand", () => {
   });
 
   it("reads commands addressed to the bot by name, without a payload", () => {
-    expect(parseCommand("/stop@SerfeliBot")).toEqual({ command: "stop", payload: "" });
+    expect(parseCommand("/stop@FindyBot")).toEqual({ command: "stop", payload: "" });
     expect(parseCommand("  /HELP ")).toEqual({ command: "help", payload: "" });
   });
 

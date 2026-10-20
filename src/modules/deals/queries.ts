@@ -1,12 +1,12 @@
 import { usableImage } from "@/config/images";
 import { and, arrayOverlaps, asc, count, desc, eq, gte, inArray, lte, max, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
-import { deals, offers, pipelineRuns, products, suppliers } from "@/db/schema";
+import { deals, freshDeals, offers, pipelineRuns, products, suppliers } from "@/db/schema";
 import type { Audience } from "@/config/audience";
 import { isSizedCategory, type CategorySlug } from "@/config/categories";
 import type { MarketConfig } from "@/config/markets";
 import type { SubcategorySlug } from "@/config/subcategories";
-import type { ProductCardData } from "@/modules/catalog/card";
+import type { CardFresh, ProductCardData } from "@/modules/catalog/card";
 import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { sortSizes } from "@/modules/suppliers/sizes";
 import { holdBack, holdBackFor } from "./hold-back";
@@ -139,6 +139,7 @@ export async function listDeals(
       .where(where),
   ]);
 
+  const fresh = await freshDropsOf(market, rows.map((row) => row.product.id));
   const items = rows.map(
     ({ deal, product, supplierId, supplierName }): ProductCardData => ({
       productId: product.id,
@@ -166,10 +167,28 @@ export async function listDeals(
       bestLocalLandedMinor: deal.bestLocalLandedMinor,
       bestGlobalLandedMinor: deal.bestGlobalLandedMinor,
       sizes: deal.sizes,
+      fresh: fresh.get(product.id) ?? null,
     }),
   );
 
   return { items, total };
+}
+
+/** The fresh price drops (fresh_deals) of these products, by product id. */
+export async function freshDropsOf(market: MarketConfig, productIds: string[]): Promise<Map<string, CardFresh>> {
+  if (productIds.length === 0) return new Map();
+  const rows = await db
+    .select({
+      productId: freshDeals.productId,
+      dropPct: freshDeals.dropPct,
+      fromLandedMinor: freshDeals.fromLandedMinor,
+      fromOn: freshDeals.fromOn,
+      storeDiscountPct: freshDeals.storeDiscountPct,
+    })
+    .from(freshDeals)
+    .where(and(eq(freshDeals.marketCode, market.code), inArray(freshDeals.productId, productIds)));
+  const windowDays = market.deals.freshDrop.windowDays;
+  return new Map(rows.map(({ productId, ...drop }) => [productId, { ...drop, windowDays }]));
 }
 
 export interface DealFacets {

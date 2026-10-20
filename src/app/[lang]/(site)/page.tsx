@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, Calculator, Flame, Handshake, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowRight, BadgeCheck, Calculator, Flame, Handshake, RefreshCw, ShieldCheck } from "lucide-react";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
 import { getPopularCoverage } from "@/modules/catalog/popular";
+import { countFreshDeals, listFreshDeals } from "@/modules/deals/fresh";
 import { getDealStats, listDeals } from "@/modules/deals/queries";
 import { FeaturedDeal } from "@/components/deals/featured-deal";
 import { ProductGrid } from "@/components/deals/product-grid";
@@ -17,15 +18,20 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { orderedCategories } from "@/modules/settings/display-order";
 import { getDisplayOrder } from "@/modules/settings/service";
 
+/** Fresh real deals shown on the home page; the rest are on /fresh. */
+const FRESH_ON_HOME = 8;
+
 export default async function HomePage() {
   const { t, money, href, market, locale } = await getI18n();
 
-  const [stats, top, lowest, popular, order] = await Promise.all([
+  const [stats, top, lowest, popular, order, fresh, freshCount] = await Promise.all([
     getDealStats(market),
     listDeals(market, { sort: "best", limit: 9 }),
     listDeals(market, { badge: "lowest_price", sort: "discount", limit: 4 }),
     getPopularCoverage(market),
     getDisplayOrder(),
+    listFreshDeals(market, { limit: FRESH_ON_HOME }),
+    countFreshDeals(market),
   ]);
   // Families sold by several stores come first: those are the ones worth comparing.
   const popularTiles = [...popular].sort((a, b) => b.stores.length - a.stores.length).slice(0, 12);
@@ -109,6 +115,29 @@ export default async function HomePage() {
       </section>
 
       <Container className="space-y-14 py-12">
+        {/* Right after the hero: prices our own checks saw fall, the site's strongest promise. */}
+        {fresh.length > 0 && (
+          <section className="rounded-3xl border border-brand/25 p-5 shadow-card md:p-7" style={{ background: "radial-gradient(60% 50% at 0% 0%, var(--brand-soft), transparent 70%), var(--surface)" }}>
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+              <div className="max-w-2xl">
+                <p className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand-strong">
+                  <BadgeCheck className="size-3.5" aria-hidden />
+                  {t.fresh.badge}
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight">{t.fresh.title}</h2>
+                <p className="mt-1 text-sm text-muted">{fmt(t.fresh.homeHint, { days: market.deals.freshDrop.windowDays })}</p>
+              </div>
+            </div>
+            <ProductGrid cards={fresh} t={t} money={money} href={href} freshFocus />
+            <div className="mt-6 flex justify-center">
+              <ButtonLink href={href("/fresh")} size="lg" className="w-full sm:w-auto">
+                {fmt(t.fresh.seeAll, { count: freshCount.total })}
+                <ArrowRight className="size-5" aria-hidden />
+              </ButtonLink>
+            </div>
+          </section>
+        )}
+
         <section>
           <SectionHeading title={t.home.categoriesTitle} />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

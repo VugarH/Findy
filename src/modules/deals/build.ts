@@ -1,16 +1,17 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { deals } from "@/db/schema";
+import { deals, freshDeals } from "@/db/schema";
 import type { MarketConfig } from "@/config/markets";
 import { loadProductsWithOffers } from "@/modules/catalog/offer-view";
 import { usableImage } from "@/config/images";
 import { summarizeProduct } from "@/modules/catalog/summary";
 import { inStockSizeKeys } from "@/modules/suppliers/sizes";
+import { offerFreshDrop } from "./fresh-drop";
 
 const INSERT_BATCH = 1000;
 
 /**
- * Rebuilds the published deal catalog for a market from current offers.
+ * Rebuilds the published deal catalog (and the fresh real deals) for a market from current offers.
  * The swap happens in one transaction, so the site never shows a half-built list.
  */
 export async function buildDeals(market: MarketConfig, runId: string, now: Date): Promise<number> {
@@ -22,10 +23,25 @@ export async function buildDeals(market: MarketConfig, runId: string, now: Date)
     .where(eq(deals.marketCode, market.code));
   const since = new Map(previous.map((row) => [row.productId, row.dealSince]));
 
+  const freshRows: (typeof freshDeals.$inferInsert)[] = [];
   const rows = entries.flatMap((entry) => {
     // No usable photo, no deal card: a grey box looks like a broken site.
     if (!usableImage(entry.product.imageUrl)) return [];
     const summary = summarizeProduct(entry, market);
+    const fresh = summary && offerFreshDrop(summary.best, market);
+    if (summary && fresh) {
+      freshRows.push({
+        marketCode: market.code,
+        productId: entry.product.id,
+        offerId: summary.best.offerId,
+        categorySlug: entry.product.categorySlug,
+        dropPct: fresh.dropPct,
+        fromLandedMinor: fresh.fromLandedMinor,
+        fromOn: fresh.fromOn,
+        storeDiscountPct: fresh.storeDiscountPct,
+        createdAt: now,
+      });
+    }
     if (!summary?.deal) return [];
     const { best, deal } = summary;
     return [
@@ -65,6 +81,10 @@ export async function buildDeals(market: MarketConfig, runId: string, now: Date)
     // In batches: PostgreSQL allows at most 65,535 parameters per statement.
     for (let i = 0; i < rows.length; i += INSERT_BATCH) {
       await tx.insert(deals).values(rows.slice(i, i + INSERT_BATCH));
+    }
+    await tx.delete(freshDeals).where(eq(freshDeals.marketCode, market.code));
+    for (let i = 0; i < freshRows.length; i += INSERT_BATCH) {
+      await tx.insert(freshDeals).values(freshRows.slice(i, i + INSERT_BATCH));
     }
   });
 

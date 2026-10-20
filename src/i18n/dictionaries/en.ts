@@ -54,6 +54,8 @@ const en = {
     tooShort: "Type at least 2 characters.",
   },
   home: {
+    browseAll: "Browse all {count} deals",
+    seeAllDeals: "See all {count} deals",
     popularTitle: "Popular in Azerbaijan",
     popularHint: "The models people look for most, compared across stores.",
     popularFrom: "from {price}",

@@ -14,6 +14,7 @@ import {
   readStructuredProduct,
   type ListPriceSource,
   type SitemapEntry,
+  type StructuredProduct,
 } from "./parse";
 
 /**
@@ -51,6 +52,8 @@ export interface StructuredDataStore {
   listPrice?: ListPriceSource;
   /** Product pages read per run (one request each). */
   productsPerRun?: number;
+  /** For a store without schema.org data: reads its pages its own way (see ./readers). */
+  readProduct?: (html: string) => StructuredProduct | null;
 }
 
 const DELAY_MS = 1500;
@@ -164,7 +167,7 @@ async function listProductPages(client: PoliteClient, store: StructuredDataStore
 }
 
 export function toRawOffer(html: string, url: string, store: StructuredDataStore): RawOffer | null {
-  const product = readStructuredProduct(html);
+  const product = (store.readProduct ?? readStructuredProduct)(html);
   if (!product || (product.currency && product.currency !== store.currency)) return null;
 
   const path = new URL(url).pathname;
@@ -178,7 +181,7 @@ export function toRawOffer(html: string, url: string, store: StructuredDataStore
   const brand = store.brandFromTitle
     ? (detectBrand(product.name) ?? product.brand ?? undefined)
     : (store.brand ?? detectBrand(statedBrand ?? "") ?? statedBrand ?? detectBrand(product.name) ?? undefined);
-  const listPrice = readListPrice(html, product.price, store.listPrice);
+  const listPrice = product.listPrice !== undefined ? product.listPrice : readListPrice(html, product.price, store.listPrice);
   // Electronics match other stores by brand + model ("Apple iPhone 17 Pro 256GB"), as everywhere else.
   const parsed =
     category === "electronics"

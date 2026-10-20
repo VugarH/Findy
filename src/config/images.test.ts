@@ -8,4 +8,9 @@ describe("usableImage", () => {
     expect(usableImage("not a url")).toBeNull();
     expect(usableImage("https://cdn.shopify.com/a.jpg")).toBe("https://cdn.shopify.com/a.jpg");
   });
+
+  it("drops WitCDN photos served from a store's own subdomain too", () => {
+    expect(usableImage("https://witcdn.dermoeczanem.com/a.jpg")).toBeNull();
+    expect(usableImage("https://cdn.example.com/witcdn.jpg")).toBe("https://cdn.example.com/witcdn.jpg");
+  });
 });

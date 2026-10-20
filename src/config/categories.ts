@@ -41,6 +41,15 @@ export const isSizedCategory = (slug: CategorySlug | undefined): boolean =>
  */
 export const AUDIENCE_CATEGORIES: readonly CategorySlug[] = ["fashion", "shoes"];
 
+/**
+ * Types held back on a category's first page while nothing else is chosen
+ * (no filter, default order): Clothing opens with clothes, and underwear and
+ * socks start after the first 100 deals. Any filter shows everything as usual.
+ */
+export const HELD_BACK_UNFILTERED: Partial<Record<CategorySlug, { subcategory: string; after: number }>> = {
+  fashion: { subcategory: "underwear-socks", after: 100 },
+};
+
 export const hasAudienceFilter = (slug: CategorySlug | undefined): boolean =>
   slug !== undefined && AUDIENCE_CATEGORIES.includes(slug);
 

@@ -9,6 +9,8 @@ const HOTLINK_PROTECTED_HOSTS = [
   // Fakir (fakir.com.tr)
   "witcdn.net",
 ];
+/** WitCDN also serves stores from their own subdomain (witcdn.dermoeczanem.com), with the same protection. */
+const HOTLINK_PROTECTED_PREFIXES = ["witcdn."];
 
 /** The photo address if it can be shown on our pages, else null. */
 export function usableImage(url: string | null | undefined): string | null {
@@ -19,5 +21,8 @@ export function usableImage(url: string | null | undefined): string | null {
   } catch {
     return null;
   }
-  return HOTLINK_PROTECTED_HOSTS.some((blocked) => host === blocked || host.endsWith(`.${blocked}`)) ? null : url;
+  const blocked =
+    HOTLINK_PROTECTED_HOSTS.some((name) => host === name || host.endsWith(`.${name}`)) ||
+    HOTLINK_PROTECTED_PREFIXES.some((prefix) => host.startsWith(prefix));
+  return blocked ? null : url;
 }

@@ -56,6 +56,8 @@ const ru: Dictionary = {
     tooShort: "Введите минимум 2 символа.",
   },
   home: {
+    browseAll: "Все скидки ({count})",
+    seeAllDeals: "Смотреть все скидки ({count})",
     popularTitle: "Популярное в Азербайджане",
     popularHint: "Самые востребованные модели — в сравнении по магазинам.",
     popularFrom: "от {price}",

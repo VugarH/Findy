@@ -11,6 +11,16 @@ export const BOT_USER_AGENT = `SerfeliBot/0.1 (price comparison${CONTACT ? `; ${
 
 const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_RETRY_AFTER_MS = 90_000;
+/** Network-level failures (no answer from the store at all) are retried this many times, waiting longer each time. */
+const NETWORK_RETRIES = 2;
+const NETWORK_RETRY_WAIT_MS = 5_000;
+const NETWORK_ERRORS = new Set(["ENOTFOUND", "EAI_AGAIN", "ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE", "UND_ERR_SOCKET", "UND_ERR_CONNECT_TIMEOUT"]);
+
+/** fetch() failed before any answer: DNS, a reset or refused connection (Node puts the code in `cause`). */
+export function isNetworkHiccup(error: unknown): boolean {
+  const code = (error as { cause?: { code?: string } } | undefined)?.cause?.code;
+  return code !== undefined && NETWORK_ERRORS.has(code);
+}
 
 /**
  * Spaces requests out. Share one Throttle between clients that hit the same
@@ -81,11 +91,11 @@ export class PoliteClient {
     if (this.budgetLeft <= 0) throw new Error(`Request budget of ${this.options.maxRequests} exhausted`);
     this.requests++;
 
-    let result = await this.throttle.run(() => this.fetchOnce(url));
+    let result = await this.fetchSteadily(url);
     if (result.status === 429) {
       // The server told us to slow down: wait as long as it asks, try once more, then give up.
       this.throttle.pause(result.retryAfterMs);
-      result = await this.throttle.run(() => this.fetchOnce(url));
+      result = await this.fetchSteadily(url);
       if (result.status === 429) this.throttle.pause(result.retryAfterMs);
     }
     return result;
@@ -95,6 +105,23 @@ export class PoliteClient {
     const { status, text } = await this.get(url);
     if (status < 200 || status >= 300) throw new Error(`HTTP ${status} for ${url}`);
     return text;
+  }
+
+  /**
+   * One request, tried again after a short wait when it failed before reaching
+   * the store (address lookup, dropped connection): a brief network hiccup on
+   * our side must not count as the store failing. HTTP answers, even errors,
+   * are never retried here.
+   */
+  private async fetchSteadily(url: string): Promise<HttpResult & { retryAfterMs: number }> {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await this.throttle.run(() => this.fetchOnce(url));
+      } catch (error) {
+        if (attempt >= NETWORK_RETRIES || !isNetworkHiccup(error) || this.options.signal?.aborted) throw error;
+        await sleep(NETWORK_RETRY_WAIT_MS * (attempt + 1));
+      }
+    }
   }
 
   private async fetchOnce(url: string): Promise<HttpResult & { retryAfterMs: number }> {

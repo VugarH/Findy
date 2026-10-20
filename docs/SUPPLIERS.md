@@ -309,3 +309,22 @@ one-item cart price when that offer applies to every shopper. At the user's requ
 discounted products are stored (max 3,000); a product without a discount only updates an
 offer we already track (`RawOffer.updateOnly`). First run: 3,000 offers, 2,801 deals,
 ~11 minutes. Sneaks Up, Beymen, Network may hide cart offers the same way — not checked yet.
+
+## Turkish stores, round 4 (2026-10-20)
+
+Asked about: **Farmasi** — connected; Next.js pages without schema.org, read by a store-specific
+reader (`adapters/structured-data/readers/farmasi.ts`: `__NEXT_DATA__` productData; previous price
+= `referencePrice`/`retailPrice`), ~450 products, all read daily. **Golden Rose** — brand site
+without a shop (no sitemap); already covered through Gratis/Rossmann (416 products). **Dolu** —
+catalogue only (no prices, sold through chain stores). **Watsons TR** — robots.txt 403. **Toyzz
+Shop** — still an empty JS shell; left out by the user's decision (2026-10-20).
+
+New: **Sportive** (sportive.com.tr, ~12,800 products) — Akinon like SuperStep, connected through
+the Akinon category reader (discounted only, max 3,000); brand from `integration_marka_label`.
+
+Checked and not usable: Boyner, Penti, Lescon, Korayspor (403), İpekyol, Suwen (418), Vatan
+Bilgisayar (sitemap 403), Linens, Kütahya Porselen, Note Cosmetique (robots.txt disallows product
+pages), Lufian, Yataş (no sitemap), Mothercare TR (no answer). **Dermoeczanem** has full data
+(Ticimax `PRODUCT_DATA`: barcode, regular and sale price) but its photos are WitCDN
+hotlink-protected, so products would have no usable image; `usableImage` now refuses every
+`witcdn.*` host.

@@ -17,4 +17,16 @@ export const AKINON_STORES: AkinonStore[] = [
     listings: ["/erkek/", "/kadin/", "/cocuk/"],
     maxDiscounted: 3000,
   },
+  {
+    id: "sportive",
+    name: "Sportive",
+    origin: "https://www.sportive.com.tr",
+    originCountry: "TR",
+    currency: "TRY",
+    reliability: { basis: "established-retailer", note: "Turkish sportswear and sneaker chain selling Nike, adidas, Hoka, New Balance and others" },
+    shipsToMarket: false,
+    categories: ["shoes", "fashion", "sports", "bags"],
+    listings: ["/erkek/", "/kadin/", "/cocuk/"],
+    maxDiscounted: 3000,
+  },
 ];

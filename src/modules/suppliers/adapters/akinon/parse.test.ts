@@ -65,4 +65,12 @@ describe("Akinon listing pages", () => {
   it("has no crossed-out price when nothing is discounted", () => {
     expect(toRawOffer(product({ basket_offers: [] }), store)!.listPriceMinor).toBeUndefined();
   });
+
+  it("reads the brand from Sportive's field too, in its usual spelling", () => {
+    const sportive = product({
+      name: "Mercurial Superfly 10 Pro Fg Erkek Mavi Futbol Krampon",
+      attributes: { integration_model_renk: "FQ1456-400", integration_marka_label: "NİKE" },
+    });
+    expect(toRawOffer(sportive, store)?.brand).toBe("Nike");
+  });
 });

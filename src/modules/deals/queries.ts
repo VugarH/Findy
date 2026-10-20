@@ -9,6 +9,7 @@ import type { SubcategorySlug } from "@/config/subcategories";
 import type { ProductCardData } from "@/modules/catalog/card";
 import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { sortSizes } from "@/modules/suppliers/sizes";
+import { holdBack, holdBackFor } from "./hold-back";
 import type { SupplierScope } from "@/modules/suppliers/types";
 
 export const DEAL_SORTS = ["best", "discount", "savings", "price_asc", "price_desc", "newest", "oldest"] as const;
@@ -98,18 +99,38 @@ export async function listDeals(
   filters: DealFilters = {},
 ): Promise<{ items: ProductCardData[]; total: number }> {
   const where = whereFor(market, filters);
-
-  const [rows, [{ total }]] = await Promise.all([
+  const order = [...(!filters.sort || filters.sort === "best" ? bestOrder(market) : ORDER_BY[filters.sort]), asc(products.slug)];
+  const limit = filters.limit ?? 20;
+  const offset = filters.offset ?? 0;
+  const select = () =>
     db
       .select({ deal: deals, product: products, supplierId: suppliers.id, supplierName: suppliers.name })
       .from(deals)
       .innerJoin(products, eq(deals.productId, products.id))
       .innerJoin(offers, eq(deals.offerId, offers.id))
-      .innerJoin(suppliers, eq(offers.supplierId, suppliers.id))
+      .innerJoin(suppliers, eq(offers.supplierId, suppliers.id));
+
+  // A category opened with nothing else chosen may hold a type back (Clothing: underwear and socks
+  // after the first 100). Then the whole list's order is read cheaply and the page taken from it.
+  const rule = holdBackFor(filters);
+  const pageRows = async () => {
+    if (!rule) return select().where(where).orderBy(...order).limit(limit).offset(offset);
+    const ordered = await db
+      .select({ id: deals.id, subcategory: deals.subcategorySlug })
+      .from(deals)
+      .innerJoin(products, eq(deals.productId, products.id))
+      .innerJoin(offers, eq(deals.offerId, offers.id))
       .where(where)
-      .orderBy(...(!filters.sort || filters.sort === "best" ? bestOrder(market) : ORDER_BY[filters.sort]), asc(products.slug))
-      .limit(filters.limit ?? 20)
-      .offset(filters.offset ?? 0),
+      .orderBy(...order);
+    const ids = holdBack(ordered, rule).slice(offset, offset + limit).map((row) => row.id);
+    if (ids.length === 0) return [];
+    const rows = await select().where(inArray(deals.id, ids));
+    const position = new Map(ids.map((id, index) => [id, index]));
+    return rows.sort((a, b) => position.get(a.deal.id)! - position.get(b.deal.id)!);
+  };
+
+  const [rows, [{ total }]] = await Promise.all([
+    pageRows(),
     db
       .select({ total: count() })
       .from(deals)

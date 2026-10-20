@@ -1,4 +1,5 @@
 import type { StructuredDataStore } from "./adapter";
+import { readFarmasiProduct } from "./readers/farmasi";
 
 /**
  * Stores read through their sitemap + schema.org product data, checked on
@@ -293,6 +294,23 @@ export const STRUCTURED_DATA_STORES: StructuredDataStore[] = [
     sitemap: "https://www.rossmann.com.tr/media/sitemap/sitemap.xml",
     productUrl: /-p-[a-z0-9]+$/,
     focus: POPULAR_BEAUTY,
+  },
+  {
+    id: "farmasi",
+    name: "Farmasi",
+    origin: "https://www.farmasi.com.tr",
+    originCountry: "TR",
+    currency: "TRY",
+    reliability: { basis: "official-brand-store", note: "Official online store of the Turkish cosmetics and personal-care brand Farmasi" },
+    shipsToMarket: false,
+    categories: ["beauty"],
+    fallbackCategory: "beauty",
+    sitemap: "https://www.farmasi.com.tr/sitemap.xml",
+    productUrl: /\/product-detail\//,
+    brand: "Farmasi",
+    // Next.js pages without schema.org data; ~450 products, all read each day.
+    readProduct: readFarmasiProduct,
+    productsPerRun: 500,
   },
   {
     id: "flormar",

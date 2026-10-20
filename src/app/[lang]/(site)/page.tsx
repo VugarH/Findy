@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calculator, Handshake, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowRight, Calculator, Flame, Handshake, RefreshCw, ShieldCheck } from "lucide-react";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
@@ -31,8 +31,9 @@ export default async function HomePage() {
   const popularTiles = [...popular].sort((a, b) => b.stores.length - a.stores.length).slice(0, 12);
   const [featured, ...topDeals] = top.items;
 
-  const statTiles = [
-    { value: stats.dealCount.toLocaleString(LOCALE_TAGS[locale]), label: t.home.statDeals },
+  const dealCount = stats.dealCount.toLocaleString(LOCALE_TAGS[locale]);
+  const statTiles: { value: string; label: string; href?: string }[] = [
+    { value: dealCount, label: t.home.statDeals, href: href("/deals") },
     { value: stats.storeCount.toLocaleString(LOCALE_TAGS[locale]), label: t.home.statStores },
     { value: stats.productCount.toLocaleString(LOCALE_TAGS[locale]), label: t.home.statProducts },
     { value: `−${stats.maxDiscountPct}%`, label: t.home.statMaxDiscount },
@@ -70,12 +71,33 @@ export default async function HomePage() {
               size="lg"
               className="mx-auto mt-8 max-w-2xl"
             />
+            {/* The way into the deal list, right where people start: no hunting for the small menu link. */}
+            {stats.dealCount > 0 && (
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <ButtonLink href={href("/deals")} size="lg" className="shadow-card">
+                  {fmt(t.home.browseAll, { count: dealCount })}
+                  <ArrowRight className="size-5" aria-hidden />
+                </ButtonLink>
+                <ButtonLink href={href("/top")} size="lg" variant="secondary">
+                  <Flame className="size-5 text-deal" aria-hidden />
+                  {t.top.nav}
+                </ButtonLink>
+              </div>
+            )}
           </div>
 
           <dl className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-4">
             {statTiles.map((stat) => (
               <div key={stat.label} className="text-center">
-                <dd className="text-3xl font-extrabold tracking-tight">{stat.value}</dd>
+                <dd className="text-3xl font-extrabold tracking-tight">
+                  {stat.href ? (
+                    <Link href={stat.href} className="hover:text-brand-strong hover:underline">
+                      {stat.value}
+                    </Link>
+                  ) : (
+                    stat.value
+                  )}
+                </dd>
                 <dt className="mt-1 text-sm text-muted">{stat.label}</dt>
               </div>
             ))}
@@ -184,6 +206,12 @@ export default async function HomePage() {
                   action={{ href: href("/deals"), label: t.home.viewAll }}
                 />
                 <ProductGrid cards={topDeals} t={t} money={money} href={href} />
+                <div className="mt-6 flex justify-center">
+                  <ButtonLink href={href("/deals")} size="lg" variant="secondary" className="w-full sm:w-auto">
+                    {fmt(t.home.seeAllDeals, { count: dealCount })}
+                    <ArrowRight className="size-5" aria-hidden />
+                  </ButtonLink>
+                </div>
               </section>
             )}
 

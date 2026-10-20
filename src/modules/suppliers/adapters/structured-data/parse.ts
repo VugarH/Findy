@@ -22,6 +22,8 @@ export interface StructuredProduct {
   inStock: boolean;
   /** From a ProductGroup's variants, when they name their size. */
   sizes?: SizeOption[];
+  /** The crossed-out price, when a store's own reader (./readers) knows it; otherwise found by `listPrice` source. */
+  listPrice?: number | null;
 }
 
 type Json = Record<string, unknown>;

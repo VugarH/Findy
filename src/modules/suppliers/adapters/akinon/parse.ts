@@ -86,8 +86,12 @@ export function toRawOffer(product: AkinonListingProduct, store: AkinonStoreShap
 
   const price = payablePrice(product);
   const regular = Math.max(Number(product.price), Number(product.retail_price ?? 0));
-  const statedBrand = typeof product.attributes?.integration_alt_marka === "string" ? product.attributes.integration_alt_marka : null;
-  const brand = detectBrand(product.name) ?? (statedBrand ? titleCase(statedBrand) : undefined);
+  // Stores name the brand field differently (SuperStep: integration_alt_marka "ADIDAS", Sportive:
+  // integration_marka_label "NİKE"); a known brand gets its usual spelling.
+  const statedBrand = [product.attributes?.integration_alt_marka, product.attributes?.integration_marka_label].find(
+    (value): value is string => typeof value === "string" && value.trim() !== "",
+  );
+  const brand = detectBrand(product.name) ?? (statedBrand ? (detectBrand(statedBrand) ?? titleCase(statedBrand)) : undefined);
   const modelColour = product.attributes?.integration_model_renk;
   const sizes = sizesOf(product);
 

@@ -56,6 +56,8 @@ const az: Dictionary = {
     tooShort: "Ən azı 2 simvol yazın.",
   },
   home: {
+    browseAll: "Bütün {count} endirimə bax",
+    seeAllDeals: "Bütün {count} endirimi gör",
     popularTitle: "Azərbaycanda populyar",
     popularHint: "Ən çox axtarılan modellər, mağazalar üzrə müqayisə ilə.",
     popularFrom: "{price}-dən",

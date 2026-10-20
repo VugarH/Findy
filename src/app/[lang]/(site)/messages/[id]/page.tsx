@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Package } from "lucide-react";
+import { Clock, Lock, Package } from "lucide-react";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { getCurrentUser } from "@/modules/auth/session";
@@ -9,6 +9,8 @@ import { isUnread } from "@/modules/messages/rules";
 import { getOwnConversation, listMessages, markReadByUser } from "@/modules/messages/service";
 import { LiveRefresh } from "@/components/messages/live-refresh";
 import { MessageThread } from "@/components/messages/message-thread";
+import { RequestDetails } from "@/components/messages/request-details";
+import { ButtonLink } from "@/components/ui/button";
 import { ReplyForm } from "@/components/messages/reply-form";
 import { SignInPrompt } from "@/components/messages/sign-in-prompt";
 import { Container } from "@/components/ui/container";
@@ -20,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ConversationPage({ params }: PageProps<"/[lang]/messages/[id]">) {
   const { id } = await params;
-  const { t, href, locale, market } = await getI18n();
+  const { t, href, locale, market, money } = await getI18n();
   const user = await getCurrentUser();
   if (!user) {
     return (
@@ -47,8 +49,16 @@ export default async function ConversationPage({ params }: PageProps<"/[lang]/me
       </Link>
       <h1 className="mt-2 text-2xl font-extrabold tracking-tight">{conversation.subject}</h1>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        <span className={conversation.status === "open" ? "font-semibold text-brand-strong" : "text-muted"}>
-          {conversation.status === "open" ? m.statusOpen : m.statusClosed}
+        <span
+          className={
+            conversation.status === "open"
+              ? "font-semibold text-brand-strong"
+              : conversation.status === "waiting"
+                ? "font-semibold text-global"
+                : "text-muted"
+          }
+        >
+          {conversation.status === "open" ? m.statusOpen : conversation.status === "waiting" ? m.statusWaiting : m.statusClosed}
         </span>
         {conversation.productSlug && conversation.productTitle && (
           <Link
@@ -60,6 +70,23 @@ export default async function ConversationPage({ params }: PageProps<"/[lang]/me
           </Link>
         )}
       </div>
+
+      {conversation.details && (
+        <div className="mt-6">
+          <RequestDetails
+            details={conversation.details}
+            money={(amount) => money(amount)}
+            productHref={(slug) => href(`/product/${slug}`)}
+            labels={{
+              title: m.orderDetails,
+              parcelFrom: t.cart.parcelFrom,
+              estimatedTotal: m.estimatedTotal,
+              fee: t.order.lineFee,
+              note: t.order.estimateNote,
+            }}
+          />
+        </div>
+      )}
 
       <div className="mt-6">
         <MessageThread
@@ -74,8 +101,24 @@ export default async function ConversationPage({ params }: PageProps<"/[lang]/me
       </div>
 
       <div className="mt-6">
-        {conversation.status === "closed" && <p className="mb-2 text-sm text-muted">{m.closedNote}</p>}
-        <ReplyForm conversationId={conversation.id} />
+        {conversation.status === "open" && <ReplyForm conversationId={conversation.id} />}
+        {conversation.status === "waiting" && (
+          <p className="flex items-start gap-2 rounded-2xl border border-line bg-surface px-4 py-3 text-sm text-muted">
+            <Clock className="mt-0.5 size-4 shrink-0 text-global" aria-hidden />
+            {m.waitingNote}
+          </p>
+        )}
+        {conversation.status === "closed" && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3">
+            <p className="flex items-center gap-2 text-sm text-muted">
+              <Lock className="size-4 shrink-0" aria-hidden />
+              {m.closedNote}
+            </p>
+            <ButtonLink href={href("/messages/new")} size="sm">
+              {m.newMessageAgain}
+            </ButtonLink>
+          </div>
+        )}
       </div>
     </Container>
   );

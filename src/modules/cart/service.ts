@@ -70,6 +70,7 @@ export async function loadCart(market: MarketConfig, items: CartItem[], now = ne
     if (offer?.inStock) {
       available.push({
         offerId: item.offerId,
+        url: offer.url,
         quantity: item.quantity,
         product,
         store: { ...offer.supplier, websiteUrl: websites.get(offer.supplier.id) ?? new URL(offer.url).origin },

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowUpRight, Loader2, Minus, PackageCheck, Plus, ShoppingBag, Trash2, Truck } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Loader2, MessageCircle, Minus, PackageCheck, Plus, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { CategorySlug } from "@/config/categories";
 import { useI18n } from "@/i18n/client";
@@ -376,6 +376,18 @@ function Summary({ view }: { view: CartView }) {
         )}
       </dl>
       <p className="text-xs text-muted">{c.disclaimer}</p>
+      {/* We buy and deliver it: Write to us, with the cart's parcels ready to tick. */}
+      <div className="rounded-xl border border-global/30 bg-global-soft p-3.5">
+        <p className="text-sm leading-6 text-ink/80">{t.messages.cartCtaText}</p>
+        <ButtonLink
+          href={`${href("/messages/new")}?cart=1`}
+          size="sm"
+          className="mt-2.5 w-full bg-global text-surface hover:bg-global hover:opacity-90"
+        >
+          <MessageCircle className="size-4" aria-hidden />
+          {t.messages.cartCta}
+        </ButtonLink>
+      </div>
       <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
         <ButtonLink href={href("/deals")} variant="secondary" size="sm">
           {c.continue}

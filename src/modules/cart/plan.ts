@@ -36,6 +36,8 @@ export interface CartStore {
 /** A cart line whose offer is in stock right now. */
 export interface PlanInput {
   offerId: string;
+  /** The listing in the store. */
+  url: string;
   quantity: number;
   product: CartProduct;
   store: CartStore;
@@ -48,6 +50,7 @@ export interface PlanInput {
 
 export interface PlannedLine {
   offerId: string;
+  url: string;
   quantity: number;
   product: CartProduct;
   storePriceMinor: number;
@@ -115,6 +118,7 @@ export function planParcels(inputs: PlanInput[], market: MarketConfig): CartPlan
       store,
       lines: group.map((input) => ({
         offerId: input.offerId,
+        url: input.url,
         quantity: input.quantity,
         product: input.product,
         storePriceMinor: input.storePriceMinor,

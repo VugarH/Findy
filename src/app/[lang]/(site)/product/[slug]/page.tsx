@@ -240,7 +240,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
           )}
           {showAssist && global && (
             <div className="min-w-0 space-y-3">
-              <AssistCard offer={global} productSlug={product.slug} />
+              <AssistCard offer={global} />
               <p className="flex items-start gap-2 text-xs leading-5 text-muted">
                 <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                 {fmt(t.product.customsNote, { threshold: money(toMinor(threshold.amount), threshold.currency) })}

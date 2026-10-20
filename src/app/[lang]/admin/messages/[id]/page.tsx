@@ -13,6 +13,7 @@ import { AdminReplyForm } from "@/components/admin/admin-reply-form";
 import { Badge, Facts, PageHeader, Panel } from "@/components/admin/ui";
 import { LiveRefresh } from "@/components/messages/live-refresh";
 import { MessageThread } from "@/components/messages/message-thread";
+import { RequestDetails } from "@/components/messages/request-details";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { a } = await getAdminI18n();
@@ -29,7 +30,7 @@ const PhoneLink = ({ phone, label }: { phone: string; label: string }) => (
 /** One conversation: the thread and reply box, with who the person is beside it. */
 export default async function AdminConversationPage({ params }: PageProps<"/[lang]/admin/messages/[id]">) {
   const { id } = await params;
-  const { a, href, dateTime, date } = await getAdminI18n();
+  const { a, href, dateTime, date, money } = await getAdminI18n();
   const conversation = await getConversation(id);
   if (!conversation) notFound();
   const [messages, customer] = await Promise.all([
@@ -50,7 +51,9 @@ export default async function AdminConversationPage({ params }: PageProps<"/[lan
         title={conversation.subject}
         actions={
           <>
-            <Badge tone={closed ? "neutral" : "good"}>{m.status[conversation.status]}</Badge>
+            <Badge tone={closed ? "neutral" : conversation.status === "waiting" ? "info" : "good"}>
+              {m.status[conversation.status]}
+            </Badge>
             <ActionButton
               action={setConversationStatusAction}
               fields={{ id: conversation.id, status: closed ? "open" : "closed" }}
@@ -64,6 +67,20 @@ export default async function AdminConversationPage({ params }: PageProps<"/[lan
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0 space-y-6">
+          {conversation.details && (
+            <RequestDetails
+              details={conversation.details}
+              money={(amount) => money(amount)}
+              productHref={(slug) => href(`/product/${slug}`)}
+              labels={{
+                title: m.orderDetails,
+                parcelFrom: m.parcelFrom,
+                estimatedTotal: m.estimatedTotal,
+                fee: m.serviceFee,
+                note: m.pricedAt,
+              }}
+            />
+          )}
           <MessageThread
             items={messages.map((message) => ({
               id: message.id,
@@ -94,6 +111,7 @@ export default async function AdminConversationPage({ params }: PageProps<"/[lan
                     label: m.phoneGiven,
                     value: conversation.contactPhone ? <PhoneLink phone={conversation.contactPhone} label={m.call} /> : m.none,
                   },
+                  { label: m.city, value: conversation.city ?? m.none },
                   {
                     label: m.accountPhone,
                     value: customer.phone ? <PhoneLink phone={customer.phone} label={m.call} /> : m.none,

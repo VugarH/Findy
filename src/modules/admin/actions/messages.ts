@@ -28,11 +28,12 @@ export async function adminReplyAction(previous: AdminFormState, form: FormData)
   return { notice: "sent", noticeVars: { at: Date.now() } };
 }
 
-/** Closes a handled conversation, or opens it again. The person can always write; that reopens it too. */
+/** Closes a handled conversation (the person can no longer write in it), or opens it again. */
 export async function setConversationStatusAction(form: FormData): Promise<void> {
   const admin = await requireAdmin();
   const status = text(form, "status");
-  if (!isConversationStatus(status)) return;
+  // "waiting" is only ever set by a new request.
+  if (!isConversationStatus(status) || status === "waiting") return;
   const conversation = await setConversationStatus(text(form, "id"), status);
   if (!conversation) return;
   await recordAdminEvent(admin, {

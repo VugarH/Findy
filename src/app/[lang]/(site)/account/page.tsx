@@ -60,11 +60,10 @@ export default async function AccountPage() {
         <div className="px-5 py-4 text-sm text-muted">{user.dealAlerts ? t.auth.dealAlertsOn : t.auth.dealAlertsOff}</div>
       </dl>
 
-      <section className="mt-8">
-        <h2 className="text-xl font-bold">{t.order.myRequests}</h2>
-        {requests.length === 0 ? (
-          <p className="mt-2 text-sm text-muted">{t.order.noRequests}</p>
-        ) : (
+      {/* Requests from before they moved into Messages, kept as a record. */}
+      {requests.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-xl font-bold">{t.order.myRequests}</h2>
           <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-surface">
             {requests.map((request) => (
               <li key={request.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 py-4">
@@ -85,8 +84,8 @@ export default async function AccountPage() {
               </li>
             ))}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
 
       <section className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-5 py-4">
         <div className="min-w-0">

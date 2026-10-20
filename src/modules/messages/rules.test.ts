@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isUnread, linkParts, subjectOf } from "./rules";
+import { isUnread, linkParts, personCanWrite, subjectOf, subjectOfRequest } from "./rules";
 
 describe("message rules", () => {
   it("titles a conversation by its product, else its text, else the shop", () => {
@@ -25,5 +25,19 @@ describe("message rules", () => {
       { text: ". Size 42" },
     ]);
     expect(linkParts("no links")).toEqual([{ text: "no links" }]);
+  });
+});
+
+describe("requests", () => {
+  it("lets the person write only once the team has answered, and never in a closed one", () => {
+    expect(personCanWrite("waiting")).toBe(false);
+    expect(personCanWrite("open")).toBe(true);
+    expect(personCanWrite("closed")).toBe(false);
+  });
+
+  it("titles a request by its first item, counting the rest", () => {
+    expect(subjectOfRequest("", [{ title: "Nike Pegasus 41" }])).toBe("Nike Pegasus 41");
+    expect(subjectOfRequest("hi", [{ title: "Nike Pegasus 41" }, { title: "Socks" }, { title: "Cap" }])).toBe("Nike Pegasus 41 +2");
+    expect(subjectOfRequest("Can you get this lamp?", [])).toBe("Can you get this lamp?");
   });
 });

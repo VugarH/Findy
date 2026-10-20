@@ -540,8 +540,31 @@ export const appLogs = pgTable(
   ],
 );
 
-export type ConversationStatus = "open" | "closed";
+/**
+ * waiting: sent, until the team's first reply (the person cannot write more);
+ * open: both sides write; closed: handled by the team, the person starts a new one.
+ */
+export type ConversationStatus = "waiting" | "open" | "closed";
 export type MessageSender = "user" | "admin";
+
+/**
+ * The items a person attached to a request (from a product page or their cart),
+ * priced when it was sent: a snapshot, kept even if the offers change.
+ * Duplicated from modules/messages to keep the schema dependency-free.
+ */
+export interface ConversationDetails {
+  currency: string;
+  parcels: {
+    store: string;
+    storeUrl: string;
+    /** Items, one delivery charge, customs and fees for the parcel. */
+    totalMinor: number;
+    lines: { title: string; slug: string; url: string; quantity: number; itemsMinor: number }[];
+  }[];
+  totalMinor: number;
+  /** Our service fee estimate on top. */
+  feeMinor: number;
+}
 
 /**
  * A person writing to us, mostly to have something bought abroad for them.
@@ -562,6 +585,10 @@ export const conversations = pgTable(
     productSlug: text("product_slug"),
     /** Phone the person gave for this request (optional), in international format. */
     contactPhone: text("contact_phone"),
+    /** City or district for delivery (optional). */
+    city: text("city"),
+    /** Attached items with their prices when sent; null for a plain question. */
+    details: jsonb("details").$type<ConversationDetails>(),
     status: text("status").$type<ConversationStatus>().notNull().default("open"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     lastMessageAt: timestamp("last_message_at", { withTimezone: true }).notNull().defaultNow(),

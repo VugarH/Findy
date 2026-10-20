@@ -24,7 +24,7 @@ export function estimateAssistedOrder(
   market: MarketConfig,
   quantity: number,
 ): AssistedOrderEstimate {
-  const { feeRate, minFee, maxQuantity } = market.assistedOrder;
+  const { maxQuantity } = market.assistedOrder;
   const count = Math.min(Math.max(1, Math.floor(quantity) || 1), maxQuantity);
 
   const landed = computeLandedCost(
@@ -36,6 +36,12 @@ export function estimateAssistedOrder(
     },
     market,
   );
-  const feeMinor = Math.max(toMinor(minFee), Math.round(landed.totalMinor * feeRate));
+  const feeMinor = serviceFeeMinor(landed.totalMinor, market);
   return { quantity: count, landed, feeMinor, totalMinor: landed.totalMinor + feeMinor };
+}
+
+/** Our service fee on an order of this landed total: a share of it, at least the minimum. */
+export function serviceFeeMinor(totalMinor: number, market: MarketConfig): number {
+  const { feeRate, minFee } = market.assistedOrder;
+  return Math.max(toMinor(minFee), Math.round(totalMinor * feeRate));
 }

@@ -7,12 +7,14 @@ import {
   products,
   users,
   type Conversation,
+  type ConversationDetails,
   type ConversationMessage,
   type ConversationStatus,
 } from "@/db/schema";
-import { isUnread, MAX_MESSAGES_PER_HOUR, subjectOf } from "./rules";
+import { detailLines } from "./details";
+import { isUnread, MAX_MESSAGES_PER_HOUR, subjectOfRequest } from "./rules";
 
-export const CONVERSATION_STATUSES: readonly ConversationStatus[] = ["open", "closed"];
+export const CONVERSATION_STATUSES: readonly ConversationStatus[] = ["waiting", "open", "closed"];
 export const isConversationStatus = (value: unknown): value is ConversationStatus =>
   CONVERSATION_STATUSES.includes(value as ConversationStatus);
 
@@ -57,9 +59,28 @@ export async function canSendMore(userId: string, now = new Date()): Promise<boo
   return row.sent < MAX_MESSAGES_PER_HOUR;
 }
 
+/** The person's request still waiting for the team's first reply, if any: one at a time. */
+export async function waitingRequestOf(userId: string): Promise<{ id: string; subject: string } | null> {
+  const [row] = await db
+    .select({ id: conversations.id, subject: conversations.subject })
+    .from(conversations)
+    .where(and(eq(conversations.userId, userId), eq(conversations.status, "waiting")))
+    .orderBy(desc(conversations.createdAt))
+    .limit(1);
+  return row ?? null;
+}
+
+/** A new request, waiting for the team's first reply. The message may be empty when items are attached. */
 export async function startConversation(
   userId: string,
-  input: { body: string; contactPhone: string | null; product: { id: string; title: string; slug: string } | null },
+  input: {
+    body: string;
+    contactPhone: string | null;
+    city: string | null;
+    details: ConversationDetails | null;
+    /** The first attached product, linked from the admin panel. */
+    product: { id: string; title: string; slug: string } | null;
+  },
   now = new Date(),
 ): Promise<string> {
   return db.transaction(async (tx) => {
@@ -67,25 +88,31 @@ export async function startConversation(
       .insert(conversations)
       .values({
         userId,
-        subject: subjectOf(input.body, input.product?.title),
+        subject: subjectOfRequest(input.body, detailLines(input.details)),
+        status: "waiting",
         productId: input.product?.id ?? null,
         productTitle: input.product?.title ?? null,
         productSlug: input.product?.slug ?? null,
         contactPhone: input.contactPhone,
+        city: input.city,
+        details: input.details,
         createdAt: now,
         lastMessageAt: now,
         lastUserMessageAt: now,
         userReadAt: now,
       })
       .returning({ id: conversations.id });
-    await tx.insert(conversationMessages).values({ conversationId: created.id, sender: "user", body: input.body, createdAt: now });
+    if (input.body) {
+      await tx.insert(conversationMessages).values({ conversationId: created.id, sender: "user", body: input.body, createdAt: now });
+    }
     return created.id;
   });
 }
 
 /**
- * Adds a message to a conversation. The writer has read everything up to it;
- * a closed conversation opens again when the person writes.
+ * Adds a message to a conversation. The writer has read everything up to it.
+ * The team's reply accepts a waiting request (and reopens a closed one); the
+ * person can only write in an open one (checked by the caller).
  */
 export async function addMessage(
   conversationId: string,
@@ -104,8 +131,8 @@ export async function addMessage(
       .update(conversations)
       .set(
         message.sender === "user"
-          ? { lastMessageAt: now, lastUserMessageAt: now, userReadAt: now, status: "open" }
-          : { lastMessageAt: now, lastAdminMessageAt: now, adminReadAt: now },
+          ? { lastMessageAt: now, lastUserMessageAt: now, userReadAt: now }
+          : { lastMessageAt: now, lastAdminMessageAt: now, adminReadAt: now, status: "open" },
       )
       .where(eq(conversations.id, conversationId));
   });
@@ -244,7 +271,7 @@ export async function listAdminConversations(
     db.select({ status: conversations.status, total: count() }).from(conversations).groupBy(conversations.status),
   ]);
   const last = await previews(rows.map((row) => row.conversation.id));
-  const byStatus = { open: 0, closed: 0 } as Record<ConversationStatus, number>;
+  const byStatus: Record<ConversationStatus, number> = { waiting: 0, open: 0, closed: 0 };
   for (const row of counts) byStatus[row.status] = row.total;
 
   return {

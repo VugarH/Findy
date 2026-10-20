@@ -10,7 +10,7 @@ import { buttonClass } from "@/components/ui/button";
  * Shown on a product page next to an offer from abroad: the offer that we
  * can buy and ship on the person's behalf, with what that would cost.
  */
-export async function AssistCard({ offer, productSlug }: { offer: OfferView; productSlug: string }) {
+export async function AssistCard({ offer }: { offer: OfferView }) {
   const { t, money, href, market } = await getI18n();
   if (!market.assistedOrder.enabled || offer.supplier.scope !== "global" || !offer.inStock) return null;
 
@@ -26,15 +26,9 @@ export async function AssistCard({ offer, productSlug }: { offer: OfferView; pro
           </p>
           <h2 className="mt-2 text-lg font-bold text-ink">{t.order.cardTitle}</h2>
           <p className="mt-1.5 text-sm leading-6 text-ink/80">{fmt(t.order.cardText, { store: offer.supplier.name })}</p>
-          <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+          <p className="mt-2">
             <Link href={href("/ordering-abroad")} className="text-sm font-semibold text-global hover:underline">
               {t.order.howLink}
-            </Link>
-            <Link
-              href={`${href("/messages/new")}?product=${encodeURIComponent(productSlug)}`}
-              className="text-sm font-semibold text-global hover:underline"
-            >
-              {t.messages.askAboutProduct}
             </Link>
           </p>
         </div>
@@ -44,8 +38,9 @@ export async function AssistCard({ offer, productSlug }: { offer: OfferView; pro
             {fmt(t.order.cardEstimate, { total: money(estimate.totalMinor) })}
           </p>
           <p className="-mt-1.5 text-xs text-ink/70">{fmt(t.order.cardFee, { fee: money(estimate.feeMinor) })}</p>
+          {/* Opens Write to us with this listing attached. */}
           <Link
-            href={`${href(`/product/${productSlug}/order`)}?offer=${offer.offerId}`}
+            href={`${href("/messages/new")}?offer=${offer.offerId}`}
             className={buttonClass({}, "bg-global text-surface hover:bg-global hover:opacity-90")}
           >
             {t.order.cardCta}

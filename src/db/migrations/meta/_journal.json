@@ -169,6 +169,13 @@
       "when": 1792505129045,
       "tag": "0023_fresh_landed",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792508094557,
+      "tag": "0024_conversation_details",
+      "breakpoints": true
     }
   ]
 }

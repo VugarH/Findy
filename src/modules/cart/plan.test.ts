@@ -18,6 +18,7 @@ const turkish = (priceTry: number, weightKg = 0.5): LandedCostInput => ({
 
 const line = (offerId: string, storeId: string, cost: LandedCostInput, quantity = 1, days = { min: 4, max: 8 }): PlanInput => ({
   offerId,
+  url: `https://${storeId}.test/${offerId}`,
   quantity,
   product: { productId: `p-${offerId}`, slug: offerId, title: offerId, brand: null, imageUrl: null, categorySlug: "shoes" },
   store: { id: storeId, name: storeId, scope: cost.scope, originCountry: cost.originCountry, websiteUrl: `https://${storeId}.test` },

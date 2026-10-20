@@ -44,3 +44,21 @@ export function linkParts(body: string): TextPart[] {
   if (last < body.length) parts.push({ text: body.slice(last) });
   return parts;
 }
+
+/** Statuses as the person sees them (mirrors ConversationStatus in the schema). */
+export type RequestStatus = "waiting" | "open" | "closed";
+
+/**
+ * The person writes again only once the team has answered (open). While it
+ * waits for the first reply they cannot add more; a closed one stays closed.
+ */
+export function personCanWrite(status: RequestStatus): boolean {
+  return status === "open";
+}
+
+/** A request's title: what it is about (the first attached item, "+2" for more), else the message's start. */
+export function subjectOfRequest(body: string, items: { title: string }[]): string {
+  if (items.length === 0) return subjectOf(body);
+  const first = shorten(items[0].title);
+  return items.length === 1 ? first : `${first} +${items.length - 1}`;
+}

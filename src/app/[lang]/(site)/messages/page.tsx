@@ -74,6 +74,7 @@ export default async function MessagesPage() {
                   )}
                   <span className="mt-1 flex gap-2 text-xs">
                     {conversation.unread && <span className="font-semibold text-deal">{m.unread}</span>}
+                    {conversation.status === "waiting" && <span className="font-semibold text-global">{m.statusWaiting}</span>}
                     {conversation.status === "closed" && <span className="text-muted">{m.statusClosed}</span>}
                   </span>
                 </span>

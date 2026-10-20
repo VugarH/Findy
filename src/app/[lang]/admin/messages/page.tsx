@@ -22,7 +22,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AdminMessagesPage({ searchParams }: PageProps<"/[lang]/admin/messages">) {
   const params = await searchParams;
   const { a, t, href, dateTime } = await getAdminI18n();
-  const statusParam = param(params, "status") || "open";
+  // Requests waiting for a first reply come first.
+  const statusParam = param(params, "status") || "waiting";
   const status = isConversationStatus(statusParam) ? statusParam : undefined;
   const page = pageParam(params);
   const { rows, total, byStatus } = await listAdminConversations(status, page);
@@ -40,7 +41,7 @@ export default async function AdminMessagesPage({ searchParams }: PageProps<"/[l
           return (
             <Link
               key={value}
-              href={value === "open" ? path : `${path}?status=${value}`}
+              href={value === "waiting" ? path : `${path}?status=${value}`}
               aria-current={current ? "page" : undefined}
               className={cn(
                 "rounded-full px-3 py-1.5 text-sm font-medium",
@@ -81,7 +82,7 @@ export default async function AdminMessagesPage({ searchParams }: PageProps<"/[l
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-1">
                     {row.unread && <Badge tone="bad">{m.unread}</Badge>}
-                    {row.status === "closed" && <Badge>{m.status.closed}</Badge>}
+                    {row.status !== "open" && <Badge tone={row.status === "waiting" ? "info" : "neutral"}>{m.status[row.status]}</Badge>}
                   </span>
                 </Link>
               </li>
@@ -92,7 +93,7 @@ export default async function AdminMessagesPage({ searchParams }: PageProps<"/[l
 
       <AdminPagination
         path={path}
-        filters={{ status: status === "open" ? "" : (status ?? "all") }}
+        filters={{ status: status === "waiting" ? "" : (status ?? "all") }}
         page={page}
         pageSize={ADMIN_CONVERSATIONS_PAGE_SIZE}
         total={total}

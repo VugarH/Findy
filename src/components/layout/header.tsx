@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BadgeCheck, Flame, MessageCircle, Shield, User } from "lucide-react";
+import { BadgeCheck, Flame, Shield, User } from "lucide-react";
 import { Suspense } from "react";
 import { siteConfig } from "@/config/site";
 import { orderedCategories } from "@/modules/settings/display-order";
@@ -19,6 +19,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { CategorySlider } from "./category-slider";
 import { LocaleSwitcher } from "./locale-switcher";
+import { MessagesLink } from "@/components/messages/messages-link";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -64,20 +65,13 @@ export async function Header() {
             </Link>
           )}
           <CartLink />
-          {/* Writing to us (and our replies); the badge counts conversations with an unread reply. */}
-          <Link
+          {/* Writing to us (and our replies); the badge counts conversations with an unread reply and keeps itself current. */}
+          <MessagesLink
             href={href(isAdmin(user) ? "/admin/messages" : "/messages")}
-            title={t.nav.messages}
-            aria-label={unreadMessages > 0 ? `${t.nav.messages} (${unreadMessages})` : t.nav.messages}
-            className="relative grid size-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
-          >
-            <MessageCircle className="size-[18px]" aria-hidden />
-            {unreadMessages > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid min-w-[18px] place-items-center rounded-full bg-deal px-1 text-[11px] font-bold leading-[18px] text-on-deal">
-                {unreadMessages > 99 ? "99+" : unreadMessages}
-              </span>
-            )}
-          </Link>
+            label={t.nav.messages}
+            initial={unreadMessages}
+            signedIn={user !== null}
+          />
           <NotificationBell
             signedIn={user !== null}
             unread={unread}

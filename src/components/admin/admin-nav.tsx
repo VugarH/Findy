@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/i18n/client";
 import { cn } from "@/lib/cn";
+import { useUnreadMessages } from "@/components/messages/messages-link";
 import { useAdminT } from "./admin-i18n";
 
 /**
@@ -48,6 +49,8 @@ export function AdminNav({ badges }: { badges: Partial<Record<(typeof SECTIONS)[
   const { href } = useI18n();
   const pathname = usePathname();
   const root = href("/admin");
+  // The menu is in the layout: the messages count keeps itself current.
+  const unreadMessages = useUnreadMessages(badges.messages ?? 0);
 
   return (
     <nav
@@ -57,7 +60,7 @@ export function AdminNav({ badges }: { badges: Partial<Record<(typeof SECTIONS)[
       {SECTIONS.map(({ path, key, icon: Icon }) => {
         const target = root + path;
         const active = path === "" ? pathname === root : pathname.startsWith(target);
-        const badge = badges[key];
+        const badge = key === "messages" ? unreadMessages : badges[key];
         return (
           <Link
             key={key}

@@ -16,7 +16,17 @@ import { serviceFeeMinor } from "@/modules/orders/pricing";
 import { detailLines, requestDetails } from "./details";
 import { notifyAdminsOfMessage } from "./notify";
 import { MAX_MESSAGE_LENGTH, personCanWrite } from "./rules";
-import { addMessage, canSendMore, getConversation, getOwnConversation, startConversation, waitingRequestOf } from "./service";
+import { isAdmin } from "@/modules/admin/guard";
+import {
+  addMessage,
+  canSendMore,
+  countUnreadForAdmins,
+  countUnreadForUser,
+  getConversation,
+  getOwnConversation,
+  startConversation,
+  waitingRequestOf,
+} from "./service";
 import { log } from "@/modules/logs/logger";
 
 export type MessageErrorKey =
@@ -148,4 +158,15 @@ export async function priceRequestItemsAction(items: unknown): Promise<{ view: C
   const market = await loadMarket();
   const view = await loadCart(market, sanitizeCart(items));
   return { view, feeMinor: view.parcels.length ? serviceFeeMinor(view.totalMinor, market) : 0 };
+}
+
+/**
+ * The header's messages badge, re-read by the browser now and then: the
+ * header sits in the layout, which does not re-render between pages.
+ * Admins count conversations waiting for the team; others their unread replies.
+ */
+export async function unreadMessagesAction(): Promise<number> {
+  const user = await getCurrentUser();
+  if (!user) return 0;
+  return isAdmin(user) ? countUnreadForAdmins() : countUnreadForUser(user.id);
 }

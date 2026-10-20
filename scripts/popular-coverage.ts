@@ -1,18 +1,20 @@
 /**
  * Shows how well the connected stores cover the popular product families:
  * how many variants we track, how many can be compared across stores, and where.
+ * Also saves them for the home page (the daily job does that too).
  *
  *   npm run popular:coverage
  */
 import { closeDb } from "@/db/client";
 import { POPULAR_FAMILIES } from "@/config/popular";
 import { formatMoney } from "@/lib/money";
-import { getPopularCoverage } from "@/modules/catalog/popular";
+import { getPopularCoverage, savePopularCoverage } from "@/modules/catalog/popular";
 import { loadMarket } from "@/modules/pricing/fx";
 
 async function main() {
   const market = await loadMarket();
-  const coverage = await getPopularCoverage(market, true);
+  await savePopularCoverage(market);
+  const coverage = await getPopularCoverage(market);
 
   console.table(
     coverage.map((row) => ({

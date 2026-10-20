@@ -64,7 +64,8 @@ export async function findSimilarProducts(
   if (candidates.length === 0) return [];
 
   const score = new Map(candidates.map((row) => [row.id, Number(row.similarity)]));
-  const entries = await loadProductsWithOffers(market, new Date(), candidates.map((row) => row.id));
+  // Prices only: shown on every product page (and to crawlers), so no price history.
+  const entries = await loadProductsWithOffers(market, new Date(), candidates.map((row) => row.id), { history: false });
 
   return entries
     .flatMap((entry): SimilarProduct[] => {

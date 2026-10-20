@@ -18,6 +18,7 @@ import { confirmManualOffers } from "@/modules/catalog/manual-offers";
 import { buildDailyDigest } from "@/modules/digest/service";
 import { postDigest } from "@/modules/telegram/channel";
 import { buildDeals } from "./build";
+import { savePopularCoverage } from "@/modules/catalog/popular";
 import { pausedStoresToSkip, updateStoreHealth } from "@/modules/suppliers/health";
 import { marketDay } from "@/modules/digest/pick";
 import { log } from "@/modules/logs/logger";
@@ -89,6 +90,12 @@ export async function runDailyPipeline(
         );
   await classifyProducts();
   const dealCount = await buildDeals(market, run.id, now);
+  // The home page's popular tiles, computed once here instead of on page views.
+  try {
+    await savePopularCoverage(market);
+  } catch (error) {
+    await log.warn("pipeline", "popular.failed", "Popular tiles were not refreshed", { error, runId: run.id });
+  }
   // With fresh prices in place: tell people whose watched products got cheaper.
   const alerts = await checkPriceWatches(market, now);
   // A run limited to some stores ("Collect now") is not the day's run.

@@ -103,6 +103,7 @@ docker exec -i serfeli-db psql -U serfeli -d serfeli   # SQL (note -i for heredo
   messages to the bot are fetched only while someone connects, or by `npm run telegram -- listen`.
 - macOS blocks launchd from ~/Desktop, so the daily schedule can't be installed until the project moves.
 - A running `deals:run` keeps its old code in memory; changes apply from the next run.
+- Neon free plan caps **network transfer at 5 GB/month** (hit on 2026-10-20). Every full rebuild reads the whole catalog: select only the columns you need (never a store's full row per offer), send history grouped per offer, keep per-page-view reads small (home tiles are a daily snapshot, `catalog/popular.ts`), and avoid extra full runs.
 - Testing admin pages: create a throwaway admin + session row in the local DB, set the `session`
   cookie in the browser pane, and delete the user, its `admin_events` and any test data afterwards.
 

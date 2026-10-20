@@ -78,11 +78,25 @@ export async function loadProductsWithOffers(
   market: MarketConfig,
   now: Date,
   productIds?: string[],
+  /** Without price history (no verdicts): for lists that only show prices, to read far less data. */
+  options: { history?: boolean } = {},
 ): Promise<ProductWithOffers[]> {
   if (productIds && productIds.length === 0) return [];
 
+  // Only the store columns used here: a store's full row (its settings) is ~2 KB and would be
+  // repeated for every one of its offers — most of the data a full rebuild reads.
   const rows = await db
-    .select({ offer: offers, supplier: suppliers, product: products })
+    .select({
+      offer: offers,
+      supplier: {
+        id: suppliers.id,
+        name: suppliers.name,
+        scope: suppliers.scope,
+        trustScore: suppliers.trustScore,
+        originCountry: suppliers.originCountry,
+      },
+      product: products,
+    })
     .from(offers)
     .innerJoin(suppliers, eq(offers.supplierId, suppliers.id))
     .innerJoin(products, eq(offers.productId, products.id))
@@ -99,13 +113,17 @@ export async function loadProductsWithOffers(
   const windowStart = new Date(now.getTime() - market.deals.historyWindowDays * DAY_MS).toISOString().slice(0, 10);
   const today = now.toISOString().slice(0, 10);
   // In batches: PostgreSQL allows at most 65,535 parameters per query, and a full catalog has more
-  // offers. Each batch goes straight into the per-offer history, row by row: a full catalog has
-  // millions of observations, too many to gather in one array or spread into one call.
+  // offers. One row per offer with its days and prices as arrays, so the offer id is not sent once
+  // per observation (a full catalog has millions); each row goes straight into the map.
   const offerIds = rows.map((r) => r.offer.id);
   const historyByOffer = new Map<string, PricePoint[]>();
-  for (let i = 0; i < offerIds.length; i += OBSERVATION_BATCH) {
+  for (let i = 0; options.history !== false && i < offerIds.length; i += OBSERVATION_BATCH) {
     const batch = await db
-      .select({ offerId: priceObservations.offerId, date: priceObservations.observedOn, priceMinor: priceObservations.priceMinor })
+      .select({
+        offerId: priceObservations.offerId,
+        dates: sql<string[]>`array_agg(${priceObservations.observedOn}::text order by ${priceObservations.observedOn})`,
+        prices: sql<number[]>`array_agg(${priceObservations.priceMinor} order by ${priceObservations.observedOn})`,
+      })
       .from(priceObservations)
       .where(
         and(
@@ -113,11 +131,12 @@ export async function loadProductsWithOffers(
           gte(priceObservations.observedOn, windowStart),
         ),
       )
-      .orderBy(priceObservations.observedOn);
-    for (const { offerId, date, priceMinor } of batch) {
-      const list = historyByOffer.get(offerId);
-      if (list) list.push({ date, priceMinor });
-      else historyByOffer.set(offerId, [{ date, priceMinor }]);
+      .groupBy(priceObservations.offerId);
+    for (const { offerId, dates, prices } of batch) {
+      historyByOffer.set(
+        offerId,
+        dates.map((date, index) => ({ date, priceMinor: Number(prices[index]) })),
+      );
     }
   }
 

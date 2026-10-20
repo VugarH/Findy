@@ -18,6 +18,8 @@ const ru: Dictionary = {
     messages: "Сообщения",
     language: "Язык",
     theme: "Сменить тему",
+    scrollBack: "Предыдущие категории",
+    scrollMore: "Ещё категории",
   },
   search: {
     dealsOnly: "Только скидки",

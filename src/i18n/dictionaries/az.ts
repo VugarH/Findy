@@ -18,6 +18,8 @@ const az: Dictionary = {
     messages: "Mesajlar",
     language: "Dil",
     theme: "Görünüşü dəyiş",
+    scrollBack: "Əvvəlki kateqoriyalar",
+    scrollMore: "Daha çox kateqoriya",
   },
   search: {
     dealsOnly: "Yalnız endirimlər",

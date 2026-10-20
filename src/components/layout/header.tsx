@@ -16,8 +16,8 @@ import { CartLink } from "@/components/cart/cart-link";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { SearchBar } from "@/components/search/search-bar";
 import { ButtonLink } from "@/components/ui/button";
-import { CategoryIcon } from "@/components/ui/category-icon";
 import { Container } from "@/components/ui/container";
+import { CategorySlider } from "./category-slider";
 import { LocaleSwitcher } from "./locale-switcher";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
@@ -117,19 +117,14 @@ export async function Header() {
             <span className="hidden sm:inline">{t.top.nav}</span>
             <span className="sm:hidden">{t.top.short}</span>
           </Link>
-          {/* Every category; scrolls sideways when they don't fit. */}
-          <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
-            {categories.map((category) => (
-              <Link
-                key={category.slug}
-                href={href(`/category/${category.slug}`)}
-                className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-ink"
-              >
-                <CategoryIcon category={category.slug} className="size-4" />
-                {t.categories[category.slug].short}
-              </Link>
-            ))}
-          </div>
+          <CategorySlider
+            items={categories.map((category) => ({
+              slug: category.slug,
+              href: href(`/category/${category.slug}`),
+              name: t.categories[category.slug].short,
+            }))}
+            labels={{ previous: t.nav.scrollBack, next: t.nav.scrollMore }}
+          />
           <Link
             href={href("/ordering-abroad")}
             className="hidden shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-ink lg:block"

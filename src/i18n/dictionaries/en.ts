@@ -16,6 +16,8 @@ const en = {
     messages: "Messages",
     language: "Language",
     theme: "Switch theme",
+    scrollBack: "Previous categories",
+    scrollMore: "More categories",
   },
   search: {
     dealsOnly: "Discounts only",

@@ -57,18 +57,23 @@ export function ProductCard({
       <Link
         href={href(`/product/${card.slug}`)}
         className={cn(
-          "group flex w-full flex-col overflow-hidden border border-line bg-surface transition-shadow hover:shadow-card",
+          "group flex w-full flex-col overflow-hidden border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-card",
           compact ? "rounded-xl" : "rounded-2xl",
         )}
       >
       <div className={cn("relative overflow-hidden", "aspect-[4/3]")}>
-        <ProductImage imageUrl={card.imageUrl} title={card.title} category={card.categorySlug} />
+        <ProductImage
+          imageUrl={card.imageUrl}
+          title={card.title}
+          category={card.categorySlug}
+          className="transition-transform duration-300 group-hover:scale-105"
+        />
         {isDeal && (
           <span
             className={cn(
               "absolute rounded-full font-bold",
               compact ? "left-2.5 top-2.5 px-2 py-0.5 text-sm" : "left-3 top-3 px-2.5 py-1 text-sm",
-              card.verified ? "bg-deal text-on-deal" : "border border-line bg-surface text-ink",
+              card.verified ? "bg-deal text-on-deal shadow-sm" : "border border-deal/25 bg-deal-soft text-deal",
             )}
           >
             −{card.discountPct}%

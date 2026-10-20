@@ -23,16 +23,25 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
   return (
     <Link
       href={href(`/product/${card.slug}`)}
-      className="group grid overflow-hidden rounded-3xl border border-line bg-surface transition-shadow hover:shadow-card md:grid-cols-[2fr_3fr]"
+      className="group relative grid overflow-hidden rounded-3xl border border-deal/25 bg-surface shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-deal/40 md:grid-cols-[2fr_3fr]"
     >
-      <div className="relative aspect-[4/3] md:aspect-auto md:min-h-72">
-        <ProductImage imageUrl={card.imageUrl} title={card.title} category={card.categorySlug} />
-        <span className="absolute left-4 top-4 rounded-full bg-deal px-3 py-1 text-base font-bold text-on-deal">
+      <div className="relative aspect-[4/3] overflow-hidden md:aspect-auto md:min-h-72">
+        <ProductImage
+          imageUrl={card.imageUrl}
+          title={card.title}
+          category={card.categorySlug}
+          className="transition-transform duration-500 group-hover:scale-105"
+        />
+        <span className="absolute left-4 top-4 rounded-full bg-deal px-3 py-1 text-base font-bold text-on-deal shadow-card">
           −{card.discountPct}%
         </span>
       </div>
 
-      <div className="flex flex-col gap-4 p-6 md:p-8">
+      {/* A warm light in the corner of the text side: this card is the day's pick. */}
+      <div
+        className="flex flex-col gap-4 p-6 md:p-8"
+        style={{ background: "radial-gradient(70% 60% at 100% 0%, var(--deal-soft), transparent 70%)" }}
+      >
         <p className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-deal">
           <Flame className="size-4" aria-hidden />
           {t.home.dealOfDay}

@@ -175,3 +175,11 @@ body {
     display: none;
   }
 }
+
+/* Soft light behind a hero block: brand green on one side, the "abroad" blue on the other. Theme-aware through the tokens. */
+.hero-glow {
+  background:
+    radial-gradient(55% 60% at 15% 0%, var(--brand-soft), transparent 70%),
+    radial-gradient(45% 55% at 90% 15%, var(--global-soft), transparent 70%),
+    var(--surface);
+}

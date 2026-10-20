@@ -55,7 +55,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="border-b border-line bg-surface">
+      <section className="hero-glow border-b border-line">
         <Container className="py-12 md:py-16">
           <div className="mx-auto max-w-3xl text-center">
             <p className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-strong">
@@ -86,9 +86,9 @@ export default async function HomePage() {
             )}
           </div>
 
-          <dl className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-4">
+          <dl className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-3 md:grid-cols-4">
             {statTiles.map((stat) => (
-              <div key={stat.label} className="text-center">
+              <div key={stat.label} className="rounded-2xl border border-line bg-surface/70 px-4 py-5 text-center backdrop-blur-sm">
                 <dd className="text-3xl font-extrabold tracking-tight">
                   {stat.href ? (
                     <Link href={stat.href} className="hover:text-brand-strong hover:underline">
@@ -116,15 +116,20 @@ export default async function HomePage() {
               <Link
                 key={category.slug}
                 href={href(`/category/${category.slug}`)}
-                className="group flex items-center gap-4 rounded-2xl border border-line bg-surface p-5 transition-shadow hover:shadow-card"
+                className="group flex items-center gap-4 rounded-2xl border border-line bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-card"
               >
-                <span className={`grid size-12 shrink-0 place-items-center rounded-xl bg-surface-2 ${CATEGORY_TEXT[category.slug]}`}>
-                  <CategoryIcon category={category.slug} className="size-6" />
+                <span
+                  className={`relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl transition-transform duration-200 group-hover:scale-105 ${CATEGORY_TEXT[category.slug]}`}
+                >
+                  <span aria-hidden className="absolute inset-0 bg-current opacity-10" />
+                  <CategoryIcon category={category.slug} className="relative size-6" />
                 </span>
                 <span className="min-w-0">
                   <span className="block font-bold group-hover:underline">{t.categories[category.slug].name}</span>
                   <span className="block truncate text-sm text-muted">{t.categories[category.slug].description}</span>
-                  <span className="mt-1 block text-xs font-semibold text-brand-strong">
+                  <span
+                    className={`mt-1 block text-xs font-semibold ${stats.byCategory[category.slug] ? "text-brand-strong" : "text-muted"}`}
+                  >
                     {fmt(t.home.categoryDeals, { count: stats.byCategory[category.slug] ?? 0 })}
                   </span>
                 </span>
@@ -141,10 +146,11 @@ export default async function HomePage() {
                 <li key={row.family.id}>
                   <Link
                     href={`${href("/search")}?q=${encodeURIComponent(row.family.query)}`}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-shadow hover:shadow-card"
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card"
                   >
                     <div className="aspect-[4/3] overflow-hidden">
                       <ProductImage
+                        className="transition-transform duration-300 group-hover:scale-105"
                         imageUrl={row.cheapest.imageUrl}
                         title={row.family.label}
                         category={row.cheapest.categorySlug}

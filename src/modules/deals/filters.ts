@@ -126,6 +126,7 @@ function readDealFilters(params: RawSearchParams, lockedCategory?: DealFilters["
     minDiscount: discount > 0 && discount <= 95 ? discount : undefined,
     priceMin,
     priceMax: priceMax !== undefined && priceMin !== undefined && priceMax < priceMin ? undefined : priceMax,
+    freshOnly: first(params.verified) === "1" || undefined,
     sort: (DEAL_SORTS as readonly string[]).includes(sort ?? "") ? (sort as DealSort) : "best",
     page,
     size,
@@ -140,7 +141,7 @@ function wholeAmount(value: string | undefined): number | undefined {
   return amount > 0 && amount < 10_000_000 ? amount : undefined;
 }
 
-export type FilterKey = "category" | "sub" | "for" | "brand" | "store" | "sizes" | "scope" | "country" | "discount" | "min" | "max" | "sort" | "size" | "page";
+export type FilterKey = "verified" | "category" | "sub" | "for" | "brand" | "store" | "sizes" | "scope" | "country" | "discount" | "min" | "max" | "sort" | "size" | "page";
 
 /**
  * The current filters as URL params (defaults omitted), without the page.
@@ -165,6 +166,7 @@ export function filterParams(
     ["discount", current.minDiscount],
     ["min", current.priceMin],
     ["max", current.priceMax],
+    ["verified", current.freshOnly ? "1" : undefined],
     ["sort", current.sort === "best" ? undefined : current.sort],
     ["size", current.size === DEFAULT_PAGE_SIZE ? undefined : current.size],
   ];

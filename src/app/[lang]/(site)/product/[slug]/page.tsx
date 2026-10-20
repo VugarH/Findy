@@ -13,6 +13,7 @@ import { toMinor } from "@/lib/money";
 import { findMergeTargetSlug } from "@/modules/catalog/merge";
 import { historyInMarketCurrency, toMarketCurrency } from "@/modules/catalog/offer-view";
 import { getProductDetail } from "@/modules/catalog/queries";
+import { storeDiscount } from "@/modules/catalog/summary";
 import { offerFreshDrop } from "@/modules/deals/fresh-drop";
 import { sameBrand } from "@/modules/catalog/normalizers/fashion";
 import { WatchButton } from "@/components/alerts/watch-button";
@@ -35,12 +36,12 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/product/[s
   if (!detail) return {};
   // What a shared link shows: the product photo, its best price and where.
   const best = detail.summary?.best;
-  const deal = detail.summary?.deal;
+  const store = best ? storeDiscount(best) : null;
   const description = best
-    ? fmt(deal ? t.meta.productPreviewDeal : t.meta.productPreview, {
+    ? fmt(store ? t.meta.productPreviewDeal : t.meta.productPreview, {
         price: money(best.landed.totalMinor),
         store: best.supplier.name,
-        pct: deal?.discountPct ?? 0,
+        pct: store?.pct ?? 0,
       })
     : t.meta.description;
   const image = usableImage(detail.product.imageUrl);
@@ -230,7 +231,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
                   <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                   {fmt(t.product.storeClaim, {
                     store: best.supplier.name,
-                    pct: deal.discountPct,
+                    pct: storeDiscount(best)?.pct ?? deal.discountPct,
                     days: best.verdict?.historyDays ?? 0,
                     min: market.deals.minHistoryDays,
                   })}

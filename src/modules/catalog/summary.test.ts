@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { azMarket } from "@/config/markets/az";
 import type { OfferView } from "./offer-view";
-import { priceBeforeDiscount } from "./summary";
+import { storeDiscount } from "./summary";
 
 const offer = (patch: Partial<OfferView>): OfferView =>
   ({
@@ -14,21 +13,22 @@ const offer = (patch: Partial<OfferView>): OfferView =>
     ...patch,
   }) as OfferView;
 
-describe("priceBeforeDiscount", () => {
-  it("uses the store's crossed-out price while we have little history", () => {
-    const result = priceBeforeDiscount(offer({ listPriceMinor: 4_000, listLandedMinor: 15_000 }), azMarket);
-    expect(result).toEqual({ wasMinor: 15_000, discountPct: 33, verified: false });
+describe("storeDiscount", () => {
+  it("is the store's own discount on its price, with the total at its crossed-out price", () => {
+    expect(storeDiscount(offer({ listPriceMinor: 4_000, listLandedMinor: 15_000 }))).toEqual({
+      pct: 50,
+      wasLandedMinor: 15_000,
+      savingsMinor: 5_000,
+    });
   });
 
-  it("uses our own usual price once the history is long enough, whatever the store claims", () => {
-    const verdict = { historyDays: azMarket.deals.minHistoryDays, realDiscountPct: 20 } as OfferView["verdict"];
-    const result = priceBeforeDiscount(offer({ listPriceMinor: 9_000, listLandedMinor: 40_000, usualLandedMinor: 12_500, verdict }), azMarket);
-    expect(result).toEqual({ wasMinor: 12_500, discountPct: 20, verified: true });
+  it("ignores our own usual price, even when the history disagrees", () => {
+    const verdict = { historyDays: 60, realDiscountPct: 5 } as OfferView["verdict"];
+    expect(storeDiscount(offer({ listPriceMinor: 4_000, listLandedMinor: 15_000, usualLandedMinor: 10_500, verdict }))?.pct).toBe(50);
   });
 
-  it("shows nothing when the offer is not cheaper than before", () => {
-    expect(priceBeforeDiscount(offer({}), azMarket)).toBeNull();
-    const verdict = { historyDays: 30, realDiscountPct: -5 } as OfferView["verdict"];
-    expect(priceBeforeDiscount(offer({ usualLandedMinor: 9_500, verdict }), azMarket)).toBeNull();
+  it("is null when the store shows no discount", () => {
+    expect(storeDiscount(offer({}))).toBeNull();
+    expect(storeDiscount(offer({ listPriceMinor: 2_000, listLandedMinor: 10_000 }))).toBeNull();
   });
 });

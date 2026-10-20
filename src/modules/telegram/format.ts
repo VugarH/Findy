@@ -44,10 +44,8 @@ export function digestPost(items: DigestItem[], day: { label: string; key: strin
   // Long titles are cut harder until the whole post fits in one message.
   for (const titleLength of [90, 60, 40, 25]) {
     const lines = items.map((item, index) => {
-      const discount =
-        item.discountPct !== null
-          ? ` · −${item.discountPct}%${item.verified ? "" : ` (${escapeHtml(t.telegram.storeClaim)})`}`
-          : "";
+      // The store's own discount, as on the site's cards.
+      const discount = item.discountPct !== null ? ` · −${item.discountPct}%` : "";
       const old = item.usualLandedMinor ? ` <s>${escapeHtml(ctx.money(item.usualLandedMinor))}</s>` : "";
       const store = `${flag(item.originCountry)} ${escapeHtml(item.supplierName)}`.trim();
       return (

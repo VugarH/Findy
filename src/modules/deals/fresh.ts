@@ -17,13 +17,13 @@ function liveFresh(market: MarketConfig, category?: CategorySlug) {
 }
 
 /**
- * "Fresh real deals": biggest drop first, newer drops first on a tie, at most
- * `market.deals.freshDrop.limit`. Cards are built from current offers, like
+ * Verified discounts ("fresh" drops, modules/deals/fresh-drop.ts): biggest drop
+ * first, newer drops first on a tie. Cards are built from current offers, like
  * the product page, since many of these are not in the deals table.
  */
 export async function listFreshDeals(
   market: MarketConfig,
-  options: { category?: CategorySlug; limit?: number } = {},
+  options: { category?: CategorySlug; limit: number; offset?: number },
 ): Promise<ProductCardData[]> {
   const rows = await db
     .select({
@@ -37,19 +37,21 @@ export async function listFreshDeals(
     .innerJoin(offers, eq(freshDeals.offerId, offers.id))
     .where(liveFresh(market, options.category))
     .orderBy(desc(freshDeals.dropPct), desc(freshDeals.fromOn), freshDeals.productId)
-    .limit(Math.min(options.limit ?? market.deals.freshDrop.limit, market.deals.freshDrop.limit));
+    .limit(options.limit)
+    .offset(options.offset ?? 0);
   if (rows.length === 0) return [];
 
   const entries = await loadProductsWithOffers(market, new Date(), rows.map((row) => row.productId));
   const byId = new Map(entries.map((entry) => [entry.product.id, entry]));
+  const windowDays = market.deals.freshDrop.windowDays;
   return rows.flatMap(({ productId, ...fresh }) => {
     const entry = byId.get(productId);
     const summary = entry && summarizeProduct(entry, market);
-    return entry && summary ? [{ ...toCard(entry.product, summary), fresh: { ...fresh, windowDays: market.deals.freshDrop.windowDays } }] : [];
+    return entry && summary ? [{ ...toCard(entry.product, summary), fresh: { ...fresh, windowDays } }] : [];
   });
 }
 
-/** How many fresh drops there are, overall and per category (capped at the page limit). */
+/** How many verified discounts there are, overall and per category. */
 export async function countFreshDeals(market: MarketConfig): Promise<{ total: number; byCategory: Record<string, number> }> {
   const rows = await db
     .select({ category: freshDeals.categorySlug, total: count() })
@@ -57,7 +59,8 @@ export async function countFreshDeals(market: MarketConfig): Promise<{ total: nu
     .innerJoin(offers, eq(freshDeals.offerId, offers.id))
     .where(liveFresh(market))
     .groupBy(freshDeals.categorySlug);
-  const byCategory = Object.fromEntries(rows.map((row) => [row.category, row.total]));
-  const total = rows.reduce((sum, row) => sum + row.total, 0);
-  return { total: Math.min(total, market.deals.freshDrop.limit), byCategory };
+  return {
+    total: rows.reduce((sum, row) => sum + row.total, 0),
+    byCategory: Object.fromEntries(rows.map((row) => [row.category, row.total])),
+  };
 }

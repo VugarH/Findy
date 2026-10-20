@@ -146,6 +146,8 @@ export function facetsOfCards(cards: ProductCardData[], category?: CategorySlug,
     audiences: tally(inCategory.flatMap((card) => (card.audience ? [card.audience] : []))),
     brands: category ? brandFacets(inCategory) : [],
     stores: storeFacets(ofCategory(cards)),
+    // Search results do not offer the verified-discounts switch.
+    fresh: 0,
     sizes: isSizedCategory(category)
       ? sizeFacets(Object.entries(tally(inCategory.flatMap((card) => card.sizes ?? []))).map(([key, total]) => ({ key, total })))
       : [],

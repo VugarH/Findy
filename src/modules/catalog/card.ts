@@ -4,7 +4,7 @@ import type { Audience } from "@/config/audience";
 import type { CategorySlug } from "@/config/categories";
 import type { SupplierScope } from "@/modules/suppliers/types";
 import { inStockSizeKeys } from "@/modules/suppliers/sizes";
-import type { ProductSummary } from "./summary";
+import { storeDiscount, type ProductSummary } from "./summary";
 
 /** The flat, serialisable shape every product card in the UI renders from. */
 export interface ProductCardData {
@@ -24,10 +24,15 @@ export interface ProductCardData {
   imageUrl: string | null;
   /** Landed total of the best offer, in the market currency. */
   landedMinor: number;
+  /**
+   * The store's own discount (its crossed-out price): the badge, the crossed-out
+   * total and the saving. Null when the store shows none. Our own check is
+   * `verified` / `fresh`, shown apart from this number.
+   */
   usualLandedMinor: number | null;
   discountPct: number | null;
   savingsMinor: number | null;
-  /** False when the discount is the store's own claim, not yet backed by our history. */
+  /** True when our own price history backs the deal. */
   verified: boolean;
   supplierId: string;
   supplierName: string;
@@ -56,6 +61,7 @@ export interface CardFresh {
 
 export function toCard(product: Product, summary: ProductSummary): ProductCardData {
   const { best, deal } = summary;
+  const store = storeDiscount(best);
   return {
     productId: product.id,
     offerId: best.offerId,
@@ -69,9 +75,9 @@ export function toCard(product: Product, summary: ProductSummary): ProductCardDa
     originCountry: best.supplier.originCountry,
     imageUrl: usableImage(product.imageUrl),
     landedMinor: best.landed.totalMinor,
-    usualLandedMinor: deal?.usualLandedMinor ?? null,
-    discountPct: deal?.discountPct ?? null,
-    savingsMinor: deal?.savingsMinor ?? null,
+    usualLandedMinor: store?.wasLandedMinor ?? null,
+    discountPct: store?.pct ?? null,
+    savingsMinor: store?.savingsMinor ?? null,
     verified: deal?.verified ?? false,
     supplierId: best.supplier.id,
     supplierName: best.supplier.name,

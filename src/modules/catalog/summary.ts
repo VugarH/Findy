@@ -76,21 +76,6 @@ function discountBasis(offer: OfferView, market: MarketConfig): DiscountBasis | 
   return null;
 }
 
-export interface PriceBeforeDiscount {
-  /** Landed total before the discount. */
-  wasMinor: number;
-  discountPct: number;
-  verified: boolean;
-}
-
-/** The "was" price to show crossed out next to an offer, or null when it is not discounted. */
-export function priceBeforeDiscount(offer: OfferView, market: MarketConfig): PriceBeforeDiscount | null {
-  const basis = discountBasis(offer, market);
-  if (!basis || basis.usualLandedMinor <= offer.landed.totalMinor) return null;
-  const discountPct = Math.round(((basis.usualLandedMinor - offer.landed.totalMinor) / basis.usualLandedMinor) * 100);
-  return discountPct >= 1 ? { wasMinor: basis.usualLandedMinor, discountPct, verified: basis.verified } : null;
-}
-
 function judgeDeal(best: OfferView, nextBest: OfferView | undefined, market: MarketConfig): DealVerdict | null {
   const basis = discountBasis(best, market);
   if (!basis || basis.discountBasisPct < market.deals.minRealDiscountPct) return null;
@@ -117,4 +102,24 @@ function judgeDeal(best: OfferView, nextBest: OfferView | undefined, market: Mar
     badges: badgesFor(signals, score),
     verified: hasHistory,
   };
+}
+
+export interface StoreDiscount {
+  /** The store's own discount on its price, in whole percent. */
+  pct: number;
+  /** Landed total at the store's crossed-out price. */
+  wasLandedMinor: number;
+  savingsMinor: number;
+}
+
+/**
+ * The discount the store itself shows (its crossed-out price), which is what
+ * the site displays on cards and badges. Our own check (DealVerdict.verified,
+ * fresh drops) is shown separately, never mixed into this number.
+ */
+export function storeDiscount(offer: OfferView): StoreDiscount | null {
+  if (offer.listPriceMinor === null || offer.listLandedMinor === null || offer.listPriceMinor <= offer.priceMinor) return null;
+  const pct = Math.round(((offer.listPriceMinor - offer.priceMinor) / offer.listPriceMinor) * 100);
+  const savingsMinor = offer.listLandedMinor - offer.landed.totalMinor;
+  return pct >= 1 && savingsMinor > 0 ? { pct, wasLandedMinor: offer.listLandedMinor, savingsMinor } : null;
 }

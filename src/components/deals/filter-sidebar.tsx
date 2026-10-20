@@ -23,7 +23,7 @@ import { orderedBrands, orderedCategories, orderedSubcategories } from "@/module
 import { getDisplayOrder, getFilterSwitches } from "@/modules/settings/service";
 import { BrandFilter } from "./brand-filter";
 import { DiscountSlider } from "./discount-slider";
-import { FilterGroup, FilterOption } from "./filter-panel";
+import { FilterGroup, FilterOption, FilterToggle } from "./filter-panel";
 import { SizeFilter } from "./size-filter";
 
 export type FilterLink = (patch: Partial<Record<FilterKey, string | number | undefined>>) => string;
@@ -38,10 +38,12 @@ interface SidebarProps {
   showCategory: boolean;
   /** Off where the page offers its own local/abroad switch. */
   showSource: boolean;
+  /** The "Verified discounts only" switch (deal lists; search results do not support it). */
+  showVerified?: boolean;
 }
 
 /** The filter groups shared by the deal listings and the search results. */
-export async function FilterSidebar({ filters, facets, link, priceForm, showCategory, showSource }: SidebarProps) {
+export async function FilterSidebar({ filters, facets, link, priceForm, showCategory, showSource, showVerified = false }: SidebarProps) {
   const { t, market, locale } = await getI18n();
   // Filters an admin switched off are not offered (their URL params are already ignored).
   const [on, order] = await Promise.all([getFilterSwitches(), getDisplayOrder()]);
@@ -99,6 +101,19 @@ export async function FilterSidebar({ filters, facets, link, priceForm, showCate
 
   return (
     <>
+      {showVerified && (facets.fresh > 0 || filters.freshOnly) && (
+        <FilterGroup title={t.fresh.nav}>
+          <FilterToggle
+            href={link({ verified: filters.freshOnly ? undefined : "1" })}
+            active={Boolean(filters.freshOnly)}
+            count={facets.fresh}
+            hint={fmt(t.fresh.filterHint, { days: market.deals.freshDrop.windowDays })}
+          >
+            {t.fresh.filterOnly}
+          </FilterToggle>
+        </FilterGroup>
+      )}
+
       {showCategory && on.category && (
         <FilterGroup title={t.filters.category}>
           <FilterOption href={link({ category: undefined })} active={!filters.category}>
@@ -295,6 +310,7 @@ interface ActiveProps {
 /** How many filters are applied (for the phone "Filters" button badge). */
 export function countActiveFilters(filters: ParsedDealFilters, showCategory: boolean, showSource: boolean): number {
   return [
+    filters.freshOnly,
     showCategory && filters.category,
     filters.subcategory,
     filters.audience,
@@ -318,6 +334,7 @@ export async function ActiveFilters({ filters, link, resetHref, showCategory, sh
 
   const active = [
     query ? { label: `“${query.text}”`, remove: query.remove } : null,
+    filters.freshOnly ? { label: t.fresh.nav, remove: link({ verified: undefined }) } : null,
     showCategory && filters.category
       ? { label: t.categories[filters.category].name, remove: link({ category: undefined }) }
       : null,

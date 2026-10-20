@@ -116,6 +116,7 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
               }}
               showCategory={showCategory}
               showSource
+              showVerified
             />
           </FilterDrawerPanel>
 

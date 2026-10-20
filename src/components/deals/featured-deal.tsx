@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Flame, Store, Truck } from "lucide-react";
+import { ArrowRight, BadgeCheck, Flame, Store, Truck } from "lucide-react";
 import type { ProductCardData } from "@/modules/catalog/card";
 import { getI18n } from "@/i18n/server";
 import { fmt } from "@/i18n/format";
@@ -58,7 +58,12 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
               <span className="text-lg text-muted line-through">{money(card.usualLandedMinor)}</span>
             )}
           </div>
-          {!card.verified && <p className="mt-1 text-sm text-muted">{t.deal.storeClaim}</p>}
+          {(card.verified || card.fresh) && (
+            <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
+              <BadgeCheck className="size-4" aria-hidden />
+              {t.fresh.cardCheck}
+            </p>
+          )}
           <p className="mt-1 text-sm text-muted">
             {t.deal.totalHint}
             {card.savingsMinor !== null && (

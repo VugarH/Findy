@@ -49,3 +49,47 @@ export function FilterOption({
     </Link>
   );
 }
+
+/** An on/off filter: a checkbox drawn as a link, like FilterOption. */
+export function FilterToggle({
+  href,
+  active,
+  count,
+  hint,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  count?: number;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      role="checkbox"
+      aria-checked={active}
+      className="group flex items-start gap-2 rounded-lg px-2 py-1.5 text-[13px] text-ink transition-colors hover:bg-surface-2"
+    >
+      <span
+        aria-hidden
+        className={cn(
+          "mt-0.5 grid size-4 shrink-0 place-items-center rounded border",
+          active ? "border-brand bg-brand text-on-brand" : "border-muted/50 group-hover:border-muted",
+        )}
+      >
+        {active && (
+          <svg viewBox="0 0 12 12" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2.5 6.5 5 9l4.5-6" />
+          </svg>
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={cn("block", active && "font-semibold")}>{children}</span>
+        {hint && <span className="mt-0.5 block text-xs text-muted">{hint}</span>}
+      </span>
+      {count !== undefined && <span className="text-xs text-muted tabular-nums">{count}</span>}
+    </Link>
+  );
+}

@@ -100,9 +100,8 @@ export interface MarketConfig {
     /**
      * "Fresh real deals" (modules/deals/fresh-drop.ts): store-discounted items
      * at least `minDropPct` cheaper than the highest price we recorded in the
-     * `windowDays` before (or the last check within `lookbackDays`). At most
-     * `limit` are shown.
+     * `windowDays` before (or the last check within `lookbackDays`).
      */
-    freshDrop: { windowDays: number; lookbackDays: number; minDropPct: number; limit: number };
+    freshDrop: { windowDays: number; lookbackDays: number; minDropPct: number };
   };
 }

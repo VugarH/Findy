@@ -52,7 +52,7 @@ describe("digestPost", () => {
     expect(post.html).toContain('1. <a href="https://findy.az/en/product/nike-pegasus">Nike Air Zoom Pegasus 41</a>');
     expect(post.html).toContain("<b>129.00 ₼</b> <s>189.00 ₼</s> · −32% · 🇹🇷 Nike TR");
     expect(post.html).toContain("&lt;Bag&gt;");
-    expect(post.html).toContain("−32% (store's discount)");
+    expect(post.html).not.toContain("store's discount");
     expect(post.previewUrl).toBe("https://cdn.example.com/pegasus.jpg");
     expect(post.button.url).toBe("https://findy.az/en/top?day=2026-10-06");
   });

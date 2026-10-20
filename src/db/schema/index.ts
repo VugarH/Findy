@@ -213,6 +213,13 @@ export const deals = pgTable(
     /** False while the discount rests on the store's own "was" price, not our history. */
     verified: boolean("verified").notNull().default(true),
     claimedDiscountPct: real("claimed_discount_pct"),
+    /**
+     * The store's own discount (its crossed-out price), whole percent, and the
+     * landed total at that crossed-out price: what cards show. Null when the
+     * store shows no discount.
+     */
+    storeDiscountPct: integer("store_discount_pct"),
+    storeListLandedMinor: integer("store_list_landed_minor"),
     bestLocalLandedMinor: integer("best_local_landed_minor"),
     bestGlobalLandedMinor: integer("best_global_landed_minor"),
     offerCount: integer("offer_count").notNull(),

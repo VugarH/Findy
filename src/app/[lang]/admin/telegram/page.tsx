@@ -75,7 +75,7 @@ export default async function AdminTelegramPage() {
                         <span className="font-bold">{money(item.landedMinor)}</span>
                         {item.discountPct !== null && (
                           <span className="ml-2 text-xs font-semibold text-deal">
-                            −{item.discountPct}%{item.verified ? "" : ` (${tg.storeClaim})`}
+                            −{item.discountPct}%
                           </span>
                         )}
                       </span>

@@ -128,7 +128,7 @@ export default async function HomePage() {
                 <p className="mt-1 text-sm text-muted">{fmt(t.fresh.homeHint, { days: market.deals.freshDrop.windowDays })}</p>
               </div>
             </div>
-            <ProductGrid cards={fresh} t={t} money={money} href={href} freshFocus />
+            <ProductGrid cards={fresh} t={t} money={money} href={href} />
             <div className="mt-6 flex justify-center">
               <ButtonLink href={href("/fresh")} size="lg" className="w-full sm:w-auto">
                 {fmt(t.fresh.seeAll, { count: freshCount.total })}

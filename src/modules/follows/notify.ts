@@ -155,8 +155,9 @@ async function loadNewDeals(market: MarketConfig, from: Date, to: Date): Promise
       storeName: suppliers.name,
       categorySlug: deals.categorySlug,
       landedMinor: deals.landedMinor,
-      usualLandedMinor: deals.usualLandedMinor,
-      discountPct: deals.realDiscountPct,
+      // The store's discount, as on the cards.
+      usualLandedMinor: sql<number>`${deals.storeListLandedMinor}`,
+      discountPct: sql<number>`${deals.storeDiscountPct}`,
       score: deals.score,
       dealSince: deals.dealSince,
     })
@@ -170,7 +171,9 @@ async function loadNewDeals(market: MarketConfig, from: Date, to: Date): Promise
         gt(deals.dealSince, from),
         lte(deals.dealSince, to),
         offerIsLive(freshSince(market, to)),
+        // Announced with the store's discount, so only deals the store shows as discounted.
+        isNotNull(deals.storeDiscountPct),
       ),
     );
-  return rows.map((row) => ({ ...row, brandKey: row.brandKey || null, discountPct: Math.round(row.discountPct) }));
+  return rows.map((row) => ({ ...row, brandKey: row.brandKey || null, discountPct: Number(row.discountPct) }));
 }

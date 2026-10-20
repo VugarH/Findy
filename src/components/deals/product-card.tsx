@@ -27,25 +27,15 @@ export interface CardNote {
 }
 
 export function ProductCard({
-  card: listed,
+  card,
   note,
   compact = false,
-  freshFocus = false,
   t,
   money,
   href,
-}: {
-  card: ProductCardData;
-  note?: CardNote | null;
-  compact?: boolean;
-  /** On "Fresh real deals" lists: the badge and crossed-out price are our measured drop. */
-  freshFocus?: boolean;
-} & CardLabels) {
-  const fresh = listed.fresh ?? null;
-  const card =
-    freshFocus && fresh
-      ? { ...listed, discountPct: fresh.dropPct, usualLandedMinor: fresh.fromLandedMinor, verified: true }
-      : listed;
+}: { card: ProductCardData; note?: CardNote | null; compact?: boolean } & CardLabels) {
+  // The badge and crossed-out total are the store's own discount; our own check is the line below.
+  const checked = Boolean(card.fresh) || card.verified;
   const isDeal = card.discountPct !== null && card.usualLandedMinor !== null;
   const lowest = card.badges.includes("lowest_price");
   // Sold locally and abroad: say so, and show both prices instead of only the cheaper one.
@@ -85,7 +75,7 @@ export function ProductCard({
             className={cn(
               "absolute rounded-full font-bold",
               compact ? "left-2.5 top-2.5 px-2 py-0.5 text-sm" : "left-3 top-3 px-2.5 py-1 text-sm",
-              card.verified ? "bg-deal text-on-deal shadow-sm" : "border border-deal/25 bg-deal-soft text-deal",
+              "bg-deal text-on-deal shadow-sm",
             )}
           >
             −{card.discountPct}%
@@ -141,18 +131,11 @@ export function ProductCard({
           </p>
         )}
 
-        {fresh ? (
-          <div className="space-y-0.5 text-xs">
-            <p className="flex items-center gap-1.5 font-semibold text-brand-strong">
-              <BadgeCheck className="size-3.5 shrink-0" aria-hidden />
-              {fmt(t.fresh.cardDrop, { pct: fresh.dropPct, days: fresh.windowDays })}
-            </p>
-            {freshFocus && fresh.storeDiscountPct > 0 && (
-              <p className="text-muted">{fmt(t.fresh.storeDiscount, { pct: fresh.storeDiscountPct })}</p>
-            )}
-          </div>
-        ) : (
-          isDeal && !card.verified && <p className={cn("text-muted", "text-xs")}>{t.deal.storeClaim}</p>
+        {checked && (
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-brand-strong">
+            <BadgeCheck className="size-3.5 shrink-0" aria-hidden />
+            {t.fresh.cardCheck}
+          </p>
         )}
 
         {lowest && (

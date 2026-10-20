@@ -32,6 +32,8 @@ export interface DealFilters {
   priceMax?: number;
   badge?: string;
   verifiedOnly?: boolean;
+  /** Only "Verified discounts": products with a recent drop by our own checks (fresh_deals). */
+  freshOnly?: boolean;
   /** Only these products (e.g. the day's top deals). */
   productIds?: string[];
   /** Size keys (sizeKey): deals whose store has any of them in stock. */
@@ -52,7 +54,8 @@ function bestOrder(market: MarketConfig): SQL[] {
 }
 
 const ORDER_BY: Record<Exclude<DealSort, "best">, SQL[]> = {
-  discount: [desc(deals.realDiscountPct), desc(deals.score)],
+  // The store's discount: the number every card shows.
+  discount: [desc(sql`coalesce(${deals.storeDiscountPct}, 0)`), desc(deals.score)],
   savings: [desc(deals.savingsMinor)],
   price_asc: [asc(deals.landedMinor)],
   price_desc: [desc(deals.landedMinor)],
@@ -74,6 +77,11 @@ function liveDeals(market: MarketConfig) {
   return and(eq(deals.marketCode, market.code), offerIsLive(freshSince(market)));
 }
 
+/** SQL condition: the deal's product is among the verified discounts (fresh_deals). */
+function hasFreshDrop(): SQL {
+  return sql`exists (select 1 from ${freshDeals} where ${and(eq(freshDeals.productId, deals.productId), eq(freshDeals.marketCode, deals.marketCode))})`;
+}
+
 function whereFor(market: MarketConfig, filters: DealFilters) {
   return and(
     liveDeals(market),
@@ -84,10 +92,11 @@ function whereFor(market: MarketConfig, filters: DealFilters) {
     filters.stores?.length ? inArray(offers.supplierId, filters.stores) : undefined,
     filters.country ? eq(deals.originCountry, filters.country) : undefined,
     filters.scope ? eq(deals.scope, filters.scope) : undefined,
-    filters.minDiscount ? gte(deals.realDiscountPct, filters.minDiscount) : undefined,
+    filters.minDiscount ? gte(deals.storeDiscountPct, filters.minDiscount) : undefined,
     filters.priceMin ? gte(deals.landedMinor, filters.priceMin * 100) : undefined,
     filters.priceMax ? lte(deals.landedMinor, filters.priceMax * 100) : undefined,
     filters.verifiedOnly ? eq(deals.verified, true) : undefined,
+    filters.freshOnly ? hasFreshDrop() : undefined,
     filters.productIds ? inArray(deals.productId, filters.productIds) : undefined,
     filters.sizes?.length ? arrayOverlaps(deals.sizes, filters.sizes) : undefined,
     filters.badge ? sql`${deals.badges} @> ${JSON.stringify([filters.badge])}::jsonb` : undefined,
@@ -154,9 +163,9 @@ export async function listDeals(
       originCountry: deal.originCountry,
       imageUrl: usableImage(product.imageUrl),
       landedMinor: deal.landedMinor,
-      usualLandedMinor: deal.usualLandedMinor,
-      discountPct: Math.round(deal.realDiscountPct),
-      savingsMinor: deal.savingsMinor,
+      usualLandedMinor: deal.storeListLandedMinor,
+      discountPct: deal.storeDiscountPct,
+      savingsMinor: deal.storeListLandedMinor === null ? null : deal.storeListLandedMinor - deal.landedMinor,
       verified: deal.verified,
       supplierId,
       supplierName,
@@ -206,6 +215,8 @@ export interface DealFacets {
   stores: StoreFacet[];
   /** Sizes in stock within a sized category (clothes, shoes…), in size order. */
   sizes: SizeFacet[];
+  /** Deals in the selected category (and stores) that are verified discounts. */
+  fresh: number;
 }
 
 export interface SizeFacet {
@@ -239,7 +250,7 @@ export async function getDealFacets(market: MarketConfig, category?: CategorySlu
   const withOffer = eq(deals.offerId, offers.id);
   // Qualified by hand: offers has a sizes column too, and raw columns render unqualified.
   const dealSize = sql<string>`unnest(${sql.raw('"deals"."sizes"')})`;
-  const [categories, countries, subcategories, audiences, brands, stores, sizes] = await Promise.all([
+  const [categories, countries, subcategories, audiences, brands, stores, sizes, [fresh]] = await Promise.all([
     db
       .select({ slug: deals.categorySlug, total: count() })
       .from(deals)
@@ -298,6 +309,7 @@ export async function getDealFacets(market: MarketConfig, category?: CategorySlu
           .where(inCategory)
           .groupBy(sql`1`)
       : [],
+    db.select({ total: count() }).from(deals).innerJoin(offers, withOffer).where(and(inCategory, hasFreshDrop())),
   ]);
   return {
     categories: Object.fromEntries(categories.map((row) => [row.slug, row.total])),
@@ -307,6 +319,7 @@ export async function getDealFacets(market: MarketConfig, category?: CategorySlu
     brands,
     stores,
     sizes: sizeFacets(sizes),
+    fresh: fresh?.total ?? 0,
   };
 }
 
@@ -337,7 +350,7 @@ export async function getDealStats(market: MarketConfig): Promise<DealStats> {
       .select({
         dealCount: count(),
         verifiedDealCount: sql<number>`count(*) filter (where ${deals.verified})::int`,
-        maxDiscountPct: max(deals.realDiscountPct),
+        maxDiscountPct: max(deals.storeDiscountPct),
         totalSavingsMinor: sql<number>`coalesce(sum(${deals.savingsMinor}), 0)::int`,
       })
       .from(deals)

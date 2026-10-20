@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowUpRight, ChevronDown, ShieldCheck, Truck } from "lucide-react";
 import type { OfferView } from "@/modules/catalog/offer-view";
-import { priceBeforeDiscount } from "@/modules/catalog/summary";
+import { storeDiscount } from "@/modules/catalog/summary";
 import { getI18n } from "@/i18n/server";
 import { fmt } from "@/i18n/format";
 import { CartButton } from "@/components/cart/cart-button";
@@ -24,10 +24,11 @@ interface Props {
  * the total.
  */
 export async function OfferPanel({ offer, note, children, extraActions }: Props) {
-  const { t, money, market } = await getI18n();
+  const { t, money } = await getI18n();
 
   const { landed, supplier } = offer;
-  const before = priceBeforeDiscount(offer, market);
+  // The store's own discount; our own check is the note under the price.
+  const before = storeDiscount(offer);
   const storeDiscounted = offer.listPriceMinor !== null && offer.listPriceMinor > offer.priceMinor;
   const lines = [
     { label: t.product.item, value: landed.itemMinor, always: true },
@@ -43,8 +44,8 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
         <p className="text-4xl font-extrabold tracking-tight text-ink">{money(landed.totalMinor)}</p>
         {before && (
           <>
-            <span className="text-lg font-medium tabular-nums text-muted line-through">{money(before.wasMinor)}</span>
-            <span className="rounded-md bg-deal px-2 py-0.5 text-sm font-bold text-on-deal">−{before.discountPct}%</span>
+            <span className="text-lg font-medium tabular-nums text-muted line-through">{money(before.wasLandedMinor)}</span>
+            <span className="rounded-md bg-deal px-2 py-0.5 text-sm font-bold text-on-deal">−{before.pct}%</span>
           </>
         )}
       </div>
@@ -102,7 +103,7 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
           </div>
           {before && (
             <p className="pt-1 text-xs text-muted">
-              {before.verified ? t.product.wasUsual : fmt(t.product.wasStore, { store: supplier.name })}
+              {fmt(t.product.wasStore, { store: supplier.name })}
             </p>
           )}
         </dl>

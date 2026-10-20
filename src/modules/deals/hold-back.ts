@@ -21,6 +21,7 @@ export function holdBackFor(filters: DealFilters): { subcategory: string; after:
     filters.priceMax ||
     filters.badge ||
     filters.verifiedOnly ||
+    filters.freshOnly ||
     filters.productIds;
   return narrowed ? null : (HELD_BACK_UNFILTERED[filters.category] ?? null);
 }

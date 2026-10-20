@@ -4,7 +4,7 @@ import { deals, freshDeals } from "@/db/schema";
 import type { MarketConfig } from "@/config/markets";
 import { loadProductsWithOffers } from "@/modules/catalog/offer-view";
 import { usableImage } from "@/config/images";
-import { summarizeProduct } from "@/modules/catalog/summary";
+import { storeDiscount, summarizeProduct } from "@/modules/catalog/summary";
 import { inStockSizeKeys } from "@/modules/suppliers/sizes";
 import { offerFreshDrop } from "./fresh-drop";
 
@@ -44,6 +44,7 @@ export async function buildDeals(market: MarketConfig, runId: string, now: Date)
     }
     if (!summary?.deal) return [];
     const { best, deal } = summary;
+    const store = storeDiscount(best);
     return [
       {
         marketCode: market.code,
@@ -61,6 +62,8 @@ export async function buildDeals(market: MarketConfig, runId: string, now: Date)
         realDiscountPct: deal.discountPct,
         verified: deal.verified,
         claimedDiscountPct: best.verdict?.claimedDiscountPct ?? null,
+        storeDiscountPct: store?.pct ?? null,
+        storeListLandedMinor: store?.wasLandedMinor ?? null,
         bestLocalLandedMinor: summary.bestLocal?.landed.totalMinor ?? null,
         bestGlobalLandedMinor: summary.bestGlobal?.landed.totalMinor ?? null,
         offerCount: summary.offerCount,

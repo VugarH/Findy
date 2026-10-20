@@ -8,11 +8,9 @@ interface Props extends CardLabels {
   notes?: Record<string, CardNote | null>;
   /** "compact" is for lists beside a sidebar: slightly smaller cards, 3–4 per row. */
   density?: "comfortable" | "compact";
-  /** Fresh real deals: badges show our measured drop (see ProductCard). */
-  freshFocus?: boolean;
 }
 
-export function ProductGrid({ cards, notes, density = "comfortable", freshFocus, ...labels }: Props) {
+export function ProductGrid({ cards, notes, density = "comfortable", ...labels }: Props) {
   return (
     <ul
       className={cn(
@@ -25,7 +23,7 @@ export function ProductGrid({ cards, notes, density = "comfortable", freshFocus,
       {cards.map((card) => (
         <li key={card.slug} className="flex">
           <div className="flex w-full [&>a]:w-full">
-            <ProductCard card={card} note={notes?.[card.slug]} compact={density === "compact"} freshFocus={freshFocus} {...labels} />
+            <ProductCard card={card} note={notes?.[card.slug]} compact={density === "compact"} {...labels} />
           </div>
         </li>
       ))}

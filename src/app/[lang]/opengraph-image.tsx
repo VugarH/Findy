@@ -26,23 +26,15 @@ export default async function Image({ params }: { params: Promise<{ lang: string
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <div
-            style={{
-              width: 88,
-              height: 88,
-              borderRadius: 24,
-              background: "white",
-              color: "#0b7a55",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 56,
-              fontWeight: 800,
-            }}
-          >
-            %
-          </div>
-          <div style={{ fontSize: 72, fontWeight: 800 }}>{siteConfig.name}</div>
+          {/* The logo mark (components/layout/logo.tsx), white on the green background. */}
+          <svg width="88" height="88" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="22" fill="white" />
+            <path d="M29 66 L29 30 C29 20 33 15 40 15" fill="none" stroke="#0b7a55" strokeWidth="9" strokeLinecap="round" />
+            <path d="M16 42 L42 42 L49 35" fill="none" stroke="#0b7a55" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="57" cy="27" r="10" fill="white" stroke="#0b7a55" strokeWidth="5" />
+            <path d="M53 27 L56 30 L61.5 23.5" fill="none" stroke="#0b7a55" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <div style={{ fontSize: 72, fontWeight: 800 }}>{siteConfig.name.toLowerCase()}</div>
         </div>
         <div style={{ marginTop: 40, fontSize: 56, fontWeight: 700, lineHeight: 1.15, maxWidth: 1000 }}>{t.meta.title}</div>
         <div style={{ marginTop: 24, fontSize: 30, opacity: 0.85, lineHeight: 1.35, maxWidth: 1000 }}>{t.meta.description}</div>

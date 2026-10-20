@@ -11,7 +11,7 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(message.title || "Findy", {
       body: message.body || "",
-      icon: "/favicon.ico",
+      icon: "/icon-192.png",
       data: { url: message.url || "/" },
     }),
   );

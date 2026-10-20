@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <!-- Same drawing as components/layout/logo.tsx (LogoMark). -->
+  <rect width="80" height="80" rx="22" fill="#0b7a55"/>
+  <path d="M29 66 L29 30 C29 20 33 15 40 15" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+  <path d="M16 42 L42 42 L49 35" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="57" cy="27" r="10" fill="#0b7a55" stroke="#fff" stroke-width="5"/>
+  <path d="M53 27 L56 30 L61.5 23.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -557,6 +557,12 @@ const az: Dictionary = {
     retry: "Yenidən cəhd et",
   },
   fresh: {
+    sortDrop: "Ən böyük qiymət düşüşü",
+    sortStoreDiscount: "Ən böyük mağaza endirimi",
+    sortNewest: "Ən yeni düşüşlər",
+    searchPlaceholder: "Təsdiqlənmiş endirimlərdə axtar…",
+    noMatch: "Hazırda “{query}” üzrə təsdiqlənmiş endirim yoxdur.",
+    searchAll: "Bütün endirimlərdə axtar",
     filterOnly: "Yalnız təsdiqlənmiş endirimlər",
     filterHint: "Son {days} gündə qiyməti düşüb, öz yoxlamamıza görə",
     nav: "Təsdiqlənmiş endirimlər",

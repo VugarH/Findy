@@ -264,6 +264,8 @@ export const freshDeals = pgTable(
     categorySlug: text("category_slug").notNull(),
     /** Whole percent, against the price compared with. */
     dropPct: integer("drop_pct").notNull(),
+    /** Today's landed total, in the market currency (for sorting by price). */
+    landedMinor: integer("landed_minor").notNull().default(0),
     /** Landed total at the price compared with, in the market currency. */
     fromLandedMinor: integer("from_landed_minor").notNull(),
     /** The day we recorded that price. */

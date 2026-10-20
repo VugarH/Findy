@@ -1,0 +1,1 @@
+ALTER TABLE "fresh_deals" ADD COLUMN "landed_minor" integer DEFAULT 0 NOT NULL;

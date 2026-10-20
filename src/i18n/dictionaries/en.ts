@@ -555,6 +555,12 @@ const en = {
     retry: "Try again",
   },
   fresh: {
+    sortDrop: "Biggest price drop",
+    sortStoreDiscount: "Biggest store discount",
+    sortNewest: "Newest drops first",
+    searchPlaceholder: "Search verified discounts…",
+    noMatch: "No verified discount matches “{query}” right now.",
+    searchAll: "Search all deals",
     filterOnly: "Only verified discounts",
     filterHint: "Price fell in the last {days} days, by our own checks",
     nav: "Verified discounts",

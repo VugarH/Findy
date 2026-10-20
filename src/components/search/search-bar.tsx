@@ -9,10 +9,14 @@ interface Props {
   defaultValue?: string;
   size?: "md" | "lg";
   className?: string;
+  /** Params sent along with the query (e.g. the open category). */
+  hidden?: Record<string, string>;
+  /** An empty search is allowed (it clears the search), for lists that filter as you search. */
+  optional?: boolean;
 }
 
 /** A plain GET form: works without JavaScript and keeps searches shareable. */
-export function SearchBar({ action, placeholder, buttonLabel, defaultValue, size = "md", className }: Props) {
+export function SearchBar({ action, placeholder, buttonLabel, defaultValue, size = "md", className, hidden, optional = false }: Props) {
   const large = size === "lg";
   return (
     <form action={action} role="search" className={cn("relative flex w-full items-center", className)}>
@@ -20,10 +24,13 @@ export function SearchBar({ action, placeholder, buttonLabel, defaultValue, size
         aria-hidden
         className={cn("pointer-events-none absolute text-muted", large ? "left-5 size-5" : "left-4 size-4")}
       />
+      {Object.entries(hidden ?? {}).map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
       <input
         type="search"
         name="q"
-        required
+        required={!optional}
         minLength={2}
         maxLength={MAX_QUERY_LENGTH}
         defaultValue={defaultValue}

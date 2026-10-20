@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { deals, products, searchQueries } from "@/db/schema";
 import type { MarketConfig } from "@/config/markets";
@@ -71,14 +71,35 @@ const FOLDED_TEXT = sql`' ' || translate(lower(translate(${products.title} || ' 
 
 const like = (text: string) => `%${text.replace(/[\\%_]/g, "\\$&")}%`;
 
+/**
+ * SQL condition on `products`: the product matches every word of the query
+ * (with synonyms, Turkish letters folded). Null for an empty query. Shared by
+ * the search page and the verified-discounts search.
+ */
+export function productMatchesQuery(query: string): SQL | null {
+  const terms = expandQuery(query);
+  if (terms.length === 0) return null;
+  return and(
+    ...terms.map((term) =>
+      or(
+        ...term.alternatives.map((alternative) => ilike(FOLDED_TEXT, like(alternative))),
+        // Unisex fits "women" and "men", not "kids".
+        term.audience
+          ? inArray(products.audience, term.audience === "kids" ? ["kids"] : [term.audience, "unisex"])
+          : undefined,
+      ),
+    ),
+  )!;
+}
+
 /** Step one of every search: what we already know. Instant and free. */
 export async function searchCatalog(
   query: string,
   market: MarketConfig,
   scope?: SupplierScope,
 ): Promise<ProductCardData[]> {
-  const terms = expandQuery(query);
-  if (terms.length === 0) return [];
+  const match = productMatchesQuery(query);
+  if (!match) return [];
 
   const matches = await db
     .select({ id: products.id })
@@ -87,15 +108,7 @@ export async function searchCatalog(
       and(
         // Only products a store still sells: expired ones would use up the result limit.
         hasFreshOffer(market),
-        ...terms.map((term) =>
-          or(
-            ...term.alternatives.map((alternative) => ilike(FOLDED_TEXT, like(alternative))),
-            // Unisex fits "women" and "men", not "kids".
-            term.audience
-              ? inArray(products.audience, term.audience === "kids" ? ["kids"] : [term.audience, "unisex"])
-              : undefined,
-          ),
-        ),
+        match,
       ),
     )
     // A fixed order: without one the database may return a different set of

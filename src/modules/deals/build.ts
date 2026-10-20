@@ -36,6 +36,7 @@ export async function buildDeals(market: MarketConfig, runId: string, now: Date)
         offerId: summary.best.offerId,
         categorySlug: entry.product.categorySlug,
         dropPct: fresh.dropPct,
+        landedMinor: summary.best.landed.totalMinor,
         fromLandedMinor: fresh.fromLandedMinor,
         fromOn: fresh.fromOn,
         storeDiscountPct: fresh.storeDiscountPct,

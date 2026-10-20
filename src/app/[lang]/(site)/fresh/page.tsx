@@ -1,24 +1,29 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BadgeCheck, CalendarCheck, SearchX, ShieldCheck, TrendingDown } from "lucide-react";
-import type { CategorySlug } from "@/config/categories";
+import { isCategorySlug, type CategorySlug } from "@/config/categories";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_COOKIE, PAGE_SIZES, parseDealFilters } from "@/modules/deals/filters";
-import { countFreshDeals, listFreshDeals } from "@/modules/deals/fresh";
+import { countFreshDeals, FRESH_SORTS, listFreshDeals, type FreshSort } from "@/modules/deals/fresh";
 import { withPageSizeCookie } from "@/modules/deals/page-size";
 import { orderedCategories } from "@/modules/settings/display-order";
 import { getDisplayOrder } from "@/modules/settings/service";
+import { MIN_QUERY_LENGTH, normalizeQuery } from "@/modules/search/normalize";
 import { FilterDrawerButton, FilterDrawerPanel, FilterDrawerProvider } from "@/components/deals/filter-drawer";
-import { FilterGroup, FilterOption } from "@/components/deals/filter-panel";
+import { FilterGroup, FilterOption, FilterToggle } from "@/components/deals/filter-panel";
 import { Pagination } from "@/components/deals/pagination";
 import { ProductGrid } from "@/components/deals/product-grid";
 import { ParamSelect } from "@/components/deals/sort-select";
+import { SearchBar } from "@/components/search/search-bar";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 
 type Props = PageProps<"/[lang]/fresh">;
+
+/** Categories in the URL: "category=shoes,fashion". */
+const CATEGORY_SEPARATOR = ",";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t, market } = await getI18n();
@@ -28,23 +33,48 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Verified discounts (modules/deals/fresh.ts): prices our own checks saw fall in the last days. */
 export default async function VerifiedDiscountsPage({ searchParams }: Props) {
   const { t, href, money, market, locale } = await getI18n();
-  // Only the category, page and page size apply here; the deal-list parser reads them the same way.
-  const { category, page: askedPage, size } = parseDealFilters(await withPageSizeCookie(await searchParams));
-  const [counts, order] = await Promise.all([countFreshDeals(market), getDisplayOrder()]);
-  const total = category ? (counts.byCategory[category] ?? 0) : counts.total;
+  // Page and page size read like the deal lists; categories (several), search and sort are this page's own.
+  const params = await searchParams;
+  const { page: askedPage, size } = parseDealFilters(await withPageSizeCookie(params));
+  const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+  const selected = [...new Set((one(params.category) ?? "").split(CATEGORY_SEPARATOR).filter(isCategorySlug))];
+  const typed = normalizeQuery(one(params.q));
+  const query = typed.length >= MIN_QUERY_LENGTH ? typed : undefined;
+  const sortParam = one(params.sort);
+  const sort: FreshSort = (FRESH_SORTS as readonly string[]).includes(sortParam ?? "") ? (sortParam as FreshSort) : "drop";
+  // The heading counts every verified discount; the panel and results follow the search.
+  const [counts, all, order] = await Promise.all([
+    countFreshDeals(market, query),
+    query ? countFreshDeals(market) : null,
+    getDisplayOrder(),
+  ]);
+  const overall = (all ?? counts).total;
+  const total = selected.length
+    ? selected.reduce((sum, slug) => sum + (counts.byCategory[slug] ?? 0), 0)
+    : counts.total;
   const pages = Math.max(1, Math.ceil(total / size));
   const page = Math.min(askedPage, pages);
-  const cards = await listFreshDeals(market, { category, limit: size, offset: (page - 1) * size });
+  const cards = await listFreshDeals(market, { categories: selected, query, sort, limit: size, offset: (page - 1) * size });
 
-  const link = (patch: { category?: CategorySlug | null; page?: number }) => {
-    const query = new URLSearchParams();
-    const nextCategory = patch.category === null ? undefined : (patch.category ?? category);
-    if (nextCategory) query.set("category", nextCategory);
-    if (size !== DEFAULT_PAGE_SIZE) query.set("size", String(size));
-    if (patch.page && patch.page > 1) query.set("page", String(patch.page));
-    const text = query.toString();
+  // The current choices as URL params (defaults left out), with some changed.
+  const paramsFor = (patch: { categories?: CategorySlug[]; page?: number } = {}) => {
+    const nextCategories = patch.categories ?? selected;
+    return Object.fromEntries(
+      [
+        ["q", query],
+        ["category", nextCategories.length ? nextCategories.join(CATEGORY_SEPARATOR) : undefined],
+        ["sort", sort === "drop" ? undefined : sort],
+        ["size", size === DEFAULT_PAGE_SIZE ? undefined : String(size)],
+        ["page", patch.page && patch.page > 1 ? String(patch.page) : undefined],
+      ].filter((entry): entry is [string, string] => entry[1] !== undefined),
+    );
+  };
+  const link = (patch: { categories?: CategorySlug[]; page?: number } = {}) => {
+    const text = new URLSearchParams(paramsFor(patch)).toString();
     return href("/fresh") + (text ? `?${text}` : "");
   };
+  const toggle = (slug: CategorySlug) =>
+    link({ categories: selected.includes(slug) ? selected.filter((s) => s !== slug) : [...selected, slug] });
   const categories = orderedCategories(order);
   const withDeals = [
     ...categories.filter((c) => counts.byCategory[c.slug]),
@@ -63,13 +93,7 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
       page={page}
       pages={pages}
       hrefFor={(n) => link({ page: n })}
-      jump={{
-        action: href("/fresh"),
-        params: Object.fromEntries([
-          ...(category ? [["category", category]] : []),
-          ...(size !== DEFAULT_PAGE_SIZE ? [["size", String(size)]] : []),
-        ]),
-      }}
+      jump={{ action: href("/fresh"), params: paramsFor() }}
       labels={{
         prev: t.filters.prev,
         next: t.filters.next,
@@ -89,7 +113,7 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
             {t.fresh.badge}
           </p>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
-            {counts.total > 0 ? fmt(t.fresh.countTitle, { count: counts.total.toLocaleString(LOCALE_TAGS[locale]) }) : t.fresh.title}
+            {overall > 0 ? fmt(t.fresh.countTitle, { count: overall.toLocaleString(LOCALE_TAGS[locale]) }) : t.fresh.title}
           </h1>
           <p className="mt-2 max-w-3xl text-pretty text-muted">{fmt(t.fresh.intro, { days: windowDays })}</p>
           <ul className="mt-5 grid gap-3 md:grid-cols-3">
@@ -117,19 +141,19 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
               showResultsLabel={fmt(t.filters.showResults, { count: totalLabel })}
             >
               <FilterGroup title={t.filters.category}>
-                <FilterOption href={link({ category: null })} active={!category} count={counts.total}>
+                <FilterOption href={link({ categories: [] })} active={selected.length === 0} count={counts.total}>
                   {t.filters.all}
                 </FilterOption>
-                {/* Every category stays listed, so the panel keeps its height; those without any go last. */}
+                {/* Tick several; every category stays listed, those without any last. */}
                 {withDeals.map((c) => (
-                  <FilterOption
+                  <FilterToggle
                     key={c.slug}
-                    href={link({ category: c.slug })}
-                    active={category === c.slug}
+                    href={toggle(c.slug)}
+                    active={selected.includes(c.slug)}
                     count={counts.byCategory[c.slug] ?? 0}
                   >
                     {t.categories[c.slug].name}
-                  </FilterOption>
+                  </FilterToggle>
                 ))}
               </FilterGroup>
             </FilterDrawerPanel>
@@ -137,19 +161,43 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <FilterDrawerButton label={t.filters.filters} activeCount={category ? 1 : 0} />
+                  <FilterDrawerButton label={t.filters.filters} activeCount={selected.length} />
                   <p className="text-sm font-semibold">{fmt(t.filters.results, { count: totalLabel })}</p>
                 </div>
-                <Suspense>
-                  <ParamSelect
-                    param="size"
-                    cookie={PAGE_SIZE_COOKIE}
-                    label={t.filters.perPage}
-                    value={String(size)}
-                    options={PAGE_SIZES.map((n) => ({ value: String(n), label: String(n) }))}
-                  />
-                </Suspense>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <Suspense>
+                    <ParamSelect
+                      param="size"
+                      cookie={PAGE_SIZE_COOKIE}
+                      label={t.filters.perPage}
+                      value={String(size)}
+                      options={PAGE_SIZES.map((n) => ({ value: String(n), label: String(n) }))}
+                    />
+                    <ParamSelect
+                      param="sort"
+                      label={t.filters.sort}
+                      value={sort}
+                      options={[
+                        { value: "drop", label: t.fresh.sortDrop },
+                        { value: "store_discount", label: t.fresh.sortStoreDiscount },
+                        { value: "price_asc", label: t.filters.sortPriceAsc },
+                        { value: "price_desc", label: t.filters.sortPriceDesc },
+                        { value: "newest", label: t.fresh.sortNewest },
+                      ]}
+                    />
+                  </Suspense>
+                </div>
               </div>
+
+              <SearchBar
+                action={href("/fresh")}
+                placeholder={t.fresh.searchPlaceholder}
+                buttonLabel={t.search.button}
+                defaultValue={query}
+                hidden={Object.fromEntries(Object.entries(paramsFor()).filter(([key]) => key === "category" || key === "sort"))}
+                optional
+                className="mt-4"
+              />
 
               {pages > 1 && <div className="mt-4">{pagination}</div>}
 
@@ -160,10 +208,18 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
               ) : (
                 <div className="mt-6 grid place-items-center rounded-2xl border border-dashed border-line px-6 py-16 text-center">
                   <SearchX className="size-8 text-muted" aria-hidden />
-                  <p className="mt-3 max-w-sm text-sm text-muted">{t.fresh.none}</p>
-                  <ButtonLink href={href("/deals")} variant="secondary" size="sm" className="mt-4">
-                    {t.top.seeAll}
-                  </ButtonLink>
+                  <p className="mt-3 max-w-sm text-sm text-muted">
+                    {query ? fmt(t.fresh.noMatch, { query }) : t.fresh.none}
+                  </p>
+                  {query ? (
+                    <ButtonLink href={`${href("/search")}?q=${encodeURIComponent(query)}`} variant="secondary" size="sm" className="mt-4">
+                      {t.fresh.searchAll}
+                    </ButtonLink>
+                  ) : (
+                    <ButtonLink href={href("/deals")} variant="secondary" size="sm" className="mt-4">
+                      {t.top.seeAll}
+                    </ButtonLink>
+                  )}
                 </div>
               )}
 

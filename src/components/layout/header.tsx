@@ -18,7 +18,6 @@ import { SearchBar } from "@/components/search/search-bar";
 import { ButtonLink } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { Container } from "@/components/ui/container";
-import { CategoryMenu } from "./category-menu";
 import { LocaleSwitcher } from "./locale-switcher";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
@@ -118,20 +117,7 @@ export async function Header() {
             <span className="hidden sm:inline">{t.top.nav}</span>
             <span className="sm:hidden">{t.top.short}</span>
           </Link>
-          <CategoryMenu
-            label={t.nav.allCategories}
-            items={categories.map((category) => ({
-              slug: category.slug,
-              href: href(`/category/${category.slug}`),
-              name: t.categories[category.slug].name,
-              description: t.categories[category.slug].description,
-            }))}
-            extras={[
-              { href: href("/ordering-abroad"), label: t.order.navHelp },
-              { href: href("/stores"), label: t.nav.stores },
-            ]}
-          />
-          {/* Quick links; the menu above lists every category, so these may scroll. */}
+          {/* Every category; scrolls sideways when they don't fit. */}
           <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
             {categories.map((category) => (
               <Link

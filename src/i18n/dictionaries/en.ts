@@ -9,7 +9,6 @@ const en = {
   demoBanner: "Demo mode — stores and prices are sample data.",
   nav: {
     back: "Back",
-    allCategories: "All categories",
     admin: "Admin panel",
     stores: "Stores",
     home: "Home",

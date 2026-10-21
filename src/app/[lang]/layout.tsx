@@ -26,6 +26,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
     description: t.meta.description,
     openGraph: { siteName: siteConfig.name, type: "website", locale: LOCALE_TAGS[lang].replace("-", "_") },
     twitter: { card: "summary_large_image" },
+    // Ownership check for the Admitad (Mitgo) affiliate ad space. Public by design; safe to keep.
+    other: { "mitgo-verification": "f093e871-1126-49f0-96fd-e0cf8d0cb06e" },
   };
 }
 

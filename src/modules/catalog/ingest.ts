@@ -102,6 +102,16 @@ export async function markUnlistedOffers(supplierId: string, readAt: Date): Prom
  * (Desa), and one insert cannot write the same offer twice; the in-stock
  * listing wins, else the first.
  */
+/**
+ * Rows per insert. PostgreSQL takes at most 65,535 parameters per statement and
+ * an offer has 15: one statement for a 5,000-offer store (AliExpress) would fail.
+ */
+const WRITE_BATCH = 1000;
+
+function* batches<T>(items: T[], size: number): Generator<T[]> {
+  for (let i = 0; i < items.length; i += size) yield items.slice(i, i + size);
+}
+
 export function uniqueListings(rawOffers: RawOffer[]): RawOffer[] {
   const byId = new Map<string, RawOffer>();
   for (const raw of rawOffers) {
@@ -164,54 +174,60 @@ export async function ingestOffers(
 
   const observedOn = now.toISOString().slice(0, 10);
 
-  const saved = await db
-    .insert(offers)
-    .values(
-      keyed.map(({ raw }, i) => ({
-        productId: productIdByRaw[i],
-        supplierId: supplier.id,
-        externalId: raw.externalId,
-        url: raw.url,
-        title: raw.title,
-        priceMinor: raw.priceMinor,
-        currency: raw.currency,
-        listPriceMinor: raw.listPriceMinor ?? null,
-        shippingMinor: raw.shippingMinor,
-        inStock: raw.inStock,
-        sizes: raw.sizes ?? null,
-        deliveryMinDays: raw.deliveryDays?.min ?? null,
-        deliveryMaxDays: raw.deliveryDays?.max ?? null,
-        firstSeenAt: now,
-        lastSeenAt: now,
-      })),
-    )
-    .onConflictDoUpdate({
-      target: [offers.supplierId, offers.externalId],
-      set: {
-        productId: sql`excluded.product_id`,
-        url: sql`excluded.url`,
-        title: sql`excluded.title`,
-        priceMinor: sql`excluded.price_minor`,
-        currency: sql`excluded.currency`,
-        listPriceMinor: sql`excluded.list_price_minor`,
-        shippingMinor: sql`excluded.shipping_minor`,
-        inStock: sql`excluded.in_stock`,
-        sizes: sql`excluded.sizes`,
-        deliveryMinDays: sql`excluded.delivery_min_days`,
-        deliveryMaxDays: sql`excluded.delivery_max_days`,
-        lastSeenAt: sql`excluded.last_seen_at`,
-        removedAt: null,
-      },
-    })
-    .returning({ id: offers.id, priceMinor: offers.priceMinor, currency: offers.currency });
+  const saved: { id: string; priceMinor: number; currency: string }[] = [];
+  for (let start = 0; start < keyed.length; start += WRITE_BATCH) {
+    const rows = await db
+      .insert(offers)
+      .values(
+        keyed.slice(start, start + WRITE_BATCH).map(({ raw }, j) => ({
+          productId: productIdByRaw[start + j],
+          supplierId: supplier.id,
+          externalId: raw.externalId,
+          url: raw.url,
+          title: raw.title,
+          priceMinor: raw.priceMinor,
+          currency: raw.currency,
+          listPriceMinor: raw.listPriceMinor ?? null,
+          shippingMinor: raw.shippingMinor,
+          inStock: raw.inStock,
+          sizes: raw.sizes ?? null,
+          deliveryMinDays: raw.deliveryDays?.min ?? null,
+          deliveryMaxDays: raw.deliveryDays?.max ?? null,
+          firstSeenAt: now,
+          lastSeenAt: now,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: [offers.supplierId, offers.externalId],
+        set: {
+          productId: sql`excluded.product_id`,
+          url: sql`excluded.url`,
+          title: sql`excluded.title`,
+          priceMinor: sql`excluded.price_minor`,
+          currency: sql`excluded.currency`,
+          listPriceMinor: sql`excluded.list_price_minor`,
+          shippingMinor: sql`excluded.shipping_minor`,
+          inStock: sql`excluded.in_stock`,
+          sizes: sql`excluded.sizes`,
+          deliveryMinDays: sql`excluded.delivery_min_days`,
+          deliveryMaxDays: sql`excluded.delivery_max_days`,
+          lastSeenAt: sql`excluded.last_seen_at`,
+          removedAt: null,
+        },
+      })
+      .returning({ id: offers.id, priceMinor: offers.priceMinor, currency: offers.currency });
+    saved.push(...rows);
+  }
 
-  await db
-    .insert(priceObservations)
-    .values(saved.map((o) => ({ offerId: o.id, observedOn, priceMinor: o.priceMinor, currency: o.currency })))
-    .onConflictDoUpdate({
-      target: [priceObservations.offerId, priceObservations.observedOn],
-      set: { priceMinor: sql`excluded.price_minor`, currency: sql`excluded.currency` },
-    });
+  for (const batch of batches(saved, WRITE_BATCH)) {
+    await db
+      .insert(priceObservations)
+      .values(batch.map((o) => ({ offerId: o.id, observedOn, priceMinor: o.priceMinor, currency: o.currency })))
+      .onConflictDoUpdate({
+        target: [priceObservations.offerId, priceObservations.observedOn],
+        set: { priceMinor: sql`excluded.price_minor`, currency: sql`excluded.currency` },
+      });
+  }
 
   return { offerCount: saved.length, productIds: [...new Set(productIdByRaw)] };
 }
@@ -249,26 +265,28 @@ async function resolveProducts(
   }
 
   if (missing.size > 0) {
-    await db
-      .insert(products)
-      .values(
-        [...missing.values()].map(({ raw, keys }) => ({
-          slug: keys.modelKey,
-          title: canonicalTitle(raw),
-          brand: raw.brand ?? null,
-          model: raw.model ?? null,
-          gtin: keys.gtin,
-          modelKey: keys.modelKey,
-          categorySlug: raw.categorySlug,
-          subcategorySlug: classifyProduct(raw.categorySlug, canonicalTitle(raw), raw.productType),
-          audience: detectAudience(`${canonicalTitle(raw)} ${raw.productType ?? ""}`, raw.brand),
-          sourceType: raw.productType ?? null,
-          imageUrl: raw.imageUrl ?? null,
-          weightKg: raw.weightKg ?? getCategory(raw.categorySlug).defaultWeightKg,
-          attributes: raw.attributes ?? {},
-        })),
-      )
-      .onConflictDoNothing({ target: products.slug });
+    for (const batch of batches([...missing.values()], WRITE_BATCH)) {
+      await db
+        .insert(products)
+        .values(
+          batch.map(({ raw, keys }) => ({
+            slug: keys.modelKey,
+            title: canonicalTitle(raw),
+            brand: raw.brand ?? null,
+            model: raw.model ?? null,
+            gtin: keys.gtin,
+            modelKey: keys.modelKey,
+            categorySlug: raw.categorySlug,
+            subcategorySlug: classifyProduct(raw.categorySlug, canonicalTitle(raw), raw.productType),
+            audience: detectAudience(`${canonicalTitle(raw)} ${raw.productType ?? ""}`, raw.brand),
+            sourceType: raw.productType ?? null,
+            imageUrl: raw.imageUrl ?? null,
+            weightKg: raw.weightKg ?? getCategory(raw.categorySlug).defaultWeightKg,
+            attributes: raw.attributes ?? {},
+          })),
+        )
+        .onConflictDoNothing({ target: products.slug });
+    }
     known = await loadKnown();
     find = index(known);
   }

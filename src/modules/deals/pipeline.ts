@@ -18,6 +18,7 @@ import { confirmManualOffers } from "@/modules/catalog/manual-offers";
 import { buildDailyDigest } from "@/modules/digest/service";
 import { postDigest } from "@/modules/telegram/channel";
 import { buildDeals } from "./build";
+import { admitadConfigured } from "@/modules/suppliers/adapters/admitad/adapter";
 import { savePopularCoverage } from "@/modules/catalog/popular";
 import { pausedStoresToSkip, updateStoreHealth } from "@/modules/suppliers/health";
 import { marketDay } from "@/modules/digest/pick";
@@ -63,6 +64,10 @@ export async function runDailyPipeline(
   // ones (failing for days, see suppliers/health.ts) only once a week — or when a run names them.
   const disabled = await disabledSupplierIds();
   const paused = options.supplierIds ? new Set<string>() : await pausedStoresToSkip(now);
+  // Admitad stores need the account's feed settings; without them they are left out, said here so it is not silent.
+  if (!admitadConfigured()) {
+    await log.warn("pipeline", "admitad.skipped", "Admitad stores (AliExpress, The Luxury Closet) skipped: ADMITAD_WEBSITE_ID, ADMITAD_FEED_USER and ADMITAD_FEED_CODE are not set (docs/DEPLOY.md §8)");
+  }
   const adapters = (await getAllAdapters()).filter(
     ({ definition }) =>
       !disabled.has(definition.id) &&

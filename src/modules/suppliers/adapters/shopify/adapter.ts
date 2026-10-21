@@ -193,7 +193,8 @@ export function createShopifyAdapter(store: ShopifyStore): SupplierAdapter {
         currency: "fixed per store, read once from /meta.json",
       },
       robots: { checkedOn: "2026-09-30", notes: "/products.json allowed when connected; re-checked on every run." },
-      politeness: { delayMs: SHOPIFY_DELAY_MS, maxRequestsPerRun: MAX_PAGES + 1 + (store.saleCollection?.pages ?? 0) },
+      // + robots.txt, + one page to confirm the end after a short page.
+      politeness: { delayMs: SHOPIFY_DELAY_MS, maxRequestsPerRun: MAX_PAGES + 2 + (store.saleCollection?.pages ?? 0) },
       liveSearch: { supported: false, reason: "Shopify stores disallow /search in robots.txt." },
       assumptions: [
         store.saleCollection
@@ -239,13 +240,23 @@ export function createShopifyAdapter(store: ShopifyStore): SupplierAdapter {
 
       let readEverything = false;
       for (let page = 1; page <= MAX_PAGES; page++) {
-        if ((await readPage(LIST_PATH, page)) < PAGE_SIZE) {
-          // A short page is the last one: the whole catalog was read.
-          ctx.listedEverything?.();
+        const count = await readPage(LIST_PATH, page);
+        if (count === 0) {
           readEverything = true;
           break;
         }
+        // Shopify sometimes returns a few less than asked in the middle of a catalog (allbeauty: 248 of
+        // 250 on page 1), so a short page is the end only when the page after it is empty.
+        if (count < PAGE_SIZE) {
+          if ((await readPage(LIST_PATH, page + 1)) === 0) {
+            readEverything = true;
+            break;
+          }
+          page++;
+        }
       }
+      // The whole catalog was read: offers it no longer lists are gone from the store.
+      if (readEverything) ctx.listedEverything?.();
 
       const sale = store.saleCollection;
       const salePath = sale && `/collections/${sale.handle}${LIST_PATH}`;

@@ -744,6 +744,7 @@ const en = {
     newMessageAgain: "Write a new message",
     waitingExists: "You have a request waiting for our reply. We'll answer it first; then you can write more there or start a new one.",
     openWaiting: "Open your request",
+    itemsEmpty: "No items yet. Add parcels from your cart, or paste product links from any store in your message below.",
     itemsTitle: "Items to buy",
     addFromCart: "Add from my cart",
     cartPanelTitle: "Your parcels",

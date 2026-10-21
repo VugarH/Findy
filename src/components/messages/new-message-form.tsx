@@ -124,7 +124,7 @@ export function NewMessageForm({ initialItems, openCart, defaultPhone }: Props) 
           {attached.length === 0 && !panelOpen && (
             <p className="flex items-center gap-2 rounded-xl border border-dashed border-line px-3.5 py-3 text-sm text-muted">
               <Package className="size-4 shrink-0" aria-hidden />
-              {m.tip1}
+              {m.itemsEmpty}
             </p>
           )}
         </section>

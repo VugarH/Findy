@@ -746,6 +746,7 @@ const az: Dictionary = {
     newMessageAgain: "Yeni mesaj yaz",
     waitingExists: "Cavabımızı gözləyən sorğunuz var. Əvvəlcə ona cavab verəcəyik; sonra orada yaza və ya yeni sorğu göndərə bilərsiniz.",
     openWaiting: "Sorğunu aç",
+    itemsEmpty: "Hələ məhsul yoxdur. Səbətinizdən bağlama əlavə edin və ya istənilən mağazadan məhsul linklərini aşağıdakı mesaja yapışdırın.",
     itemsTitle: "Alınacaq məhsullar",
     addFromCart: "Səbətimdən əlavə et",
     cartPanelTitle: "Bağlamalarınız",

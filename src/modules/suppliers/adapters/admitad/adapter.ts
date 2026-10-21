@@ -6,6 +6,7 @@ import { BOT_USER_AGENT } from "../../http";
 import type { AdapterContext, RawOffer, Reliability, SupplierAdapter, SupplierDefinition } from "../../types";
 import { readFeed, rootCategories, type FeedCategory, type FeedOffer } from "./feed";
 import { Selector, type SelectionRules } from "./select";
+import { ADMITAD_FEED_STORES } from "./stores";
 
 /**
  * Stores we join through the Admitad affiliate network, read from the product
@@ -67,8 +68,12 @@ function feedAccount(): { websiteId: string; user: string; code: string } | null
 /** Whether Admitad stores can be read here (the account is configured). */
 export const admitadConfigured = () => feedAccount() !== null;
 
-/** A long download: the AliExpress feed is ~850 MB. */
-const TIMEOUT_MS = 30 * 60_000;
+/** Whether a store id is one of the Admitad feed stores. */
+const ADMITAD_IDS = new Set(ADMITAD_FEED_STORES.map((store) => store.id));
+export const isAdmitadStore = (id: string) => ADMITAD_IDS.has(id);
+
+/** A long download: the AliExpress feed is ~850 MB (about 20 minutes on a slow line); the job itself stops at 120. */
+const TIMEOUT_MS = 75 * 60_000;
 
 export function feedUrl(store: AdmitadFeedStore, account: { websiteId: string; user: string; code: string }): string {
   const query = new URLSearchParams({

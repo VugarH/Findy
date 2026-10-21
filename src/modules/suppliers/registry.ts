@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config/site";
-import { admitadConfigured, createAdmitadFeedAdapter } from "./adapters/admitad/adapter";
+import { createAdmitadFeedAdapter } from "./adapters/admitad/adapter";
 import { ADMITAD_FEED_STORES } from "./adapters/admitad/stores";
 import { createAkinonAdapter } from "./adapters/akinon/adapter";
 import { AKINON_STORES } from "./adapters/akinon/stores";
@@ -27,8 +27,8 @@ const REAL_ADAPTERS: SupplierAdapter[] = [
   ...SHOPIFY_STORES.map(createShopifyAdapter),
   ...STRUCTURED_DATA_STORES.map(createStructuredDataAdapter),
   ...AKINON_STORES.map(createAkinonAdapter),
-  // Only where the Admitad account is set (ADMITAD_*): without it the feeds cannot be read.
-  ...(admitadConfigured() ? ADMITAD_FEED_STORES.map(createAdmitadFeedAdapter) : []),
+  // Always listed (the site shows them); only the daily job needs the Admitad settings to read them.
+  ...ADMITAD_FEED_STORES.map(createAdmitadFeedAdapter),
 ];
 
 /** Demo mode (NEXT_PUBLIC_DEMO_DATA=true) swaps in the fictional stores; the two are never mixed. */

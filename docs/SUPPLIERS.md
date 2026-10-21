@@ -328,3 +328,17 @@ pages), Lufian, Yataş (no sitemap), Mothercare TR (no answer). **Dermoeczanem**
 (Ticimax `PRODUCT_DATA`: barcode, regular and sale price) but its photos are WitCDN
 hotlink-protected, so products would have no usable image; `usableImage` now refuses every
 `witcdn.*` host.
+
+## Round 5 (2026-10-21): Admitad affiliate network
+
+Ad space "Findy.az" on store.admitad.com (website id 3013554). Programs are read from the
+product feeds Admitad builds (adapters/admitad); links in them carry our tracking.
+
+| Program | Feed | Verdict |
+|---|---|---|
+| AliExpress WW | "hot products", discounted only, ~480k offers / ~850 MB, USD; fields: name, price, oldprice, categoryId (with parentId tree), pictures, discount, commissionRate, shopId — no brand, stock, shipping or order count | **Connected** (`aliexpress`): streamed, 5,000 kept by category quota, $2–40, 10–85 % off, ≤20 per seller; shipping assumed free (direct to AZ), delivery 10–25 days |
+| Geekbuying WW | "Main 2", 1,018 offers, 785 discounted; brand + topseller flag; mostly laser engravers, 3D printers, power stations (median $217); all marked unavailable | Not connected: wrong products for us, delivery to AZ doubtful |
+| ChicMe WW | "main EN", 1,444 offers, **no old prices**, categories unresolved | Not connected: ships to 21 countries only (not AZ, not TR — its Shopify meta.json) |
+
+Other Admitad programs open to Azerbaijan worth joining: iHerb (ships to AZ), CASETiFY,
+G-Star Raw, Puma TR. Turkish retailers we already list are not on Admitad.

@@ -35,6 +35,10 @@ jobs:
       TELEGRAM_CHANNEL_URL: ${{ vars.TELEGRAM_CHANNEL_URL }}
       TELEGRAM_CHANNEL_LOCALE: ${{ vars.TELEGRAM_CHANNEL_LOCALE }}
       TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+      # Admitad affiliate feeds (AliExpress…); without them those stores are simply skipped.
+      ADMITAD_WEBSITE_ID: ${{ vars.ADMITAD_WEBSITE_ID }}
+      ADMITAD_FEED_USER: ${{ vars.ADMITAD_FEED_USER }}
+      ADMITAD_FEED_CODE: ${{ secrets.ADMITAD_FEED_CODE }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

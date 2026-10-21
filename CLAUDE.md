@@ -21,7 +21,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Audience (women/men/kids/unisex) | `src/config/audience.ts` |
 | Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts` |
 | DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0024) |
-| Store adapters | `src/modules/suppliers/adapters/{shopify,structured-data,akinon}/{adapter,stores}.ts` (akinon = category pages, cart prices, discounted-only + `RawOffer.updateOnly`) |
+| Store adapters | `src/modules/suppliers/adapters/{shopify,structured-data,akinon,admitad}/{adapter,stores}.ts` (akinon = category pages, cart prices, discounted-only + `RawOffer.updateOnly`; admitad = affiliate product feeds streamed and filtered to a few thousand offers, `select.ts`, env `ADMITAD_*`, docs/DEPLOY.md §8) |
 | Code store list → daily job | `suppliers/registry.ts` (`getAdapters`, `getAllAdapters` = code + admin stores) |
 | Stores added in the panel | `suppliers/custom-config.ts` (zod, client-safe), `suppliers/custom.ts` (adapters, preview) |
 | HTTP (polite client, robots, gzip) | `suppliers/http.ts`, `suppliers/robots.ts` |

@@ -132,6 +132,25 @@ not available). Needs your own domain.
 
 Sent and failed emails appear in Admin → Logs (`auth/email.sent`, `auth/email.failed`).
 
+## 8. Admitad affiliate stores (AliExpress, optional)
+
+Stores joined through Admitad are read from the product feeds Admitad builds
+(`src/modules/suppliers/adapters/admitad`). The daily job needs the account's feed
+settings; without them those stores are skipped. In Admitad: Product Feeds →
+pick the program and feed → Generate. The link looks like
+`…/websites/3013554/products/export_adv_products/?user=PID…&code=…`.
+
+GitHub → Settings → Secrets and variables → Actions:
+
+| Kind | Name | Value |
+|---|---|---|
+| Variable | `ADMITAD_WEBSITE_ID` | the number after `/websites/` |
+| Variable | `ADMITAD_FEED_USER` | the `user=` value |
+| Secret | `ADMITAD_FEED_CODE` | the `code=` value (works like a password for your feeds) |
+
+The AliExpress feed is ~850 MB: the job streams it and keeps 5,000 offers; it
+adds a few minutes to the run, not to the database.
+
 ## Random values
 
 ```bash

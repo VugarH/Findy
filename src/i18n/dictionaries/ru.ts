@@ -278,6 +278,9 @@ const ru: Dictionary = {
     page: "Страница {page} из {pages}",
   },
   product: {
+    preowned: "Люкс б/у",
+    conditionGrade: "Состояние: {grade}",
+    conditions: { Pristine: "идеальное", Excellent: "отличное" },
     priceBreakdown: "Из чего складывается цена",
     share: { button: "Поделиться", copy: "Копировать ссылку", copied: "Ссылка скопирована" },
     sizes: "Размеры",

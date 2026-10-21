@@ -276,6 +276,9 @@ const en = {
     page: "Page {page} of {pages}",
   },
   product: {
+    preowned: "Pre-owned luxury",
+    conditionGrade: "{grade} condition",
+    conditions: { Pristine: "Pristine", Excellent: "Excellent" },
     priceBreakdown: "Price breakdown",
     share: { button: "Share", copy: "Copy link", copied: "Link copied" },
     sizes: "Sizes",

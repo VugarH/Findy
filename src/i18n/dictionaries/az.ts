@@ -278,6 +278,9 @@ const az: Dictionary = {
     page: "Səhifə {page} / {pages}",
   },
   product: {
+    preowned: "İşlənmiş lüks məhsul",
+    conditionGrade: "{grade} vəziyyət",
+    conditions: { Pristine: "Qüsursuz", Excellent: "Əla" },
     priceBreakdown: "Qiymətin tərkibi",
     share: { button: "Paylaş", copy: "Linki kopyala", copied: "Link kopyalandı" },
     sizes: "Ölçülər",

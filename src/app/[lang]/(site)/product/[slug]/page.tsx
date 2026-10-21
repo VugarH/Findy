@@ -2,7 +2,7 @@ import { usableImage } from "@/config/images";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { BadgeCheck, ChevronRight, Info, Search, TrendingDown } from "lucide-react";
+import { BadgeCheck, ChevronRight, Info, Search, Sparkles, TrendingDown } from "lucide-react";
 import type { CategorySlug } from "@/config/categories";
 import { isSubcategoryOf } from "@/config/subcategories";
 import { siteConfig } from "@/config/site";
@@ -171,6 +171,17 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
           <header>
             {product.brand && <p className="text-sm font-semibold tracking-wide text-muted">{brandLabel(product.brand)}</p>}
             <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{product.title}</h1>
+            {/* Pre-owned items (The Luxury Closet): never mistaken for new. */}
+            {product.attributes.condition === "pre-owned" && (
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-2.5 py-1 text-xs font-semibold text-ink">
+                <Sparkles className="size-3.5 text-cat-jewelry" aria-hidden />
+                {t.product.preowned}
+                {product.attributes.conditionGrade &&
+                  ` · ${fmt(t.product.conditionGrade, {
+                    grade: t.product.conditions[product.attributes.conditionGrade as keyof typeof t.product.conditions] ?? product.attributes.conditionGrade,
+                  })}`}
+              </p>
+            )}
             {best && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <span className="text-xs text-muted">{t.follows.productLine}</span>

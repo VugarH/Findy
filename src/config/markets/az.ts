@@ -43,7 +43,7 @@ export const azMarket: MarketConfig = {
   foreignPaymentFeeRate: 0.01,
 
   // PLACEHOLDER PRICING — set the real service fee before offering this to customers.
-  assistedOrder: { enabled: true, feeRate: 0.07, minFee: 5, maxQuantity: 5 },
+  assistedOrder: { enabled: true, showFee: false, feeRate: 0.07, minFee: 5, maxQuantity: 5 },
 
   alerts: { minDropPct: 2, maxWatches: 100 },
 

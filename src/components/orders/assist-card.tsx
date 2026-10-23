@@ -35,9 +35,13 @@ export async function AssistCard({ offer }: { offer: OfferView }) {
 
         <div className="flex shrink-0 flex-col gap-2">
           <p className="text-lg font-extrabold tracking-tight text-ink">
-            {fmt(t.order.cardEstimate, { total: money(estimate.totalMinor) })}
+            {fmt(t.order.cardEstimate, {
+              total: money(market.assistedOrder.showFee ? estimate.totalMinor : estimate.totalMinor - estimate.feeMinor),
+            })}
           </p>
-          <p className="-mt-1.5 text-xs text-ink/70">{fmt(t.order.cardFee, { fee: money(estimate.feeMinor) })}</p>
+          {market.assistedOrder.showFee && (
+            <p className="-mt-1.5 text-xs text-ink/70">{fmt(t.order.cardFee, { fee: money(estimate.feeMinor) })}</p>
+          )}
           {/* Opens Write to us with this listing attached. */}
           <Link
             href={`${href("/messages/new")}?offer=${offer.offerId}`}

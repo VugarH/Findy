@@ -151,6 +151,13 @@ GitHub → Settings → Secrets and variables → Actions:
 The AliExpress feed is ~850 MB: the job streams it and keeps 5,000 offers; it
 adds a few minutes to the run, not to the database.
 
+## 9. Google Search Console (optional)
+
+1. https://search.google.com/search-console → Add property → **URL prefix** → the site address (e.g. `https://findy-az.vercel.app`).
+2. Choose **HTML tag** and copy only the `content="…"` value.
+3. Vercel → Settings → Environment Variables: `GOOGLE_SITE_VERIFICATION` = that value; redeploy; press **Verify**.
+4. Sitemaps → submit `sitemap.xml`.
+
 ## Random values
 
 ```bash

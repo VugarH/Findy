@@ -28,6 +28,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
     twitter: { card: "summary_large_image" },
     // Ownership check for the Admitad (Mitgo) affiliate ad space. Public by design; safe to keep.
     other: { "mitgo-verification": "f093e871-1126-49f0-96fd-e0cf8d0cb06e" },
+    // Google Search Console ownership check (docs/DEPLOY.md §9); env GOOGLE_SITE_VERIFICATION, left out when unset.
+    ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
   };
 }
 

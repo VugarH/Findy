@@ -40,12 +40,14 @@ export default async function OrderingAbroadPage() {
         <OrderSteps t={t} />
       </section>
 
-      <section className="rounded-2xl border border-line bg-surface p-6">
-        <h2 className="text-xl font-bold">{t.order.feeTitle}</h2>
-        <p className="mt-2 max-w-3xl leading-7 text-muted">
-          {fmt(t.order.feeText, { rate: Math.round(feeRate * 1000) / 10, min: money(toMinor(minFee)) })}
-        </p>
-      </section>
+      {market.assistedOrder.showFee && (
+        <section className="rounded-2xl border border-line bg-surface p-6">
+          <h2 className="text-xl font-bold">{t.order.feeTitle}</h2>
+          <p className="mt-2 max-w-3xl leading-7 text-muted">
+            {fmt(t.order.feeText, { rate: Math.round(feeRate * 1000) / 10, min: money(toMinor(minFee)) })}
+          </p>
+        </section>
+      )}
 
       <OrderFaq t={t} market={market} money={money} />
 

@@ -13,7 +13,8 @@ interface Props {
     /** "From {store}" / "Parcel from {store}". */
     parcelFrom: string;
     estimatedTotal: string;
-    fee: string;
+    /** Left out to hide the service fee. */
+    fee?: string;
     note?: string;
   };
 }
@@ -63,10 +64,12 @@ export function RequestDetails({ details, money, productHref, labels }: Props) {
           <dt>{labels.estimatedTotal}</dt>
           <dd className="tabular-nums">{money(details.totalMinor)}</dd>
         </div>
-        <div className="flex justify-between gap-4 text-muted">
-          <dt>{labels.fee}</dt>
-          <dd className="tabular-nums">{money(details.feeMinor)}</dd>
-        </div>
+        {labels.fee && (
+          <div className="flex justify-between gap-4 text-muted">
+            <dt>{labels.fee}</dt>
+            <dd className="tabular-nums">{money(details.feeMinor)}</dd>
+          </div>
+        )}
       </dl>
       {labels.note && <p className="mt-2 text-xs text-muted">{labels.note}</p>}
     </section>

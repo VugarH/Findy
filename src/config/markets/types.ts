@@ -48,6 +48,8 @@ export interface MarketConfig {
    */
   assistedOrder: {
     enabled: boolean;
+    /** Whether customers see our service fee (off while help is informal, without a delivery partner). */
+    showFee: boolean;
     /** Share of the landed total, e.g. 0.07 = 7%. */
     feeRate: number;
     /** Smallest fee, in whole units of the market currency. */

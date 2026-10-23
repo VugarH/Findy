@@ -3,7 +3,7 @@ import { azMarket } from "@/config/markets/az";
 import type { MarketConfig } from "@/config/markets";
 import { estimateAssistedOrder } from "./pricing";
 
-const market: MarketConfig = { ...azMarket, assistedOrder: { enabled: true, feeRate: 0.1, minFee: 5, maxQuantity: 5 } };
+const market: MarketConfig = { ...azMarket, assistedOrder: { enabled: true, showFee: true, feeRate: 0.1, minFee: 5, maxQuantity: 5 } };
 const unit = { priceMinor: 10_000, currency: "USD" as const, shippingMinor: 0, weightKg: 0.5, scope: "global" as const, originCountry: "US" };
 
 describe("estimateAssistedOrder", () => {

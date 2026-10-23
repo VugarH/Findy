@@ -81,7 +81,7 @@ export default async function ConversationPage({ params }: PageProps<"/[lang]/me
               title: m.orderDetails,
               parcelFrom: t.cart.parcelFrom,
               estimatedTotal: m.estimatedTotal,
-              fee: t.order.lineFee,
+              fee: market.assistedOrder.showFee ? t.order.lineFee : undefined,
               note: t.order.estimateNote,
             }}
           />

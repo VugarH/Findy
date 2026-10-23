@@ -46,3 +46,8 @@ export function galleryImages(main: string | null | undefined, others: readonly 
   }
   return out;
 }
+
+/** A sharper copy for the zoom panel, where the store's image server can resize (Shopify "width="); else the same photo. */
+export function largeImage(url: string): string {
+  return url.replace(/([?&]width=)\d+/, (_, param: string) => `${param}1600`);
+}

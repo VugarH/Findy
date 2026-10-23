@@ -26,7 +26,7 @@ import { ShareButton } from "@/components/product/share-button";
 import { PriceHistoryChart } from "@/components/product/price-history-chart";
 import { ProductImage } from "@/components/product/product-image";
 import { productGallery } from "@/modules/catalog/gallery";
-import { ProductGallery } from "@/components/product/product-gallery";
+import { PHOTO_FRAME, ProductGallery } from "@/components/product/product-gallery";
 import { SizeFinder, type SizedOffer } from "@/components/product/size-finder";
 import { Container } from "@/components/ui/container";
 import { brandLabel } from "@/lib/text";
@@ -165,12 +165,14 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
       </nav>
 
       {/* First screen: the photo and everything needed to decide and buy. */}
-      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-8">
-        <div className="aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-white sm:aspect-square lg:sticky lg:top-40 lg:self-start">
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,11fr)_minmax(0,13fr)] lg:gap-10">
+        <div className="lg:sticky lg:top-40 lg:self-start">
           {gallery.length > 0 ? (
             <ProductGallery images={gallery} title={product.title} labels={{ photo: t.product.photo }} />
           ) : (
-            <ProductImage imageUrl={null} title={product.title} category={category} />
+            <div className={PHOTO_FRAME}>
+              <ProductImage imageUrl={null} title={product.title} category={category} />
+            </div>
           )}
         </div>
 

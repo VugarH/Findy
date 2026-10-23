@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GALLERY_MAX, galleryImages, usableImage } from "./images";
+import { GALLERY_MAX, galleryImages, largeImage, usableImage } from "./images";
 
 describe("usableImage", () => {
   it("drops photos from servers that refuse to be shown elsewhere, and missing ones", () => {
@@ -26,5 +26,12 @@ describe("galleryImages", () => {
   it("works without a main photo", () => {
     expect(galleryImages(null, ["https://a.test/2.jpg"])).toEqual(["https://a.test/2.jpg"]);
     expect(galleryImages(null, [])).toEqual([]);
+  });
+});
+
+describe("largeImage", () => {
+  it("asks a resizing image server for a bigger copy, and leaves other photos alone", () => {
+    expect(largeImage("https://cdn.shopify.com/a.jpg?v=1&width=600")).toBe("https://cdn.shopify.com/a.jpg?v=1&width=1600");
+    expect(largeImage("https://cdn.example/a.jpg")).toBe("https://cdn.example/a.jpg");
   });
 });

@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, inArray, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
-import { freshDeals, offers, products } from "@/db/schema";
+import { freshDeals, offers, products, suppliers } from "@/db/schema";
 import type { CategorySlug } from "@/config/categories";
 import type { MarketConfig } from "@/config/markets";
 import { toCard, type ProductCardData } from "@/modules/catalog/card";
@@ -21,12 +21,13 @@ const FRESH_ORDER: Record<FreshSort, SQL[]> = {
   newest: [desc(freshDeals.fromOn), desc(freshDeals.dropPct)],
 };
 
-/** Live fresh drops of a market (their offer still confirmed by the store), optionally in some categories and matching a search. */
-function liveFresh(market: MarketConfig, categories?: CategorySlug[], query?: string) {
+/** Live fresh drops of a market (their offer still confirmed by the store), optionally in some categories and stores and matching a search. */
+function liveFresh(market: MarketConfig, categories?: CategorySlug[], query?: string, stores?: string[]) {
   return and(
     eq(freshDeals.marketCode, market.code),
     offerIsLive(freshSince(market)),
     categories?.length ? inArray(freshDeals.categorySlug, categories) : undefined,
+    stores?.length ? inArray(offers.supplierId, stores) : undefined,
     (query && productMatchesQuery(query)) || undefined,
   );
 }
@@ -38,7 +39,7 @@ function liveFresh(market: MarketConfig, categories?: CategorySlug[], query?: st
  */
 export async function listFreshDeals(
   market: MarketConfig,
-  options: { categories?: CategorySlug[]; query?: string; sort?: FreshSort; limit: number; offset?: number },
+  options: { categories?: CategorySlug[]; stores?: string[]; query?: string; sort?: FreshSort; limit: number; offset?: number },
 ): Promise<ProductCardData[]> {
   const rows = await db
     .select({
@@ -51,7 +52,7 @@ export async function listFreshDeals(
     .from(freshDeals)
     .innerJoin(offers, eq(freshDeals.offerId, offers.id))
     .innerJoin(products, eq(freshDeals.productId, products.id))
-    .where(liveFresh(market, options.categories, options.query))
+    .where(liveFresh(market, options.categories, options.query, options.stores))
     .orderBy(...FRESH_ORDER[options.sort ?? "drop"], freshDeals.productId)
     .limit(options.limit)
     .offset(options.offset ?? 0);
@@ -67,20 +68,42 @@ export async function listFreshDeals(
   });
 }
 
-/** How many verified discounts there are, overall and per category (matching a search, if given). */
+/**
+ * How many verified discounts there are (matching a search, if given): in total
+ * for the chosen categories and stores, per category within the chosen stores,
+ * and per store within the chosen categories, so each list counts what ticking
+ * it would add. One grouped query; the rest is summed here.
+ */
 export async function countFreshDeals(
   market: MarketConfig,
-  query?: string,
-): Promise<{ total: number; byCategory: Record<string, number> }> {
+  options: { query?: string; categories?: CategorySlug[]; stores?: string[] } = {},
+): Promise<{ total: number; byCategory: Record<string, number>; stores: { key: string; name: string; total: number }[] }> {
   const rows = await db
-    .select({ category: freshDeals.categorySlug, total: count() })
+    .select({ category: freshDeals.categorySlug, store: offers.supplierId, name: suppliers.name, total: count() })
     .from(freshDeals)
     .innerJoin(offers, eq(freshDeals.offerId, offers.id))
     .innerJoin(products, eq(freshDeals.productId, products.id))
-    .where(liveFresh(market, undefined, query))
-    .groupBy(freshDeals.categorySlug);
+    .innerJoin(suppliers, eq(offers.supplierId, suppliers.id))
+    .where(liveFresh(market, undefined, options.query))
+    .groupBy(freshDeals.categorySlug, offers.supplierId, suppliers.name);
+  const inCategories = (row: (typeof rows)[number]) =>
+    !options.categories?.length || options.categories.includes(row.category as CategorySlug);
+  const inStores = (row: (typeof rows)[number]) => !options.stores?.length || options.stores.includes(row.store);
+  const byCategory: Record<string, number> = {};
+  const byStore = new Map<string, { key: string; name: string; total: number }>();
+  let total = 0;
+  for (const row of rows) {
+    if (inStores(row)) byCategory[row.category] = (byCategory[row.category] ?? 0) + row.total;
+    if (inCategories(row)) {
+      const store = byStore.get(row.store) ?? { key: row.store, name: row.name, total: 0 };
+      store.total += row.total;
+      byStore.set(row.store, store);
+    }
+    if (inStores(row) && inCategories(row)) total += row.total;
+  }
   return {
-    total: rows.reduce((sum, row) => sum + row.total, 0),
-    byCategory: Object.fromEntries(rows.map((row) => [row.category, row.total])),
+    total,
+    byCategory,
+    stores: [...byStore.values()].sort((a, b) => b.total - a.total || a.name.localeCompare(b.name)),
   };
 }

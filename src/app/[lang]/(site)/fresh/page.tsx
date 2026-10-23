@@ -5,12 +5,13 @@ import { isCategorySlug, type CategorySlug } from "@/config/categories";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
-import { DEFAULT_PAGE_SIZE, PAGE_SIZE_COOKIE, PAGE_SIZES, parseDealFilters } from "@/modules/deals/filters";
+import { DEFAULT_PAGE_SIZE, MAX_STORES, PAGE_SIZE_COOKIE, PAGE_SIZES, parseDealFilters, STORE_SEPARATOR } from "@/modules/deals/filters";
 import { countFreshDeals, FRESH_SORTS, listFreshDeals, type FreshSort } from "@/modules/deals/fresh";
 import { withPageSizeCookie } from "@/modules/deals/page-size";
 import { orderedCategories } from "@/modules/settings/display-order";
 import { getDisplayOrder } from "@/modules/settings/service";
 import { MIN_QUERY_LENGTH, normalizeQuery } from "@/modules/search/normalize";
+import { BrandFilter } from "@/components/deals/brand-filter";
 import { FilterDrawerButton, FilterDrawerPanel, FilterDrawerProvider } from "@/components/deals/filter-drawer";
 import { FilterGroup, FilterOption, FilterToggle } from "@/components/deals/filter-panel";
 import { Pagination } from "@/components/deals/pagination";
@@ -38,43 +39,51 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
   const { page: askedPage, size } = parseDealFilters(await withPageSizeCookie(params));
   const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
   const selected = [...new Set((one(params.category) ?? "").split(CATEGORY_SEPARATOR).filter(isCategorySlug))];
+  const selectedStores = [...new Set((one(params.store) ?? "").split(STORE_SEPARATOR).filter(Boolean))].slice(0, MAX_STORES);
   const typed = normalizeQuery(one(params.q));
   const query = typed.length >= MIN_QUERY_LENGTH ? typed : undefined;
   const sortParam = one(params.sort);
   const sort: FreshSort = (FRESH_SORTS as readonly string[]).includes(sortParam ?? "") ? (sortParam as FreshSort) : "drop";
   // The heading counts every verified discount; the panel and results follow the search.
   const [counts, all, order] = await Promise.all([
-    countFreshDeals(market, query),
+    countFreshDeals(market, { query, categories: selected, stores: selectedStores }),
     query ? countFreshDeals(market) : null,
     getDisplayOrder(),
   ]);
   const overall = (all ?? counts).total;
-  const total = selected.length
-    ? selected.reduce((sum, slug) => sum + (counts.byCategory[slug] ?? 0), 0)
-    : counts.total;
+  const total = counts.total;
   const pages = Math.max(1, Math.ceil(total / size));
   const page = Math.min(askedPage, pages);
-  const cards = await listFreshDeals(market, { categories: selected, query, sort, limit: size, offset: (page - 1) * size });
+  const cards = await listFreshDeals(market, { categories: selected, stores: selectedStores, query, sort, limit: size, offset: (page - 1) * size });
 
   // The current choices as URL params (defaults left out), with some changed.
-  const paramsFor = (patch: { categories?: CategorySlug[]; page?: number } = {}) => {
+  const paramsFor = (patch: { categories?: CategorySlug[]; stores?: string[]; page?: number } = {}) => {
     const nextCategories = patch.categories ?? selected;
+    const nextStores = patch.stores ?? selectedStores;
     return Object.fromEntries(
       [
         ["q", query],
         ["category", nextCategories.length ? nextCategories.join(CATEGORY_SEPARATOR) : undefined],
+        ["store", nextStores.length ? nextStores.join(STORE_SEPARATOR) : undefined],
         ["sort", sort === "drop" ? undefined : sort],
         ["size", size === DEFAULT_PAGE_SIZE ? undefined : String(size)],
         ["page", patch.page && patch.page > 1 ? String(patch.page) : undefined],
       ].filter((entry): entry is [string, string] => entry[1] !== undefined),
     );
   };
-  const link = (patch: { categories?: CategorySlug[]; page?: number } = {}) => {
+  const link = (patch: { categories?: CategorySlug[]; stores?: string[]; page?: number } = {}) => {
     const text = new URLSearchParams(paramsFor(patch)).toString();
     return href("/fresh") + (text ? `?${text}` : "");
   };
   const toggle = (slug: CategorySlug) =>
     link({ categories: selected.includes(slug) ? selected.filter((s) => s !== slug) : [...selected, slug] });
+  const toggleStore = (key: string) =>
+    link({ stores: selectedStores.includes(key) ? selectedStores.filter((s) => s !== key) : [...selectedStores, key].slice(-MAX_STORES) });
+  // A ticked store with nothing left in the chosen categories still needs its box, to untick it.
+  const storeOptions = [
+    ...counts.stores,
+    ...selectedStores.filter((key) => !counts.stores.some((store) => store.key === key)).map((key) => ({ key, name: key, total: 0 })),
+  ].map((store) => ({ ...store, href: toggleStore(store.key), active: selectedStores.includes(store.key) }));
   const categories = orderedCategories(order);
   const withDeals = [
     ...categories.filter((c) => counts.byCategory[c.slug]),
@@ -141,7 +150,11 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
               showResultsLabel={fmt(t.filters.showResults, { count: totalLabel })}
             >
               <FilterGroup title={t.filters.category}>
-                <FilterOption href={link({ categories: [] })} active={selected.length === 0} count={counts.total}>
+                <FilterOption
+                  href={link({ categories: [] })}
+                  active={selected.length === 0}
+                  count={Object.values(counts.byCategory).reduce((sum, n) => sum + n, 0)}
+                >
                   {t.filters.all}
                 </FilterOption>
                 {/* Tick several; every category stays listed, those without any last. */}
@@ -156,12 +169,25 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
                   </FilterToggle>
                 ))}
               </FilterGroup>
+              {storeOptions.length > 1 && (
+                <FilterGroup title={t.filters.store}>
+                  <BrandFilter
+                    options={storeOptions}
+                    labels={{
+                      showAll: fmt(t.filters.showAllStores, { count: storeOptions.length }),
+                      showFewer: t.filters.showFewerBrands,
+                      search: t.filters.searchStores,
+                      none: t.filters.noStores,
+                    }}
+                  />
+                </FilterGroup>
+              )}
             </FilterDrawerPanel>
 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <FilterDrawerButton label={t.filters.filters} activeCount={selected.length} />
+                  <FilterDrawerButton label={t.filters.filters} activeCount={selected.length + selectedStores.length} />
                   <p className="text-sm font-semibold">{fmt(t.filters.results, { count: totalLabel })}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -194,7 +220,7 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
                 placeholder={t.fresh.searchPlaceholder}
                 buttonLabel={t.search.button}
                 defaultValue={query}
-                hidden={Object.fromEntries(Object.entries(paramsFor()).filter(([key]) => key === "category" || key === "sort"))}
+                hidden={Object.fromEntries(Object.entries(paramsFor()).filter(([key]) => key === "category" || key === "store" || key === "sort"))}
                 optional
                 className="mt-4"
               />

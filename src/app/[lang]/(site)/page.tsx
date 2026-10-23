@@ -53,8 +53,6 @@ export default async function HomePage() {
     ? new Intl.DateTimeFormat(LOCALE_TAGS[locale], {
         day: "numeric",
         month: "long",
-        hour: "2-digit",
-        minute: "2-digit",
         timeZone: "Asia/Baku",
       }).format(stats.lastRunAt)
     : null;

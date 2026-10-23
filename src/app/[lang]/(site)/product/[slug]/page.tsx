@@ -25,6 +25,7 @@ import { OtherSideLine } from "@/components/product/other-side-line";
 import { ShareButton } from "@/components/product/share-button";
 import { PriceHistoryChart } from "@/components/product/price-history-chart";
 import { ProductImage } from "@/components/product/product-image";
+import { ZoomImage } from "@/components/product/zoom-image";
 import { SizeFinder, type SizedOffer } from "@/components/product/size-finder";
 import { Container } from "@/components/ui/container";
 import { brandLabel } from "@/lib/text";
@@ -164,7 +165,11 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
       {/* First screen: the photo and everything needed to decide and buy. */}
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-8">
         <div className="aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-white sm:aspect-square lg:sticky lg:top-40 lg:self-start">
-          <ProductImage imageUrl={usableImage(product.imageUrl)} title={product.title} category={category} />
+          {usableImage(product.imageUrl) ? (
+            <ZoomImage src={usableImage(product.imageUrl)!} alt={product.title} />
+          ) : (
+            <ProductImage imageUrl={null} title={product.title} category={category} />
+          )}
         </div>
 
         <div className="min-w-0 space-y-4">

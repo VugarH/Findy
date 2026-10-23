@@ -17,6 +17,8 @@ export interface StructuredProduct {
   mpn: string | null;
   gtin: string | null;
   image: string | null;
+  /** Every photo listed (main first); left out by readers that know only one. */
+  images?: string[];
   price: number;
   currency: string | null;
   inStock: boolean;
@@ -96,6 +98,11 @@ export function parsePrice(value: unknown): number | null {
   return price > 0 ? price : null;
 }
 
+function allImages(value: unknown): string[] {
+  const list = Array.isArray(value) ? value : [value];
+  return list.flatMap((item) => firstImage(item) ?? []);
+}
+
 function firstImage(value: unknown): string | null {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return firstImage(value[0]);
@@ -145,6 +152,7 @@ function toStructuredProduct(node: Json): StructuredProduct | null {
     mpn: text(node.mpn),
     gtin: gtin ?? null,
     image: firstImage(node.image),
+    images: allImages(node.image),
     price: offer.price,
     currency: offer.currency,
     inStock: offer.inStock,

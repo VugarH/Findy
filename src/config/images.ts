@@ -26,3 +26,23 @@ export function usableImage(url: string | null | undefined): string | null {
     HOTLINK_PROTECTED_PREFIXES.some((prefix) => host.startsWith(prefix));
   return blocked ? null : url;
 }
+
+/** Photos shown on a product page (the main one included). Set to 1 to show only the main photo. */
+export const GALLERY_MAX = 4;
+
+/**
+ * A product page's photos: the main photo first, then the store's other photos
+ * in their order — only ones we can show, no repeats, at most GALLERY_MAX.
+ */
+export function galleryImages(main: string | null | undefined, others: readonly (string | null | undefined)[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of [main, ...others]) {
+    const usable = usableImage(url);
+    if (!usable || seen.has(usable)) continue;
+    seen.add(usable);
+    out.push(usable);
+    if (out.length === GALLERY_MAX) break;
+  }
+  return out;
+}

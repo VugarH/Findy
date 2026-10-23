@@ -278,6 +278,7 @@ const ru: Dictionary = {
     page: "Страница {page} из {pages}",
   },
   product: {
+    photo: "Фото",
     preowned: "Люкс б/у",
     conditionGrade: "Состояние: {grade}",
     conditions: { Pristine: "идеальное", Excellent: "отличное" },

@@ -20,7 +20,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Subcategory rules (≤10/category) | `src/config/subcategories.ts` (`classifyProduct`) |
 | Audience (women/men/kids/unisex) | `src/config/audience.ts` |
 | Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts` |
-| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0024) |
+| DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0025) |
 | Store adapters | `src/modules/suppliers/adapters/{shopify,structured-data,akinon,admitad}/{adapter,stores}.ts` (akinon = category pages, cart prices, discounted-only + `RawOffer.updateOnly`; admitad = affiliate product feeds streamed and filtered to a few thousand offers, `select.ts`, env `ADMITAD_*`, docs/DEPLOY.md §8) |
 | Code store list → daily job | `suppliers/registry.ts` (`getAdapters`, `getAllAdapters` = code + admin stores) |
 | Stores added in the panel | `suppliers/custom-config.ts` (zod, client-safe), `suppliers/custom.ts` (adapters, preview) |
@@ -37,6 +37,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Verified discounts (`/fresh`, home section, header; code calls them "fresh") | rule `deals/fresh-drop.ts` (pure: store-discounted items ≥5% below the highest price we recorded in the 7 days before, or the last check within 14; raise-then-cut counts; `market.deals.freshDrop`), saved to `fresh_deals` by `deals/build.ts`, read by `deals/fresh.ts` (paged, no cap); deal-list switch `?verified=1` (`DealFilters.freshOnly`); card line via `freshDropsOf` in `listDeals`, `ProductCard freshFocus` |
 | Deal list queries + filters | `deals/queries.ts` ("Best deals" mixes stores: `bestOrder`, `market.deals.storeRepeatFactor`), `deals/filters.ts` |
 | Search (+ az/ru/en synonyms) | `search/catalog-search.ts`, `search/synonyms.ts`; default order `search/relevance.ts` (query read by the subcategory rules: "iphone 16" = phone before its cases; then words in the title) |
+| Product photos, gallery (≤4, hover zoom) | `config/images.ts` (`usableImage`, `GALLERY_MAX`, `galleryImages`); adapters fill `RawOffer.images` → `offers.images` (read only by `catalog/gallery.ts` `productGallery`); UI `components/product/product-gallery.tsx`, `zoom-image.tsx` |
 | Cart / parcel planner | `modules/cart/plan.ts` (pure: parcels per store), `cart/service.ts`; cost `pricing/landed-cost.ts` `computeParcelCost`; browser cart `components/cart/cart-store.ts` (localStorage); page `(site)/cart` |
 | Follow brand/store/category → new deals | `modules/follows/*` (`match.ts` pure, `notify.ts` = daily 10:00 job); `deals.deal_since` kept across rebuilds in `deals/build.ts` |
 | Email (Resend), confirm address, reset password | `modules/email/send.ts` (Resend HTTP API; off without `RESEND_API_KEY` + `EMAIL_FROM`, docs/DEPLOY.md §7), `email/layout.ts` (one design, pure); `auth/email-links.ts` (single-use hashed links in `auth_tokens`: verify 24 h, reset 1 h, ≤3/hour; reset signs out everywhere); pages `(site)/forgot-password`, `reset-password`, `verify-email`; texts `t.email` |

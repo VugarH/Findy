@@ -200,6 +200,7 @@ export function toRawOffer(html: string, url: string, store: StructuredDataStore
     categorySlug: category,
     // Pages may give "//host/a.jpg" or "/a.jpg": made absolute against the page.
     imageUrl: absoluteUrl(product.image, url),
+    images: product.images?.flatMap((image) => absoluteUrl(image, url) ?? []),
     priceMinor: toMinor(product.price),
     currency: store.currency,
     listPriceMinor: listPrice ? toMinor(listPrice) : undefined,

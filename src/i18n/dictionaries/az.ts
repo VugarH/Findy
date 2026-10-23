@@ -278,6 +278,7 @@ const az: Dictionary = {
     page: "Səhifə {page} / {pages}",
   },
   product: {
+    photo: "Şəkil",
     preowned: "İşlənmiş lüks məhsul",
     conditionGrade: "{grade} vəziyyət",
     conditions: { Pristine: "Qüsursuz", Excellent: "Əla" },

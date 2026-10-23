@@ -102,6 +102,7 @@ export function toRawOffer(product: ShopifyProduct, store: ShopifyStore): RawOff
     categorySlug: category,
     productType: product.product_type || undefined,
     imageUrl: thumbnail(product.images[0]?.src),
+    images: product.images.flatMap((image) => thumbnail(image.src) ?? []),
     priceMinor: toMinor(price),
     currency: store.currency,
     listPriceMinor: compareAt > price ? toMinor(compareAt) : undefined,

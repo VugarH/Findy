@@ -142,6 +142,8 @@ export const offers = pgTable(
     inStock: boolean("in_stock").notNull().default(true),
     /** Sizes the store lists (clothes, shoes) and which are in stock; null = not known or one size. */
     sizes: jsonb("sizes").$type<{ label: string; inStock: boolean }[]>(),
+    /** The store's photos of the item, main first, at most GALLERY_MAX; read only by the product page. */
+    images: text("images").array(),
     deliveryMinDays: integer("delivery_min_days"),
     deliveryMaxDays: integer("delivery_max_days"),
     /** Entered in the admin panel, not read from the store: re-confirmed by every daily run until changed. */

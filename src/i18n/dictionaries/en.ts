@@ -276,6 +276,7 @@ const en = {
     page: "Page {page} of {pages}",
   },
   product: {
+    photo: "Photo",
     preowned: "Pre-owned luxury",
     conditionGrade: "{grade} condition",
     conditions: { Pristine: "Pristine", Excellent: "Excellent" },

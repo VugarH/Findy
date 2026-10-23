@@ -119,6 +119,7 @@ export function toRawOffer(offer: FeedOffer, category: CategorySlug, store: Admi
     categorySlug: category,
     productType,
     imageUrl: offer.pictures[0],
+    images: offer.pictures,
     priceMinor: toMinor(offer.price),
     currency: store.currency,
     listPriceMinor: offer.oldPrice ? toMinor(offer.oldPrice) : undefined,

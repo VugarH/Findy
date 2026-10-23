@@ -23,6 +23,7 @@ describe("readStructuredProduct", () => {
       mpn: "HZ0872",
       gtin: null,
       image: "https://cdn.example/1.jpg",
+      images: ["https://cdn.example/1.jpg", "https://cdn.example/2.jpg"],
       price: 2534.35,
       currency: "TRY",
       inStock: true,

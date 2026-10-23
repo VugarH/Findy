@@ -1,4 +1,5 @@
 import { and, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import { GALLERY_MAX } from "@/config/images";
 import { db } from "@/db/client";
 import { offers, priceObservations, products, suppliers } from "@/db/schema";
 import { detectAudience } from "@/config/audience";
@@ -191,6 +192,7 @@ export async function ingestOffers(
           shippingMinor: raw.shippingMinor,
           inStock: raw.inStock,
           sizes: raw.sizes ?? null,
+          images: raw.images?.length ? raw.images.slice(0, GALLERY_MAX) : null,
           deliveryMinDays: raw.deliveryDays?.min ?? null,
           deliveryMaxDays: raw.deliveryDays?.max ?? null,
           firstSeenAt: now,
@@ -209,6 +211,7 @@ export async function ingestOffers(
           shippingMinor: sql`excluded.shipping_minor`,
           inStock: sql`excluded.in_stock`,
           sizes: sql`excluded.sizes`,
+          images: sql`excluded.images`,
           deliveryMinDays: sql`excluded.delivery_min_days`,
           deliveryMaxDays: sql`excluded.delivery_max_days`,
           lastSeenAt: sql`excluded.last_seen_at`,

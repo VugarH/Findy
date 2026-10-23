@@ -106,6 +106,7 @@ export function toRawOffer(product: AkinonListingProduct, store: AkinonStoreShap
     mpn: articleNumberOf(brand, [product.base_code, product.sku, product.absolute_url, product.name], category) ?? undefined,
     categorySlug: category,
     imageUrl: product.productimage_set?.[0]?.image,
+    images: product.productimage_set?.flatMap((image) => image.image ?? []),
     priceMinor: toMinor(price),
     currency: store.currency,
     listPriceMinor: regular > price ? toMinor(regular) : undefined,

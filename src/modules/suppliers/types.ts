@@ -80,6 +80,8 @@ export interface RawOffer {
   /** The store's own product type / section name, if it has one. Helps pick a subcategory. */
   productType?: string;
   imageUrl?: string;
+  /** All the store's photos of the item, main first (product page gallery, config/images.ts GALLERY_MAX). */
+  images?: string[];
   /** Minor units of `currency`. */
   priceMinor: number;
   currency: CurrencyCode;

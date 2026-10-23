@@ -44,10 +44,10 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
   const query = typed.length >= MIN_QUERY_LENGTH ? typed : undefined;
   const sortParam = one(params.sort);
   const sort: FreshSort = (FRESH_SORTS as readonly string[]).includes(sortParam ?? "") ? (sortParam as FreshSort) : "drop";
-  // The heading counts every verified discount; the panel and results follow the search.
+  // The heading counts every verified discount; the panel and results follow the search and filters.
   const [counts, all, order] = await Promise.all([
     countFreshDeals(market, { query, categories: selected, stores: selectedStores }),
-    query ? countFreshDeals(market) : null,
+    query || selected.length || selectedStores.length ? countFreshDeals(market) : null,
     getDisplayOrder(),
   ]);
   const overall = (all ?? counts).total;

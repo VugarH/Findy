@@ -45,7 +45,8 @@ const SHOPIFY_DELAY_MS = 2500;
 const shopifyThrottle = new Throttle(SHOPIFY_DELAY_MS);
 
 const PAGE_SIZE = 250;
-const MAX_PAGES = 2;
+/** 4 × 250 = the first 1,000 products of each store. */
+const MAX_PAGES = 4;
 const LIST_PATH = "/products.json";
 
 /** Things a store lists as "products" that are not goods anyone compares prices on. */

@@ -92,7 +92,7 @@ By country: mostly USA, then China/Hong Kong brand stores, a few UK, two Turkish
   (one request every 2.5 s, back off when told). A full run takes about 20 minutes, and a few
   stores are refused on any given day; they are retried on the next run. 89 of the 92 have
   returned data so far.
-- Only the first 500 products of each store are read.
+- Only the first 500 products of each store are read (1,000 since 2026-10-28).
 - The catalog JSON has no shipping price. 43 stores list Azerbaijan as a destination, the rest
   need a freight forwarder; in both cases delivery is *estimated* by weight and origin country
   using the rates in `src/config/markets/az.ts`. Replace those with your forwarder's real tariff.

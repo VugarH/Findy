@@ -21,6 +21,11 @@ const az: Dictionary = {
     scrollBack: "Əvvəlki kateqoriyalar",
     scrollMore: "Daha çox kateqoriya",
   },
+  recommendations: {
+    title: "Sizin üçün tövsiyələr",
+    hint: "Bu cihazda baxdığınız və axtardığınız məhsullara əsasən seçilmiş endirimlər.",
+    clear: "Maraqlarımı sil",
+  },
   search: {
     dealsOnly: "Yalnız endirimlər",
     market: "Nəticələri göstər",

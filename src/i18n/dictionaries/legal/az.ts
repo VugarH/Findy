@@ -75,6 +75,7 @@ const legalAz: LegalDictionary = {
           "Hesabınız: ad, e-poçt, istəyə bağlı telefon nömrəsi, diliniz və ayarlarınız. Şifrəniz yalnız heç kimin oxuya bilmədiyi təhlükəsiz hash şəklində saxlanılır.",
           "Hesabınızla etdikləriniz: izlədiyiniz məhsullar, izlədiyiniz brendlər, mağazalar və kateqoriyalar, bizə göndərdiyiniz mesaj və sorğular (verdiyiniz telefon və çatdırılma şəhəri, saytımızdan və ya səbətinizdən əlavə etdiyiniz məhsullar və o anki qiymətləri ilə) və köhnə “Mənim üçün sifariş et” sorğuları (ad, telefon, e-poçt, şəhər və qeyd). Səbətiniz öz brauzerinizdə saxlanılır; yalnız sorğuya əlavə etdiyiniz məhsulları görürük.",
           "Telegram botumuzu qoşsanız: Telegram çat id-niz və istifadəçi adınız. Brauzer bildirişlərinə icazə versəniz: brauzerinizin bunun üçün verdiyi ünvan.",
+          "Tövsiyələr: endirim təklif etmək üçün brauzeriniz açdığınız və ya axtardığınız məhsulların kateqoriya, növ və brendlərinin qısa siyahısını saxlayır. O, cihazınızda qalır; «Sizin üçün tövsiyələr» göstəriləndə yalnız endirimləri seçmək üçün bizə göndərilir və saxlanılmır. Tövsiyələrin altındakı «Maraqlarımı sil» onu silir.",
           "Ziyarətlər: baxılan səhifələr, axtarışlar, mağazalara keçidlər, sizi göndərən sayt, cihaz növü və dil. Bunlar hər gün dəyişən anonim id ilə sayılır; bunun üçün IP ünvanınızı saxlamırıq və reklam və ya izləmə cookie-lərindən istifadə etmirik.",
           "Təhlükəsizlik: hesabları qorumaq üçün uğursuz giriş cəhdləri daxil edilən e-poçt və IP ünvanı ilə qeydə alınır.",
         ],

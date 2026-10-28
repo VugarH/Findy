@@ -13,4 +13,4 @@ export function getLegalDictionary(locale: Locale): LegalDictionary {
 }
 
 /** When the texts last changed: shown on the pages. Update it with every change. */
-export const LEGAL_UPDATED = "2026-10-20";
+export const LEGAL_UPDATED = "2026-10-28";

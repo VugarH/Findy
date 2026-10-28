@@ -547,6 +547,7 @@ const adminEn = {
       "settings.filters": "changed the deal filters",
       "settings.order": "changed the display order",
       "settings.deal-rules": "changed the deal rules",
+      "settings.features": "switched site features",
     },
     notPublished: "not published yet",
     empty: "No changes yet.",
@@ -622,6 +623,12 @@ const adminEn = {
   },
   settings: {
     intro: "Settings that apply to the whole site.",
+    featuresTitle: "Features",
+    featuresIntro: "Optional parts of the site. A switched-off feature disappears for every visitor at once; switch it back on at any time.",
+    recommendations: {
+      label: "Recommended for you",
+      hint: "Rows of deals picked from what a visitor opened and searched for. Their interests are kept in their own browser and sent only to pick the deals; nothing is stored on our side.",
+    },
     dealRulesTitle: "Deal rules",
     dealRulesIntro: "Which discounts are listed as deals. Changes apply when the deal list is next rebuilt: the daily run, or Run now in Daily runs.",
     keepStoreClaims: { label: "Keep store discounts after 14 days", hint: "On: a store's crossed-out price stays listed even when our price history does not confirm it (marked as the store's discount, ranked lower). Off: after 14 days of history only discounts our history confirms are listed." },

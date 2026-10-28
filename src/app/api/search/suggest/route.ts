@@ -8,7 +8,8 @@ import { suggestSearches } from "@/modules/search/terms";
  */
 export async function GET(request: Request) {
   const typed = normalizeQuery(new URL(request.url).searchParams.get("q")).slice(0, MAX_QUERY_LENGTH);
-  const suggestions = typed.length < 2 ? [] : await suggestSearches(await loadMarket(), typed);
+  // Suggestions are a convenience: a failure (e.g. before the daily job created their table) shows none.
+  const suggestions = typed.length < 2 ? [] : await suggestSearches(await loadMarket(), typed).catch(() => []);
   return Response.json(
     { suggestions },
     { headers: { "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400" } },

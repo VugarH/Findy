@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getAdminI18n } from "@/modules/admin/i18n";
-import { getDealRules, getFilterSwitches } from "@/modules/settings/service";
+import { getDealRules, getFeatureSwitches, getFilterSwitches } from "@/modules/settings/service";
 import { DealRulesForm } from "@/components/admin/deal-rules-form";
+import { FeatureSwitchesForm } from "@/components/admin/feature-switches-form";
 import { FilterSwitchesForm } from "@/components/admin/filter-switches-form";
 import { PageHeader, Panel } from "@/components/admin/ui";
 
@@ -13,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Site-wide settings. New settings get their own panel here and a key in modules/settings. */
 export default async function AdminSettingsPage() {
   const { a } = await getAdminI18n();
-  const [switches, rules] = await Promise.all([getFilterSwitches(), getDealRules()]);
+  const [switches, rules, features] = await Promise.all([getFilterSwitches(), getDealRules(), getFeatureSwitches()]);
   return (
     <>
       <PageHeader title={a.nav.settings} intro={a.settings.intro} />
@@ -24,6 +25,10 @@ export default async function AdminSettingsPage() {
       <Panel title={a.settings.dealRulesTitle}>
         <p className="mb-4 max-w-2xl text-sm text-muted">{a.settings.dealRulesIntro}</p>
         <DealRulesForm rules={rules} />
+      </Panel>
+      <Panel title={a.settings.featuresTitle}>
+        <p className="mb-4 max-w-2xl text-sm text-muted">{a.settings.featuresIntro}</p>
+        <FeatureSwitchesForm switches={features} />
       </Panel>
     </>
   );

@@ -11,7 +11,8 @@ import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
 import { filterParams, filterQuery, PAGE_SIZE_COOKIE, PAGE_SIZES, parseDealFilters } from "@/modules/deals/filters";
 import { withPageSizeCookie } from "@/modules/deals/page-size";
-import { getFilterSwitches } from "@/modules/settings/service";
+import { getFeatureSwitches, getFilterSwitches } from "@/modules/settings/service";
+import { searchInterest } from "@/modules/recommendations/profile";
 import {
   facetsOfCards,
   filterCards,
@@ -32,6 +33,7 @@ import { ParamSelect } from "@/components/deals/sort-select";
 import { LiveSearch } from "@/components/search/live-search";
 import { CheckLink } from "@/components/search/check-link";
 import { MarketFilter } from "@/components/search/market-filter";
+import { InterestTracker } from "@/components/recommendations/interest-tracker";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 
@@ -64,14 +66,17 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
   // Nothing found: perhaps a typo ("adidsa"). The corrected words are searched instead,
   // unless the visitor asked for exactly what they typed (?exact=1).
   const exact = first(params.exact) === "1";
-  const corrected = asTyped.length === 0 && !exact ? await correctSearch(market, query) : null;
+  // A fix is a convenience: if it fails (e.g. before the daily job created its table), search as typed.
+  const corrected = asTyped.length === 0 && !exact ? await correctSearch(market, query).catch(() => null) : null;
   const fixed = corrected ? await searchCatalog(corrected, market, filters.scope) : [];
   const shownQuery = fixed.length > 0 ? corrected! : query;
   const found = fixed.length > 0 ? fixed : asTyped;
   // Recorded as typed and with what the typed words found, so a typo never becomes a suggestion.
   await recordSearch(query, market, asTyped.length, false);
-  // Analytics: the search itself, not every filter click on its results.
-  if (Object.keys(params).every((key) => key === "q")) {
+  // Analytics and interests: the search itself, not every filter click on its results.
+  const plainSearch = Object.keys(params).every((key) => key === "q");
+  const interest = plainSearch && (await getFeatureSwitches()).recommendations ? searchInterest(sortCards(found, "relevance", shownQuery)) : null;
+  if (plainSearch) {
     const visitor = visitorOf(await headers(), await getCurrentUser());
     if (visitor) after(() => recordSearchEvent(visitor, query, asTyped.length));
   }
@@ -120,6 +125,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
 
   return (
     <Container className="max-w-[88rem] py-6">
+      {interest && <InterestTracker event={interest} />}
       <h1 className="text-2xl font-extrabold tracking-tight">{fmt(t.search.resultsFor, { query: shownQuery })}</h1>
       {shownQuery !== query && (
         <p className="mt-1 text-sm">

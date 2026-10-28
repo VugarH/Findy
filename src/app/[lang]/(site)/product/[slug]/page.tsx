@@ -16,6 +16,7 @@ import { getProductDetail } from "@/modules/catalog/queries";
 import { storeDiscount } from "@/modules/catalog/summary";
 import { offerFreshDrop } from "@/modules/deals/fresh-drop";
 import { sameBrand } from "@/modules/catalog/normalizers/fashion";
+import { getFeatureSwitches } from "@/modules/settings/service";
 import { WatchButton } from "@/components/alerts/watch-button";
 import { FollowButton } from "@/components/follows/follow-button";
 import { AssistCard } from "@/components/orders/assist-card";
@@ -30,6 +31,7 @@ import { PHOTO_FRAME, ProductGallery } from "@/components/product/product-galler
 import { SizeFinder, type SizedOffer } from "@/components/product/size-finder";
 import { Container } from "@/components/ui/container";
 import { brandLabel } from "@/lib/text";
+import { InterestTracker } from "@/components/recommendations/interest-tracker";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/product/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -68,7 +70,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
   }
 
   const { product, offers, summary, lastSeenAt } = detail;
-  const gallery = await productGallery(product.id, product.imageUrl);
+  const [gallery, features] = await Promise.all([productGallery(product.id, product.imageUrl), getFeatureSwitches()]);
   const category = product.categorySlug as CategorySlug;
   const subcategory = isSubcategoryOf(category, product.subcategorySlug) ? product.subcategorySlug : null;
   const best = summary?.best ?? null;
@@ -177,6 +179,17 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
         </div>
 
         <div className="min-w-0 space-y-4">
+          {features.recommendations && (
+            <InterestTracker
+              event={{
+                kind: "view",
+                productId: product.id,
+                categorySlug: product.categorySlug,
+                subcategorySlug: product.subcategorySlug,
+                brand: product.brand,
+              }}
+            />
+          )}
           <header>
             {product.brand && <p className="text-sm font-semibold tracking-wide text-muted">{brandLabel(product.brand)}</p>}
             <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{product.title}</h1>

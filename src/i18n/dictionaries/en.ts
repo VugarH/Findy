@@ -19,6 +19,11 @@ const en = {
     scrollBack: "Previous categories",
     scrollMore: "More categories",
   },
+  recommendations: {
+    title: "Recommended for you",
+    hint: "Deals picked from what you looked at and searched for on this device.",
+    clear: "Clear my interests",
+  },
   search: {
     dealsOnly: "Discounts only",
     market: "Show results from",

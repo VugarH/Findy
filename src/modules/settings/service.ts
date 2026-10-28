@@ -4,12 +4,14 @@ import { db } from "@/db/client";
 import { siteSettings } from "@/db/schema";
 import { toDealRules, type DealRules } from "./deal-rules";
 import { toDisplayOrder, type DisplayOrder } from "./display-order";
+import { toFeatureSwitches, type FeatureSwitches } from "./features";
 import { toFilterSwitches, type FilterSwitches } from "./filter-switches";
 
 /** Settings stored in site_settings, by key. */
 const FILTERS_KEY = "deal-filters";
 const ORDER_KEY = "display-order";
 const DEAL_RULES_KEY = "deal-rules";
+const FEATURES_KEY = "features";
 
 async function read(key: string): Promise<unknown> {
   const [row] = await db.select({ value: siteSettings.value }).from(siteSettings).where(eq(siteSettings.key, key));
@@ -44,4 +46,11 @@ export async function getDealRules(): Promise<DealRules> {
 
 export async function saveDealRules(rules: DealRules, by: string): Promise<void> {
   await write(DEAL_RULES_KEY, toDealRules(rules), by);
+}
+
+/** Which optional site features are on. Read once per request. */
+export const getFeatureSwitches = cache(async (): Promise<FeatureSwitches> => toFeatureSwitches(await read(FEATURES_KEY)));
+
+export async function saveFeatureSwitches(switches: FeatureSwitches, by: string): Promise<void> {
+  await write(FEATURES_KEY, toFeatureSwitches(switches), by);
 }

@@ -37,6 +37,7 @@ export const ADMIN_ACTIONS = [
   "settings.filters",
   "settings.order",
   "settings.deal-rules",
+  "settings.features",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 

@@ -16,7 +16,8 @@ import { CATEGORY_TEXT, CategoryIcon } from "@/components/ui/category-icon";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { orderedCategories } from "@/modules/settings/display-order";
-import { getDisplayOrder } from "@/modules/settings/service";
+import { getDisplayOrder, getFeatureSwitches } from "@/modules/settings/service";
+import { RecommendedRow } from "@/components/recommendations/recommended-row";
 
 /** Fresh real deals shown on the home page; the rest are on /fresh. */
 const FRESH_ON_HOME = 8;
@@ -24,7 +25,7 @@ const FRESH_ON_HOME = 8;
 export default async function HomePage() {
   const { t, money, href, market, locale } = await getI18n();
 
-  const [stats, top, lowest, popular, order, fresh, freshCount] = await Promise.all([
+  const [stats, top, lowest, popular, order, fresh, freshCount, features] = await Promise.all([
     getDealStats(market),
     listDeals(market, { sort: "best", limit: 9 }),
     listDeals(market, { badge: "lowest_price", sort: "discount", limit: 4 }),
@@ -32,6 +33,7 @@ export default async function HomePage() {
     getDisplayOrder(),
     listFreshDeals(market, { limit: FRESH_ON_HOME }),
     countFreshDeals(market),
+    getFeatureSwitches(),
   ]);
   // Families sold by several stores come first: those are the ones worth comparing.
   const popularTiles = [...popular].sort((a, b) => b.stores.length - a.stores.length).slice(0, 12);
@@ -114,6 +116,8 @@ export default async function HomePage() {
       </section>
 
       <Container className="space-y-14 py-12">
+        {/* Asked for after the page is shown; nothing for new visitors (components/recommendations). */}
+        {features.recommendations && <RecommendedRow />}
         {/* Right after the hero: prices our own checks saw fall, the site's strongest promise. */}
         {fresh.length > 0 && (
           <section className="rounded-3xl border border-brand/25 p-5 shadow-card md:p-7" style={{ background: "radial-gradient(60% 50% at 0% 0%, var(--brand-soft), transparent 70%), var(--surface)" }}>

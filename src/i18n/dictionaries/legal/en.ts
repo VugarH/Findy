@@ -78,6 +78,7 @@ const legalEn = {
           "Your account: name, email, an optional phone number, your language and your settings. Your password is stored only as a secure hash that nobody can read.",
           "What you do with your account: products you watch, brands, stores and categories you follow, messages and requests you send us (with the phone and delivery city you give, and the items you attach from our site or your cart, with their prices at the time), and older “Order it for me” requests (name, phone, email, city and note). Your cart is kept in your own browser; we only see the items you attach to a request.",
           "If you connect our Telegram bot: your Telegram chat id and username. If you allow browser notifications: the address your browser gives us for them.",
+          "Recommendations: to suggest deals, your browser keeps a short list of the categories, types and brands of products you opened or searched for. It stays on your device; when “Recommended for you” is shown, it is sent to us only to pick the deals and is not stored. “Clear my interests” under the recommendations deletes it.",
           "Visits: pages viewed, searches, clicks to stores, the site that sent you, device type and language. These are counted with an anonymous id that changes every day; we don't store your IP address for this and use no advertising or tracking cookies.",
           "Security: failed sign-in attempts are logged with the email that was entered and the IP address, to protect accounts.",
         ],

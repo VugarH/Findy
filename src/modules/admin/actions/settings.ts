@@ -3,7 +3,16 @@
 import { refresh } from "next/cache";
 import { FILTER_NAMES, type FilterSwitches } from "@/modules/settings/filter-switches";
 import { toDisplayOrder } from "@/modules/settings/display-order";
-import { getDealRules, getDisplayOrder, getFilterSwitches, saveDealRules, saveDisplayOrder, saveFilterSwitches } from "@/modules/settings/service";
+import {
+  getDealRules,
+  getDisplayOrder,
+  getFeatureSwitches,
+  getFilterSwitches,
+  saveDealRules,
+  saveDisplayOrder,
+  saveFeatureSwitches,
+  saveFilterSwitches,
+} from "@/modules/settings/service";
 import { recordAdminEvent } from "../audit";
 import { checked, type AdminFormState } from "../forms";
 import { requireAdmin } from "../guard";
@@ -76,6 +85,25 @@ export async function saveDealRulesAction(_previous: AdminFormState, form: FormD
       entityId: "deal-rules",
       entityLabel: "Deal rules",
       details: { keepStoreClaims: rules.keepStoreClaims ? "on" : "off" },
+    });
+  }
+  refresh();
+  return { notice: "saved" };
+}
+
+/** Switches optional site features (Settings → Features) on or off for every visitor. */
+export async function saveFeatureSwitchesAction(_previous: AdminFormState, form: FormData): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const before = await getFeatureSwitches();
+  const switches = { recommendations: checked(form, "recommendations") };
+  await saveFeatureSwitches(switches, admin.email);
+  if (before.recommendations !== switches.recommendations) {
+    await recordAdminEvent(admin, {
+      action: "settings.features",
+      entityType: "settings",
+      entityId: "features",
+      entityLabel: "Features",
+      details: { recommendations: switches.recommendations ? "on" : "off" },
     });
   }
   refresh();

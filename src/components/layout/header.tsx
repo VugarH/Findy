@@ -46,6 +46,7 @@ export async function Header() {
           action={href("/search")}
           placeholder={t.search.placeholder}
           buttonLabel={t.search.button}
+          suggest={{ suggestions: t.search.suggestions, brand: t.search.suggestionBrand }}
           className="order-last basis-full md:order-none md:flex-1 md:basis-0"
         />
         {/* relative: the notification list opens below this group, aligned to its right edge. */}

@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { recordSearchEvent, visitorOf } from "@/modules/analytics/record";
 import { getCurrentUser } from "@/modules/auth/session";
 import { Search, SearchX } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
@@ -20,6 +21,7 @@ import {
   sortCards,
 } from "@/modules/search/catalog-search";
 import { MIN_QUERY_LENGTH, normalizeQuery } from "@/modules/search/normalize";
+import { correctSearch } from "@/modules/search/terms";
 import { getLiveSearchAdapters } from "@/modules/suppliers/registry";
 import type { SupplierScope } from "@/modules/suppliers/types";
 import { FilterDrawerButton, FilterDrawerPanel, FilterDrawerProvider } from "@/components/deals/filter-drawer";
@@ -58,30 +60,44 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
 
   // The local/abroad choice changes which offer represents a product, so it is applied
   // while building the cards; everything else filters the finished list.
-  const found = await searchCatalog(query, market, filters.scope);
-  await recordSearch(query, market, found.length, false);
+  const asTyped = await searchCatalog(query, market, filters.scope);
+  // Nothing found: perhaps a typo ("adidsa"). The corrected words are searched instead,
+  // unless the visitor asked for exactly what they typed (?exact=1).
+  const exact = first(params.exact) === "1";
+  const corrected = asTyped.length === 0 && !exact ? await correctSearch(market, query) : null;
+  const fixed = corrected ? await searchCatalog(corrected, market, filters.scope) : [];
+  const shownQuery = fixed.length > 0 ? corrected! : query;
+  const found = fixed.length > 0 ? fixed : asTyped;
+  // Recorded as typed and with what the typed words found, so a typo never becomes a suggestion.
+  await recordSearch(query, market, asTyped.length, false);
   // Analytics: the search itself, not every filter click on its results.
   if (Object.keys(params).every((key) => key === "q")) {
     const visitor = visitorOf(await headers(), await getCurrentUser());
-    if (visitor) after(() => recordSearchEvent(visitor, query, found.length));
+    if (visitor) after(() => recordSearchEvent(visitor, query, asTyped.length));
   }
 
   // "Discounts only": results, counts and filters all come from the discounted products.
   const dealsOnly = first(params.deals) === "1";
   const pool = dealsOnly ? found.filter((card) => card.discountPct !== null) : found;
   const facets = facetsOfCards(pool, filters.category, filters.stores);
-  const matching = sortCards(filterCards(pool, filters), sort, query);
+  const matching = sortCards(filterCards(pool, filters), sort, shownQuery);
   const total = matching.length;
   const pages = Math.max(1, Math.ceil(total / filters.size));
   const page = Math.min(filters.page, pages);
   const items = matching.slice((page - 1) * filters.size, page * filters.size);
 
   // Params that belong to the search itself and must survive every filter change.
-  const extra = { q: query, sort: sort === "relevance" ? undefined : sort, deals: dealsOnly ? "1" : undefined };
+  const extra = {
+    q: shownQuery,
+    sort: sort === "relevance" ? undefined : sort,
+    deals: dealsOnly ? "1" : undefined,
+    exact: exact ? "1" : undefined,
+  };
   const link: FilterLink = (patch) => href("/search") + filterQuery(filters, true, patch, extra);
   const dealsOnlyHref = href("/search") + filterQuery(filters, true, {}, { ...extra, deals: dealsOnly ? undefined : "1" });
   const carried = filterParams(filters, true, extra);
-  const resetHref = `${href("/search")}?${new URLSearchParams({ q: query })}`;
+  const resetHref = `${href("/search")}?${new URLSearchParams({ q: shownQuery })}`;
+  const exactHref = `${href("/search")}?${new URLSearchParams({ q: query, exact: "1" })}`;
   const activeCount = countActiveFilters(filters, true, false);
   const liveSearchAvailable = getLiveSearchAdapters().length > 0;
   const totalLabel = total.toLocaleString(LOCALE_TAGS[locale]);
@@ -104,7 +120,15 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
 
   return (
     <Container className="max-w-[88rem] py-6">
-      <h1 className="text-2xl font-extrabold tracking-tight">{fmt(t.search.resultsFor, { query })}</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">{fmt(t.search.resultsFor, { query: shownQuery })}</h1>
+      {shownQuery !== query && (
+        <p className="mt-1 text-sm">
+          {fmt(t.search.showingFor, { query: shownQuery })}.{" "}
+          <Link href={exactHref} className="text-brand underline-offset-2 hover:underline">
+            {fmt(t.search.searchInstead, { query })}
+          </Link>
+        </p>
+      )}
       <p className="mt-1 text-sm text-muted">
         {found.length > 0
           ? fmt(t.search.catalogCount, { count: found.length })
@@ -183,7 +207,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
               brands={facets.brands}
               stores={facets.stores}
               // Without the text, the same filters over all deals.
-              query={{ text: query, remove: href("/deals") + filterQuery(filters, true, {}) }}
+              query={{ text: shownQuery, remove: href("/deals") + filterQuery(filters, true, {}) }}
             />
 
             {pages > 1 && pagination}

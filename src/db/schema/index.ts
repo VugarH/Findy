@@ -354,6 +354,31 @@ export const searchQueries = pgTable(
   (t) => [primaryKey({ columns: [t.marketCode, t.query] })],
 );
 
+/**
+ * The words search knows, rebuilt by the daily job (modules/search/terms.ts):
+ * brands, popular searches and the words in product titles. Search
+ * suggestions and spelling fixes read only this small table.
+ */
+export const searchTerms = pgTable(
+  "search_terms",
+  {
+    marketCode: text("market_code").notNull(),
+    /** "brand" | "query" | "word" */
+    kind: text("kind").notNull(),
+    /** Lower case, Turkish/Azerbaijani letters as ASCII (foldForMatching): what is matched. */
+    folded: text("folded").notNull(),
+    /** As shown: the brand's usual spelling, the query as people type it. */
+    label: text("label").notNull(),
+    /** Products with the brand or word, or how often the query was searched. */
+    weight: integer("weight").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.marketCode, t.kind, t.folded] }),
+    index("search_terms_folded_trgm_idx").using("gin", t.folded.op("gin_trgm_ops")),
+    index("search_terms_prefix_idx").on(t.marketCode, t.folded.op("text_pattern_ops")),
+  ],
+);
+
 /** Click-outs to suppliers — the basis for affiliate and sponsored reporting. */
 export const outboundClicks = pgTable(
   "outbound_clicks",

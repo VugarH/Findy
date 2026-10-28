@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { MAX_QUERY_LENGTH } from "@/modules/search/normalize";
+import { SearchInput } from "./search-input";
 
 interface Props {
   action: string;
@@ -13,11 +14,17 @@ interface Props {
   hidden?: Record<string, string>;
   /** An empty search is allowed (it clears the search), for lists that filter as you search. */
   optional?: boolean;
+  /** Suggestions while typing (brands, popular searches); for searches over the whole catalog. */
+  suggest?: { suggestions: string; brand: string };
 }
 
 /** A plain GET form: works without JavaScript and keeps searches shareable. */
-export function SearchBar({ action, placeholder, buttonLabel, defaultValue, size = "md", className, hidden, optional = false }: Props) {
+export function SearchBar({ action, placeholder, buttonLabel, defaultValue, size = "md", className, hidden, optional = false, suggest }: Props) {
   const large = size === "lg";
+  const inputClass = cn(
+    "w-full rounded-full border border-line bg-surface text-ink placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25",
+    large ? "h-14 pl-13 pr-32 text-base shadow-card" : "h-11 pl-11 pr-4 text-sm",
+  );
   return (
     <form action={action} role="search" className={cn("relative flex w-full items-center", className)}>
       <Search
@@ -27,21 +34,29 @@ export function SearchBar({ action, placeholder, buttonLabel, defaultValue, size
       {Object.entries(hidden ?? {}).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <input
-        type="search"
-        name="q"
-        required={!optional}
-        minLength={2}
-        maxLength={MAX_QUERY_LENGTH}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        aria-label={placeholder}
-        autoComplete="off"
-        className={cn(
-          "w-full rounded-full border border-line bg-surface text-ink placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/25",
-          large ? "h-14 pl-13 pr-32 text-base shadow-card" : "h-11 pl-11 pr-4 text-sm",
-        )}
-      />
+      {suggest ? (
+        <SearchInput
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          required={!optional}
+          maxLength={MAX_QUERY_LENGTH}
+          className={inputClass}
+          labels={suggest}
+        />
+      ) : (
+        <input
+          type="search"
+          name="q"
+          required={!optional}
+          minLength={2}
+          maxLength={MAX_QUERY_LENGTH}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          aria-label={placeholder}
+          autoComplete="off"
+          className={inputClass}
+        />
+      )}
       {large && (
         <button
           type="submit"

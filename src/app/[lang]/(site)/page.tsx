@@ -72,6 +72,7 @@ export default async function HomePage() {
               action={href("/search")}
               placeholder={t.search.placeholder}
               buttonLabel={t.search.button}
+              suggest={{ suggestions: t.search.suggestions, brand: t.search.suggestionBrand }}
               size="lg"
               className="mx-auto mt-8 max-w-2xl"
             />

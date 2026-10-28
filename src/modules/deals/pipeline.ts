@@ -22,6 +22,7 @@ import { postDigest } from "@/modules/telegram/channel";
 import { buildDeals } from "./build";
 import { admitadConfigured, isAdmitadStore } from "@/modules/suppliers/adapters/admitad/adapter";
 import { savePopularCoverage } from "@/modules/catalog/popular";
+import { refreshSearchTerms } from "@/modules/search/terms";
 import { pausedStoresToSkip, updateStoreHealth } from "@/modules/suppliers/health";
 import { marketDay } from "@/modules/digest/pick";
 import { log } from "@/modules/logs/logger";
@@ -105,6 +106,12 @@ export async function runDailyPipeline(
     await savePopularCoverage(market);
   } catch (error) {
     await log.warn("pipeline", "popular.failed", "Popular tiles were not refreshed", { error, runId: run.id });
+  }
+  // The words search suggests and corrects to, from today's catalog.
+  try {
+    await refreshSearchTerms(market, now);
+  } catch (error) {
+    await log.warn("pipeline", "search-terms.failed", "Search suggestions were not refreshed", { error, runId: run.id });
   }
   // With fresh prices in place: tell people whose watched products got cheaper.
   const alerts = await checkPriceWatches(market, now);

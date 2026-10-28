@@ -8,6 +8,7 @@ import {
   recordSupplierFailure,
   recordSupplierSuccess,
   registerSupplier,
+  soldOutPages,
 } from "@/modules/catalog/ingest";
 import { getAllAdapters, getLiveSearchAdapters } from "@/modules/suppliers/registry";
 import type { AdapterContext, SupplierAdapter } from "@/modules/suppliers/types";
@@ -229,7 +230,11 @@ async function collectOne(adapter: SupplierAdapter, ctx: AdapterContext): Promis
   const supplierId = adapter.definition.id;
   try {
     let listedEverything = false;
-    const rawOffers = await adapter.fetchCatalog({ ...ctx, listedEverything: () => (listedEverything = true) });
+    const rawOffers = await adapter.fetchCatalog({
+      ...ctx,
+      listedEverything: () => (listedEverything = true),
+      soldOutPages: () => soldOutPages(supplierId),
+    });
     if (rawOffers.length === 0) throw new Error("The store returned no offers");
     // Only now — with real data in hand — does the store enter our database.
     await recordSupplierSuccess(adapter.definition, rawOffers.length, ctx.now);

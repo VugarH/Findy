@@ -31,7 +31,12 @@ export class Throttle {
   private queue: Promise<void> = Promise.resolve();
   private lastAt = 0;
 
-  constructor(private readonly delayMs: number) {}
+  constructor(private delayMs: number) {}
+
+  /** Never less than `ms` between requests from now on (robots.txt Crawl-delay). */
+  slowTo(ms: number) {
+    this.delayMs = Math.max(this.delayMs, ms);
+  }
 
   /** Runs `task` after every earlier task has finished and the delay has passed. */
   run<T>(task: () => Promise<T>): Promise<T> {
@@ -80,6 +85,11 @@ export class PoliteClient {
     },
   ) {
     this.throttle = options.throttle ?? new Throttle(options.delayMs);
+  }
+
+  /** See Throttle.slowTo. */
+  slowTo(ms: number) {
+    this.throttle.slowTo(ms);
   }
 
   get budgetLeft() {

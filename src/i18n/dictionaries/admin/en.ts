@@ -279,6 +279,7 @@ const adminEn = {
         "old-price-field": "“old_price” in the page data",
         "ga4-discount": "Google Analytics “discount”",
         "strikethrough": "schema.org StrikethroughPrice (IdeaSoft and others)",
+        "retail-element": "Akinon “-retail” price element (older Akinon pages)",
       },
       brandFromTitle: "Read the brand from the product name",
       productsPerRun: "Product pages per run",

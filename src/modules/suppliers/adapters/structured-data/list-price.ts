@@ -13,7 +13,9 @@ export type ListPriceSource =
   /** Google Analytics 4 item data: price + "discount". */
   | "ga4-discount"
   /** schema.org's own crossed-out price: a priceSpecification of type StrikethroughPrice. */
-  | "strikethrough";
+  | "strikethrough"
+  /** Akinon's older (Omnishop) pages: the crossed-out price is a `-retail` element, `<div class="price -retail"><pz-price>599</pz-price>`. */
+  | "retail-element";
 
 /** Every crossed-out-price source the adapter can read, for forms and validation. */
 export const LIST_PRICE_SOURCES = [
@@ -22,4 +24,5 @@ export const LIST_PRICE_SOURCES = [
   "old-price-field",
   "ga4-discount",
   "strikethrough",
+  "retail-element",
 ] as const satisfies readonly ListPriceSource[];

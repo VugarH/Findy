@@ -135,7 +135,8 @@ export function createStructuredDataAdapter(store: StructuredDataStore): Supplie
 
       const offers: RawOffer[] = [];
       let failures = 0;
-      for (const url of pickProductUrls(entries, { limit: perRun, focus: store.focus })) {
+      const soldOut = (await ctx.soldOutPages?.()) ?? new Map<string, Date>();
+      for (const url of pickProductUrls(entries, { limit: perRun, focus: store.focus, soldOut })) {
         if (client.budgetLeft <= 0) break;
         try {
           const offer = toRawOffer(await client.getText(url), url, store);
@@ -155,7 +156,9 @@ export function createStructuredDataAdapter(store: StructuredDataStore): Supplie
 
 async function listProductPages(client: PoliteClient, store: StructuredDataStore): Promise<SitemapEntry[]> {
   const root = readSitemap(await client.getText(store.sitemap));
-  if (!root.isIndex) return root.entries;
+  // Some stores (Hotiç) write their sitemap index as an ordinary URL list.
+  const listsSitemaps = !!store.productSitemaps && root.entries.some((e) => store.productSitemaps!.test(e.url));
+  if (!root.isIndex && !listsSitemaps) return root.entries;
 
   const children = root.entries.filter((e) => !store.productSitemaps || store.productSitemaps.test(e.url)).slice(0, MAX_SITEMAPS);
   const entries: SitemapEntry[] = [];
@@ -167,7 +170,7 @@ async function listProductPages(client: PoliteClient, store: StructuredDataStore
 }
 
 export function toRawOffer(html: string, url: string, store: StructuredDataStore): RawOffer | null {
-  const product = (store.readProduct ?? readStructuredProduct)(html);
+  const product = store.readProduct ? store.readProduct(html) : readStructuredProduct(html, url);
   if (!product || (product.currency && product.currency !== store.currency)) return null;
 
   const path = new URL(url).pathname;
@@ -183,10 +186,12 @@ export function toRawOffer(html: string, url: string, store: StructuredDataStore
     : (store.brand ?? detectBrand(statedBrand ?? "") ?? statedBrand ?? detectBrand(product.name) ?? undefined);
   const listPrice = product.listPrice !== undefined ? product.listPrice : readListPrice(html, product.price, store.listPrice);
   // Electronics match other stores by brand + model ("Apple iPhone 17 Pro 256GB"), as everywhere else.
-  const parsed =
+  const titleParsed =
     category === "electronics"
       ? parseElectronicsTitle(brand && !startsWithBrand(product.name, brand) ? `${brand} ${product.name}` : product.name)
       : null;
+  // A single-brand store's charger "for MagSafe" is still its own brand's, not Apple's.
+  const parsed = titleParsed && store.brand && !sameBrand(titleParsed.brand, store.brand) ? null : titleParsed;
 
   return {
     externalId: product.sku ?? path,

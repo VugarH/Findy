@@ -342,3 +342,45 @@ product feeds Admitad builds (adapters/admitad); links in them carry our trackin
 
 Other Admitad programs open to Azerbaijan worth joining: iHerb (ships to AZ), CASETiFY,
 G-Star Raw, Puma TR. Turkish retailers we already list are not on Admitad.
+
+## Round 6 (2026-10-28): Turkey, Russia, nearby countries
+
+Triaged ~160 stores (robots.txt, Shopify JSON, platform), then `store:probe` on the reachable ones.
+
+Connected:
+
+| Store | Read through | Category | Notes |
+|---|---|---|---|
+| Lacoste Türkiye | Akinon category pages (`/tum-urunler/`, ~2,100) | Clothing, shoes, bags | `allProducts`: whole catalog, not only discounts |
+| Paşabahçe | Akinon category pages (4 listings, ~4,900) | Home | `allProducts`; names rarely match keywords, so `fallbackCategory: "home"` |
+| KIKO Milano TR | sitemap + schema.org (~2,300) | Beauty | old price in `<div class="price -retail"><pz-price>` (new source `retail-element`) |
+| Porland | sitemap + schema.org (~6,300) | Home | no store discounts seen |
+| Under Armour TR | sitemap + schema.org (~12,000) | Sports, clothing, shoes | ProductGroup with one page per colour: the parser now keeps the page's own variant; `retail_price` written as `"`; ~70% of sitemap items sold out |
+
+Evidea, Under Armour, Porland and KIKO are Akinon's older "Omnishop" pages: no Next.js data, so the Akinon
+category reader cannot read them (each has different card markup).
+
+Step 2, connected the same day (sitemap + schema.org): Cosmetica (beauty chain, barcodes as GTIN), LOFT
+(`ga4-discount`), Hotiç (sitemap index written as a `<urlset>`; its `oldPrice` is always 2× the price, so it is
+not used), Hummel TR (`ga4-discount`), ZEN Pırlanta, ttec (single-brand: "MagSafe" in a title no longer makes it
+Apple), Smarton.az (local; robots.txt `Crawl-delay: 30` — now obeyed for every store — so 100 pages per run,
+Azerbaijani `/mehsullar/` pages only; the sitemap lists each product in Russian too). Not connected: Texnomart.az
+(9 of 10 sampled items sold out, no photos), Chicco TR (JSON-LD present but not parseable), MG Store (half the
+sitemap is category pages, most products sold out), Dyson TR (sitemap products are mostly spare parts).
+
+Since this round a sold-out listing only updates an offer we already track; sold-out pages we never saved are
+remembered in `sold_out_pages`, and sitemap stores read sold-out pages last until the sitemap's lastmod changes.
+
+Earlier list — readable, not connected yet: Cosmetica (5,200, multi-brand beauty), Loft (4,800, `ga4-discount`), Zen Pırlanta
+(4,700), Hummel TR (2,800, `ga4-discount`), Dyson TR, Hotiç (`sitemap_products.xml`), Chicco TR, ttec, Game Garaj,
+Doğtaş (decor only), re:Store and Befree (RUB: needs FX + delivery rate), Extra.ge (GEL). Local: Smarton.az
+(JSON-LD), Texnomart.az, MG Store, Almali.az (USD prices), Irshad (crawl-delay 30). Need their own reader:
+Casper (GA4 `view_item`), Columbia TR, Yargıcı, Arzum, İstikbal, Babymall (~18,000), Ugreen TR, Evidea.
+
+Blocked (403 / Cloudflare / reCAPTCHA / 498) — partnership or feed only: Trendyol, Hepsiburada, n11 (no product
+data), Amazon TR, Teknosa, MediaMarkt TR, Vatan, İtopya, İncehesap, PttAVM, Monster, Arçelik, Beko, Grundig,
+Decathlon TR, adidas TR, New Balance TR, FLO/Kinetix/Lumberjack/Instreet (reCAPTCHA), LC Waikiki, Koton,
+DeFacto, Boyner, Twist, Machka, Eve Shop, Yves Rocher, Kitapyurdu, e-bebek, Joker, Jumbo, English Home, Koçtaş
+(product pages 403). Russia: Ozon (works in Azerbaijan since 2024, free delivery), Wildberries (in Azerbaijan
+since 2023), Lamoda, DNS, M.Video (no product data), Gold Apple, L'Etoile (no schema.org), Detsky Mir. Azerbaijan:
+Kontakt, Birmarket/Umico, Optimal. Georgia: Zoommer, Alta, Elit Electronics. UAE: Noon, Namshi, Sharaf DG.

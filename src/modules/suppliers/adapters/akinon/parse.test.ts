@@ -73,4 +73,13 @@ describe("Akinon listing pages", () => {
     });
     expect(toRawOffer(sportive, store)?.brand).toBe("Nike");
   });
+
+  it("gives a single-brand store's products its brand and fallback category", () => {
+    const vase = product({ name: "Inca Vazo 27 cm", absolute_url: "/inca-vazo-27-cm-p-10003682/", attributes: {} });
+    expect(toRawOffer(vase, { ...store, categories: ["home"] })).toBeNull();
+    expect(toRawOffer(vase, { ...store, categories: ["home"], fallbackCategory: "home", brand: "Paşabahçe" })).toMatchObject({
+      categorySlug: "home",
+      brand: "Paşabahçe",
+    });
+  });
 });

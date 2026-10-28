@@ -11,10 +11,15 @@ interface Rule {
  * changes its mind is respected the same day.
  */
 export class RobotsPolicy {
-  private constructor(private readonly rules: Rule[]) {}
+  private constructor(
+    private readonly rules: Rule[],
+    /** The group's Crawl-delay, in milliseconds, if it sets one. */
+    readonly crawlDelayMs: number | null = null,
+  ) {}
 
   static parse(robotsTxt: string): RobotsPolicy {
     const rules: Rule[] = [];
+    let crawlDelayMs: number | null = null;
     let inOurGroup = false;
     let readingAgents = false;
 
@@ -34,9 +39,11 @@ export class RobotsPolicy {
         if (inOurGroup && value && (key === "allow" || key === "disallow")) {
           rules.push({ allow: key === "allow", pattern: value });
         }
+        const seconds = Number(value);
+        if (inOurGroup && key === "crawl-delay" && seconds > 0) crawlDelayMs = Math.max(crawlDelayMs ?? 0, seconds * 1000);
       }
     }
-    return new RobotsPolicy(rules);
+    return new RobotsPolicy(rules, crawlDelayMs);
   }
 
   static async fetch(origin: string, client: PoliteClient): Promise<RobotsPolicy> {
@@ -44,7 +51,10 @@ export class RobotsPolicy {
     // No robots.txt means no restrictions; any other failure means we do not know, so we stop.
     if (status === 404) return new RobotsPolicy([]);
     if (status !== 200) throw new Error(`robots.txt unavailable (HTTP ${status}) for ${origin}`);
-    return RobotsPolicy.parse(text);
+    const policy = RobotsPolicy.parse(text);
+    // A store that asks for a longer gap between requests gets it, from the next request on.
+    if (policy.crawlDelayMs) client.slowTo(policy.crawlDelayMs);
+    return policy;
   }
 
   /** Longest matching rule wins; Allow wins a tie. No match means allowed. */

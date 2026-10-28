@@ -183,6 +183,13 @@
       "when": 1792763004913,
       "tag": "0025_offer_images",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793184812543,
+      "tag": "0026_sold_out_pages",
+      "breakpoints": true
     }
   ]
 }

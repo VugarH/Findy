@@ -280,6 +280,7 @@ const adminAz: AdminDictionary = {
         "old-price-field": "Səhifə məlumatında «old_price»",
         "ga4-discount": "Google Analytics «discount»",
         "strikethrough": "schema.org StrikethroughPrice (IdeaSoft və s.)",
+        "retail-element": "Akinon «-retail» qiymət elementi (köhnə Akinon səhifələri)",
       },
       brandFromTitle: "Brendi məhsulun adından oxu",
       productsPerRun: "Hər toplamada məhsul səhifəsi",

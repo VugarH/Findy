@@ -163,6 +163,23 @@ export const offers = pgTable(
   ],
 );
 
+/**
+ * Product pages that were sold out when read and that we do not track as
+ * offers (an item never seen in stock is not saved). Sampling adapters read
+ * them last until the store's sitemap says the page changed.
+ */
+export const soldOutPages = pgTable(
+  "sold_out_pages",
+  {
+    supplierId: text("supplier_id")
+      .notNull()
+      .references(() => suppliers.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    checkedAt: timestamp("checked_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.supplierId, t.url] })],
+);
+
 /** Daily price history — the asset that makes discount verification possible. */
 export const priceObservations = pgTable(
   "price_observations",

@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { GALLERY_MAX } from "@/config/images";
 import { db } from "@/db/client";
-import { offers, priceObservations, products, suppliers } from "@/db/schema";
+import { offers, priceObservations, products, soldOutPages as soldOutPagesTable, suppliers } from "@/db/schema";
 import { detectAudience } from "@/config/audience";
 import { getCategory } from "@/config/categories";
 import { classifyProduct } from "@/config/subcategories";
@@ -122,9 +122,13 @@ export function uniqueListings(rawOffers: RawOffer[]): RawOffer[] {
   return [...byId.values()];
 }
 
-/** Drops update-only listings (RawOffer.updateOnly) for offers we do not track yet. */
+/**
+ * Drops listings that may only update an offer we already track: update-only
+ * listings (RawOffer.updateOnly), and sold-out ones — an item we never saw in
+ * stock is of no use to anyone, while one we show must learn it sold out.
+ */
 async function withoutUntracked(supplierId: string, rawOffers: RawOffer[]): Promise<RawOffer[]> {
-  const updateOnly = rawOffers.filter((raw) => raw.updateOnly).map((raw) => raw.externalId);
+  const updateOnly = rawOffers.filter((raw) => raw.updateOnly || !raw.inStock).map((raw) => raw.externalId);
   if (updateOnly.length === 0) return rawOffers;
   const tracked = new Set<string>();
   for (let i = 0; i < updateOnly.length; i += 1000) {
@@ -134,7 +138,42 @@ async function withoutUntracked(supplierId: string, rawOffers: RawOffer[]): Prom
       .where(and(eq(offers.supplierId, supplierId), inArray(offers.externalId, updateOnly.slice(i, i + 1000))));
     for (const row of rows) tracked.add(row.externalId);
   }
-  return rawOffers.filter((raw) => !raw.updateOnly || tracked.has(raw.externalId));
+  return rawOffers.filter((raw) => !(raw.updateOnly || !raw.inStock) || tracked.has(raw.externalId));
+}
+
+/**
+ * Sold-out pages we do not save as offers are remembered (sold_out_pages), so
+ * a sampling adapter does not spend tomorrow's reads on them again; a page
+ * back in stock is forgotten.
+ */
+async function rememberSoldOutPages(supplierId: string, listed: RawOffer[], kept: RawOffer[], now: Date) {
+  const keptIds = new Set(kept.map((raw) => raw.externalId));
+  const dropped = [...new Set(listed.filter((raw) => !raw.inStock && !keptIds.has(raw.externalId)).map((raw) => raw.url))];
+  for (const batch of batches(dropped, WRITE_BATCH)) {
+    await db
+      .insert(soldOutPagesTable)
+      .values(batch.map((url) => ({ supplierId, url, checkedAt: now })))
+      .onConflictDoUpdate({ target: [soldOutPagesTable.supplierId, soldOutPagesTable.url], set: { checkedAt: now } });
+  }
+  const inStock = [...new Set(listed.filter((raw) => raw.inStock).map((raw) => raw.url))];
+  for (const batch of batches(inStock, WRITE_BATCH)) {
+    await db
+      .delete(soldOutPagesTable)
+      .where(and(eq(soldOutPagesTable.supplierId, supplierId), inArray(soldOutPagesTable.url, batch)));
+  }
+}
+
+/** The store's pages that were sold out when last read, with when that was (AdapterContext.soldOutPages). */
+export async function soldOutPages(supplierId: string): Promise<Map<string, Date>> {
+  const tracked = await db
+    .select({ url: offers.url, checkedAt: offers.lastSeenAt })
+    .from(offers)
+    .where(and(eq(offers.supplierId, supplierId), eq(offers.inStock, false), isNull(offers.removedAt)));
+  const untracked = await db
+    .select({ url: soldOutPagesTable.url, checkedAt: soldOutPagesTable.checkedAt })
+    .from(soldOutPagesTable)
+    .where(eq(soldOutPagesTable.supplierId, supplierId));
+  return new Map([...tracked, ...untracked].map((row) => [row.url, row.checkedAt]));
 }
 
 export async function ingestOffers(
@@ -142,7 +181,10 @@ export async function ingestOffers(
   listed: RawOffer[],
   now: Date,
 ): Promise<IngestResult> {
-  const rawOffers = await withoutUntracked(supplier.id, uniqueListings(listed));
+  const unique = uniqueListings(listed);
+  const rawOffers = await withoutUntracked(supplier.id, unique);
+  // Only page-by-page stores sample their catalog; feed stores read everything anyway.
+  if (supplier.integration === "crawler") await rememberSoldOutPages(supplier.id, unique, rawOffers, now);
   if (rawOffers.length === 0) return { offerCount: 0, productIds: [] };
 
   const allKeyed = rawOffers.map((raw) => ({ raw, keys: matchKeysOf(raw) }));

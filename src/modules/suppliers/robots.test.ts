@@ -26,6 +26,12 @@ describe("RobotsPolicy", () => {
     expect(policy.allows("/meta.json?x=1")).toBe(true);
   });
 
+  it("reads the * group's Crawl-delay, not other groups'", () => {
+    expect(RobotsPolicy.parse("User-agent: Yandex\nCrawl-delay: 5\n\nUser-agent: *\nCrawl-delay: 30\n").crawlDelayMs).toBe(30_000);
+    expect(RobotsPolicy.parse("User-agent: Yandex\nCrawl-delay: 5\n").crawlDelayMs).toBeNull();
+    expect(policy.crawlDelayMs).toBeNull();
+  });
+
   it("allows everything without rules", () => {
     expect(RobotsPolicy.parse("").allows("/anything")).toBe(true);
   });

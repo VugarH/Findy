@@ -76,12 +76,15 @@ export interface AkinonStoreShape {
   origin: string;
   currency: CurrencyCode;
   categories: CategorySlug[];
+  fallbackCategory?: CategorySlug;
+  brand?: string;
 }
 
 /** One listing as an offer, or null when it fits none of the store's categories. */
 export function toRawOffer(product: AkinonListingProduct, store: AkinonStoreShape): RawOffer | null {
   const url = new URL(product.absolute_url, store.origin).toString();
-  const category = detectCategory(store.categories, `${product.name} ${product.absolute_url.replace(/[-_/]+/g, " ")}`);
+  const category =
+    detectCategory(store.categories, `${product.name} ${product.absolute_url.replace(/[-_/]+/g, " ")}`) ?? store.fallbackCategory;
   if (!category) return null;
 
   const price = payablePrice(product);
@@ -91,7 +94,10 @@ export function toRawOffer(product: AkinonListingProduct, store: AkinonStoreShap
   const statedBrand = [product.attributes?.integration_alt_marka, product.attributes?.integration_marka_label].find(
     (value): value is string => typeof value === "string" && value.trim() !== "",
   );
-  const brand = detectBrand(product.name) ?? (statedBrand ? (detectBrand(statedBrand) ?? titleCase(statedBrand)) : undefined);
+  const brand =
+    store.brand ??
+    detectBrand(product.name) ??
+    (statedBrand ? (detectBrand(statedBrand) ?? titleCase(statedBrand)) : undefined);
   const modelColour = product.attributes?.integration_model_renk;
   const sizes = sizesOf(product);
 

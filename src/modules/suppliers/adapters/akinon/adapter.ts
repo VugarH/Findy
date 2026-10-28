@@ -21,10 +21,16 @@ export interface AkinonStore {
   shipsToMarket: boolean;
   /** Categories this store's products may go to; a product that fits none is skipped. */
   categories: CategorySlug[];
+  /** For a store whose every product belongs to one category even when its name does not say so. */
+  fallbackCategory?: CategorySlug;
+  /** Single-brand store: the brand of every product. */
+  brand?: string;
   /** Category pages that together list the catalog, e.g. ["/erkek/", "/kadin/"]; read in turns, page by page. */
   listings: string[];
   /** Stop once this many discounted products were found. */
   maxDiscounted: number;
+  /** Save every listed product, not only discounted ones: for brand stores whose whole catalog fits in a run. */
+  allProducts?: boolean;
 }
 
 const DELAY_MS = 1500;
@@ -58,7 +64,9 @@ export function createAkinonAdapter(store: AkinonStore): SupplierAdapter {
         `GET ${store.listings.join(", ")} with ?page=1, 2, … in turns, one request every ${DELAY_MS / 1000} s, until each listing ends`,
         `Stop once ${store.maxDiscounted} discounted products were found (or after ${MAX_PAGES} pages)`,
         "Price = what one item costs: the listed price, or the cart price when a one-item cart offer applies to every shopper (\"SEPETTE %30 İNDİRİM\")",
-        "Discounted products are saved; a product without a discount only updates an offer we already have, so ended discounts disappear",
+        store.allProducts
+          ? "Every listed product is saved, with or without a discount"
+          : "Discounted products are saved; a product without a discount only updates an offer we already have, so ended discounts disappear",
       ],
       entryPoints: store.listings.map((path) => store.origin + path),
       fields: {
@@ -83,7 +91,9 @@ export function createAkinonAdapter(store: AkinonStore): SupplierAdapter {
         store.shipsToMarket
           ? "The store ships to Azerbaijan, but its shipping price is unknown; a forwarder estimate is used."
           : "The store does not ship to Azerbaijan directly; delivery is assumed through a freight forwarder.",
-        `Only discounted products are tracked, at most ${store.maxDiscounted}; our price history therefore has gaps between discounts.`,
+        store.allProducts
+          ? `Every product is tracked, at most ${MAX_PAGES} listing pages per run.`
+          : `Only discounted products are tracked, at most ${store.maxDiscounted}; our price history therefore has gaps between discounts.`,
       ],
     },
   };
@@ -122,6 +132,8 @@ export function createAkinonAdapter(store: AkinonStore): SupplierAdapter {
               if (discounted >= store.maxDiscounted) continue;
               discounted++;
               offers.set(offer.externalId, offer);
+            } else if (store.allProducts) {
+              offers.set(offer.externalId, offer);
             } else {
               // No discount: only refreshes an offer we already track, so its old discount ends.
               offers.set(offer.externalId, { ...offer, updateOnly: true });
@@ -133,6 +145,8 @@ export function createAkinonAdapter(store: AkinonStore): SupplierAdapter {
         }
       }
       if (offers.size === 0) throw new Error("The category pages listed no products we could read");
+      // Every listing read to its end: what they no longer list has left the store.
+      if (store.allProducts && nextPage.size === 0 && failures === 0) ctx.listedEverything?.();
       return [...offers.values()];
     },
 

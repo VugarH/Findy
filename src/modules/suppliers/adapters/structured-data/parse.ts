@@ -31,11 +31,11 @@ export interface StructuredProduct {
 type Json = Record<string, unknown>;
 
 /** The first schema.org Product (or ProductGroup) on a page, or null. */
-export function readStructuredProduct(html: string): StructuredProduct | null {
+export function readStructuredProduct(html: string, pageUrl?: string): StructuredProduct | null {
   for (const block of html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
     const product = findProduct(parseJson(block[1]));
     if (product) {
-      const parsed = toStructuredProduct(product);
+      const parsed = toStructuredProduct(product, pageUrl);
       if (parsed) return parsed;
     }
   }
@@ -134,10 +134,10 @@ function readOffers(value: unknown): OfferInfo | null {
   return sorted[0] ?? null;
 }
 
-function toStructuredProduct(node: Json): StructuredProduct | null {
+function toStructuredProduct(node: Json, pageUrl?: string): StructuredProduct | null {
   const name = text(node.name);
   // A ProductGroup carries its prices on the variants.
-  const variants = Array.isArray(node.hasVariant) ? (node.hasVariant as Json[]) : [];
+  const variants = variantsOfPage(Array.isArray(node.hasVariant) ? (node.hasVariant as Json[]) : [], pageUrl);
   const offer = readOffers(node.offers) ?? readOffers(variants.flatMap((v) => (Array.isArray(v.offers) ? v.offers : [v.offers])));
   if (!name || !offer) return null;
 
@@ -148,11 +148,12 @@ function toStructuredProduct(node: Json): StructuredProduct | null {
   return {
     name,
     brand: text(node.brand),
-    sku: text(node.sku),
-    mpn: text(node.mpn),
+    // One variant left = the page's own colour: its codes name it.
+    sku: text(node.sku) ?? (variants.length === 1 ? text(variants[0].sku) : null),
+    mpn: text(node.mpn) ?? (variants.length === 1 ? text(variants[0].mpn) : null),
     gtin: gtin ?? null,
-    image: firstImage(node.image),
-    images: allImages(node.image),
+    image: firstImage(node.image) ?? firstImage(variants[0]?.image),
+    images: node.image ? allImages(node.image) : allImages(variants[0]?.image),
     price: offer.price,
     currency: offer.currency,
     inStock: offer.inStock,
@@ -160,10 +161,28 @@ function toStructuredProduct(node: Json): StructuredProduct | null {
   };
 }
 
+/**
+ * A ProductGroup whose variants have pages of their own (one per colour, as on
+ * Under Armour) lists every colour on each page: keep the variants of the page
+ * being read, so stock, price, photo and sizes are that colour's.
+ */
+function variantsOfPage(variants: Json[], pageUrl: string | undefined): Json[] {
+  if (!pageUrl) return variants;
+  const page = comparableUrl(pageUrl);
+  const own = variants.filter((v) => typeof v.url === "string" && comparableUrl(v.url) === page);
+  return own.length > 0 ? own : variants;
+}
+
+function comparableUrl(url: string): string {
+  return url.replace(/[?#].*$/, "").replace(/\/$/, "").toLowerCase();
+}
+
 const LIST_PRICE_PATTERNS: Record<Exclude<ListPriceSource, "ga4-discount" | "strikethrough">, RegExp> = {
-  "retail-price": /\\?"retail_price\\?"\s*:\s*\\?"?([\d.]+)/,
+  // Quotes may be escaped as \" or, on Akinon's older pages, as \u0022.
+  "retail-price": /(?:\\u0022|\\?")retail_price(?:\\u0022|\\?")\s*:\s*(?:\\u0022|\\?")?([\d.]+)/,
   "old-price-json": /"oldPrice"\s*:\s*"?([\d.]+)/,
   "old-price-field": /"old_price"\s*:\s*"?([\d.]+)/,
+  "retail-element": /class="[^"]*-retail"[^>]*>\s*(?:<pz-price[^>]*>)?\s*([\d.,]+)/,
 };
 
 /** A crossed-out price must be above the price, and not absurdly so (that would be another product's). */
@@ -207,11 +226,20 @@ export function readSitemap(xml: string): { isIndex: boolean; entries: SitemapEn
  * the store adds and edits products), so every product we show is re-checked
  * daily — a product read only once would expire and vanish two days later.
  */
-export function pickProductUrls(entries: SitemapEntry[], options: { limit: number; focus?: RegExp }): string[] {
-  const { limit, focus } = options;
+export function pickProductUrls(
+  entries: SitemapEntry[],
+  options: { limit: number; focus?: RegExp; soldOut?: Map<string, Date> },
+): string[] {
+  const { limit, focus, soldOut } = options;
+  // A page sold out when we last read it comes last, unless the sitemap says it changed since (a restock).
+  const stillSoldOut = (entry: SitemapEntry) => {
+    const seen = soldOut?.get(entry.url);
+    return !!seen && (!entry.lastmod || new Date(entry.lastmod) <= seen);
+  };
   const unique = [...new Map(entries.map((e) => [e.url, e])).values()];
   const ranked = unique.sort(
     (a, b) =>
+      Number(stillSoldOut(a)) - Number(stillSoldOut(b)) ||
       Number(!!focus && focus.test(b.url)) - Number(!!focus && focus.test(a.url)) ||
       (b.lastmod ?? "").localeCompare(a.lastmod ?? ""),
   );

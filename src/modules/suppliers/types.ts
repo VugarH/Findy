@@ -115,6 +115,11 @@ export interface AdapterContext {
    * hidden at once (see markUnlistedOffers). Sampling adapters never call it.
    */
   listedEverything?: () => void;
+  /**
+   * The store's pages that were sold out when last read (url → when), for
+   * sampling adapters to read last, so a daily sample is not spent on them.
+   */
+  soldOutPages?: () => Promise<Map<string, Date>>;
 }
 
 /**

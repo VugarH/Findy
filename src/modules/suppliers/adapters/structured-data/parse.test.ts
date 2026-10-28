@@ -64,6 +64,21 @@ describe("readStructuredProduct", () => {
     expect(readStructuredProduct(group)?.price).toBe(15);
   });
 
+  it("keeps the variants of the page being read when each colour has its own page", () => {
+    const group = ld({
+      "@type": "ProductGroup",
+      name: "Joggers",
+      hasVariant: [
+        { "@type": "Product", url: "https://shop.test/joggers-blue/", sku: "J-410", image: "blue.jpg", offers: { price: "25", availability: "https://schema.org/InStock" } },
+        { "@type": "Product", url: "https://shop.test/joggers-black/", sku: "J-001", image: "black.jpg", offers: { price: "30", availability: "https://schema.org/OutOfStock" } },
+      ],
+    });
+    expect(readStructuredProduct(group, "https://shop.test/joggers-black")).toMatchObject({ price: 30, inStock: false, sku: "J-001", image: "black.jpg" });
+    // Without the page address (or when no variant names it) every variant counts.
+    expect(readStructuredProduct(group)).toMatchObject({ price: 25, inStock: true, sku: null });
+    expect(readStructuredProduct(group, "https://shop.test/other/")?.price).toBe(25);
+  });
+
   it("returns null without a usable product or price", () => {
     expect(readStructuredProduct("<html></html>")).toBeNull();
     expect(readStructuredProduct(ld({ "@type": "Product", name: "No price" }))).toBeNull();
@@ -93,6 +108,9 @@ describe("parsePrice", () => {
 describe("readListPrice", () => {
   it("reads each store's crossed-out price", () => {
     expect(readListPrice('{\\"price\\":\\"969.90\\",\\"retail_price\\":\\"1499\\"}', 969.9, "retail-price")).toBe(1499);
+    expect(readListPrice('<div class="price -retail"> <pz-price>599</pz-price> </div>', 419, "retail-element")).toBe(599);
+    // Akinon's older pages escape the quotes as \u0022.
+    expect(readListPrice('\\u0022retail_price\\u0022: \\u00224990\\u0022', 2994, "retail-price")).toBe(4990);
     expect(readListPrice('"price":{"oldPrice":3899,"newPrice":2534.35}', 2534.35, "old-price-json")).toBe(3899);
     expect(readListPrice('"initial_price":70950.0000,"old_price":80000.0000', 70950, "old-price-field")).toBe(80000);
     expect(readListPrice('{"discount":999.9100,"price":699.9900}', 699.99, "ga4-discount")).toBe(1699.9);
@@ -133,6 +151,17 @@ describe("pickProductUrls", () => {
 
   it("picks the same pages every day, so tracked prices never expire", () => {
     expect(pickProductUrls(entries, { limit: 6 })).toEqual(pickProductUrls([...entries].reverse(), { limit: 6 }));
+  });
+
+  it("reads pages that were sold out last, until the sitemap says they changed", () => {
+    const soldOut = new Map([
+      ["https://s.example/other-19", new Date("2026-09-30")],
+      ["https://s.example/other-18", new Date("2026-09-20")],
+    ]);
+    const urls = pickProductUrls(entries, { limit: 20, soldOut });
+    // other-19 (lastmod 09-29) has not changed since it was seen sold out; other-18 (lastmod 09-28) has.
+    expect(urls[0]).toBe("https://s.example/other-18");
+    expect(urls.at(-1)).toBe("https://s.example/other-19");
   });
 
   it("returns everything when the catalog fits the budget", () => {

@@ -19,7 +19,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Categories + keyword hints | `src/config/categories.ts` (`CATEGORY_HINTS`, `detectCategory`) |
 | Subcategory rules (≤10/category) | `src/config/subcategories.ts` (`classifyProduct`) |
 | Audience (women/men/kids/unisex) | `src/config/audience.ts` |
-| Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts` |
+| Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts`; items below `deals.minItemPrice` (300 TL / 10 AZN / 10 USD / 10 EUR) are never collected (`pricing/min-price.ts`, applied in `pipeline.ts` before ingest) |
 | DB schema / migrations | `src/db/schema/index.ts`, `src/db/migrations/` (0000–0026) |
 | Store adapters | `src/modules/suppliers/adapters/{shopify,structured-data,akinon,admitad}/{adapter,stores}.ts` (akinon = category pages, cart prices, discounted-only + `RawOffer.updateOnly`; admitad = affiliate product feeds streamed and filtered to a few thousand offers, `select.ts`, env `ADMITAD_*`, docs/DEPLOY.md §8) |
 | Code store list → daily job | `suppliers/registry.ts` (`getAdapters`, `getAllAdapters` = code + admin stores) |

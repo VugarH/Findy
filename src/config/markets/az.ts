@@ -59,5 +59,7 @@ export const azMarket: MarketConfig = {
     staleAfterHours: 48,
     refreshTopSearches: 20,
     freshDrop: { windowDays: 7, lookbackDays: 14, minDropPct: 5 },
+    // Cheaper items cost more to deliver than to buy. Add RUB: 1000 once Russian stores are connected.
+    minItemPrice: { byCurrency: { TRY: 300, AZN: 10, USD: 10, EUR: 10 }, otherwise: { amount: 10, currency: "USD" } },
   },
 };

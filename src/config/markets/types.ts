@@ -111,5 +111,11 @@ export interface MarketConfig {
      * `windowDays` before (or the last check within `lookbackDays`).
      */
     freshDrop: { windowDays: number; lookbackDays: number; minDropPct: number };
+    /**
+     * Items cheaper than this (the store's own price, before delivery) are not
+     * collected at all: per currency, in major units; other currencies use the
+     * equivalent of `otherwise` (see modules/pricing/min-price.ts).
+     */
+    minItemPrice: { byCurrency: Partial<Record<CurrencyCode, number>>; otherwise: { amount: number; currency: CurrencyCode } };
   };
 }

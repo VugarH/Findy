@@ -11,8 +11,9 @@ import {
   soldOutPages,
 } from "@/modules/catalog/ingest";
 import { getAllAdapters, getLiveSearchAdapters } from "@/modules/suppliers/registry";
-import type { AdapterContext, SupplierAdapter } from "@/modules/suppliers/types";
+import type { AdapterContext, RawOffer, SupplierAdapter } from "@/modules/suppliers/types";
 import { loadMarket, refreshFxRates } from "@/modules/pricing/fx";
+import { belowMinItemPrice } from "@/modules/pricing/min-price";
 import { checkPriceWatches } from "@/modules/alerts/check";
 import { classifyProducts } from "@/modules/catalog/classify";
 import { confirmManualOffers } from "@/modules/catalog/manual-offers";
@@ -86,7 +87,7 @@ export async function runDailyPipeline(
     .values({ marketCode: market.code, status: "running", startedAt: now })
     .returning({ id: pipelineRuns.id });
 
-  const supplierStats = await collectCatalogs(adapters, ctx);
+  const supplierStats = await collectCatalogs(adapters, ctx, (offer) => !belowMinItemPrice(offer, market));
   await updateStoreHealth(supplierStats, marketDay(now, market.timeZone), now);
   await confirmManualOffers(now);
   const refreshedSearches =
@@ -209,7 +210,12 @@ export function planLanes(adapters: SupplierAdapter[]): CollectionLane[] {
 }
 
 /** Step 1 on its own — also used to back-fill price history for past days. Stats come back in `adapters` order. */
-export async function collectCatalogs(adapters: SupplierAdapter[], ctx: AdapterContext): Promise<SupplierRunStat[]> {
+export async function collectCatalogs(
+  adapters: SupplierAdapter[],
+  ctx: AdapterContext,
+  /** Which listings to save, e.g. not items below the market's minimum price. */
+  keep: (offer: RawOffer) => boolean = () => true,
+): Promise<SupplierRunStat[]> {
   const stats: SupplierRunStat[] = new Array(adapters.length);
 
   async function runLane({ concurrency, order }: CollectionLane) {
@@ -217,7 +223,7 @@ export async function collectCatalogs(adapters: SupplierAdapter[], ctx: AdapterC
     async function worker() {
       while (next < order.length) {
         const index = order[next++];
-        stats[index] = await collectOne(adapters[index], ctx);
+        stats[index] = await collectOne(adapters[index], ctx, keep);
       }
     }
     await Promise.all(Array.from({ length: Math.min(concurrency, order.length) }, worker));
@@ -226,7 +232,11 @@ export async function collectCatalogs(adapters: SupplierAdapter[], ctx: AdapterC
   return stats;
 }
 
-async function collectOne(adapter: SupplierAdapter, ctx: AdapterContext): Promise<SupplierRunStat> {
+async function collectOne(
+  adapter: SupplierAdapter,
+  ctx: AdapterContext,
+  keep: (offer: RawOffer) => boolean,
+): Promise<SupplierRunStat> {
   const supplierId = adapter.definition.id;
   try {
     let listedEverything = false;
@@ -238,7 +248,8 @@ async function collectOne(adapter: SupplierAdapter, ctx: AdapterContext): Promis
     if (rawOffers.length === 0) throw new Error("The store returned no offers");
     // Only now — with real data in hand — does the store enter our database.
     await recordSupplierSuccess(adapter.definition, rawOffers.length, ctx.now);
-    const { offerCount } = await ingestOffers(adapter.definition, rawOffers, ctx.now);
+    // A listing left out here counts as no longer listed: after a whole-listing read it is hidden at once.
+    const { offerCount } = await ingestOffers(adapter.definition, rawOffers.filter(keep), ctx.now);
     // Only after a successful read of the whole listing. A store that failed, or that is read as a
     // sample (sitemap stores, large Shopify catalogs), keeps its offers until they turn stale.
     const removed = listedEverything ? await markUnlistedOffers(supplierId, ctx.now) : 0;
@@ -288,7 +299,11 @@ async function refreshPopularSearches(
           const rawOffers = await adapter.search(query, ctx);
           if (rawOffers.length === 0) return;
           await registerSupplier(adapter.definition);
-          await ingestOffers(adapter.definition, rawOffers, ctx.now);
+          await ingestOffers(
+            adapter.definition,
+            rawOffers.filter((offer) => !belowMinItemPrice(offer, market)),
+            ctx.now,
+          );
         } catch {
           // A store failing one refresh is not worth failing the run for.
         }

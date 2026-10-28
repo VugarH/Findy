@@ -267,6 +267,13 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
               </p>
             </div>
           )}
+          {/* Stores abroad are read from their home site; some charge Azerbaijan more. */}
+          {global && (
+            <p className="flex items-start gap-2 text-xs leading-5 text-muted">
+              <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              {t.product.marketNote}
+            </p>
+          )}
         </div>
       )}
 

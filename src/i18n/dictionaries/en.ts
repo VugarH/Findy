@@ -276,6 +276,7 @@ const en = {
     page: "Page {page} of {pages}",
   },
   product: {
+    marketNote: "Prices from stores abroad are taken from the store's main site (for US stores, US prices). The store may show a different price for your country.",
     photo: "Photo",
     preowned: "Pre-owned luxury",
     conditionGrade: "{grade} condition",

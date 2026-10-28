@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createStructuredDataAdapter, toRawOffer, type StructuredDataStore } from "./adapter";
+import { pagesWithinRunTime } from "./adapter";
 import { parsePrice, pickProductUrls, readListPrice, readSitemap, readStructuredProduct } from "./parse";
 
 const ld = (data: unknown) => `<html><head><script type="application/ld+json">${JSON.stringify(data)}</script></head></html>`;
@@ -217,5 +218,15 @@ describe("toRawOffer", () => {
     expect(definition).toMatchObject({ id: "shoeshop", scope: "global", integration: "crawler", categories: ["shoes", "bags", "fashion"] });
     expect(definition.access.kind).toBe("sitemap-json-ld");
     expect(definition.access.fields.listPrice).toContain("retail-price");
+  });
+});
+
+describe("pagesWithinRunTime", () => {
+  it("keeps the store's page budget unless its Crawl-delay would make the run too long", () => {
+    expect(pagesWithinRunTime(300, null)).toBe(300);
+    expect(pagesWithinRunTime(300, 1000)).toBe(300);
+    // 30 s between requests: 35 minutes hold 70 requests, minus robots.txt and up to 6 sitemaps.
+    expect(pagesWithinRunTime(300, 30_000)).toBe(63);
+    expect(pagesWithinRunTime(10, 30_000)).toBe(10);
   });
 });

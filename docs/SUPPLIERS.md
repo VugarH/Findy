@@ -363,7 +363,8 @@ category reader cannot read them (each has different card markup).
 Step 2, connected the same day (sitemap + schema.org): Cosmetica (beauty chain, barcodes as GTIN), LOFT
 (`ga4-discount`), Hotiç (sitemap index written as a `<urlset>`; its `oldPrice` is always 2× the price, so it is
 not used), Hummel TR (`ga4-discount`), ZEN Pırlanta, ttec (single-brand: "MagSafe" in a title no longer makes it
-Apple), Smarton.az (local; robots.txt `Crawl-delay: 30` — now obeyed for every store — so 100 pages per run,
+Apple), Smarton.az (local; robots.txt `Crawl-delay: 30` — now obeyed for every store; a sitemap store gets at most 35 minutes
+per run, so ~63 pages for Smarton, Pilsan and Bernardo, which also ask for 30 s —
 Azerbaijani `/mehsullar/` pages only; the sitemap lists each product in Russian too). Not connected: Texnomart.az
 (9 of 10 sampled items sold out, no photos), Chicco TR (JSON-LD present but not parseable), MG Store (half the
 sitemap is category pages, most products sold out), Dyson TR (sitemap products are mostly spare parts).

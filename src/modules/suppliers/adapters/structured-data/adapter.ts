@@ -64,6 +64,11 @@ const DEFAULT_PRODUCTS_PER_RUN = 300;
 const MAX_SITEMAPS = 6;
 /** More failures than this in one run means the store is refusing us, not that a page was removed. */
 const MAX_FAILURES = 15;
+/**
+ * Longest one store may take per run. A robots.txt Crawl-delay of 30 s (Smarton, Pilsan, Bernardo) would
+ * otherwise stretch 300 pages to 2.5 hours, past the daily job's time limit; it gets fewer pages instead.
+ */
+const MAX_STORE_RUN_MS = 35 * 60_000;
 
 export function createStructuredDataAdapter(store: StructuredDataStore): SupplierAdapter {
   const perRun = store.productsPerRun ?? DEFAULT_PRODUCTS_PER_RUN;
@@ -136,7 +141,8 @@ export function createStructuredDataAdapter(store: StructuredDataStore): Supplie
       const offers: RawOffer[] = [];
       let failures = 0;
       const soldOut = (await ctx.soldOutPages?.()) ?? new Map<string, Date>();
-      for (const url of pickProductUrls(entries, { limit: perRun, focus: store.focus, soldOut })) {
+      const limit = pagesWithinRunTime(perRun, robots.crawlDelayMs);
+      for (const url of pickProductUrls(entries, { limit, focus: store.focus, soldOut })) {
         if (client.budgetLeft <= 0) break;
         try {
           const offer = toRawOffer(await client.getText(url), url, store);
@@ -152,6 +158,12 @@ export function createStructuredDataAdapter(store: StructuredDataStore): Supplie
       return [];
     },
   };
+}
+
+/** Product pages one run can read: `perRun`, or fewer when the store's Crawl-delay would make that too slow. */
+export function pagesWithinRunTime(perRun: number, crawlDelayMs: number | null): number {
+  if (!crawlDelayMs || crawlDelayMs <= DELAY_MS) return perRun;
+  return Math.max(1, Math.min(perRun, Math.floor(MAX_STORE_RUN_MS / crawlDelayMs) - 1 - MAX_SITEMAPS));
 }
 
 async function listProductPages(client: PoliteClient, store: StructuredDataStore): Promise<SitemapEntry[]> {

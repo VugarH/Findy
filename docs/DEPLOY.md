@@ -117,6 +117,13 @@ their recent runs. It needs a token that may only start this repository's workfl
 
 Every start is recorded under Admin → Activity; a refused start is in Admin → Logs.
 
+**The daily start time.** GitHub's own timer is often hours late (it fires when GitHub has capacity), so
+Vercel Cron starts the daily job instead: `vercel.json` calls `/api/cron/start-daily` at 03:00 UTC
+(07:00 Baku; on the free Hobby plan Vercel runs it within that hour), which asks GitHub to start it
+with the token above. It needs `CRON_SECRET` set in Vercel (Production; Vercel sends it with the call).
+GitHub's own timer stays as a backup at 09:17 Baku and does nothing if that day's run already started
+(`npm run deals:ran-today`). Check it under Vercel → Settings → Cron Jobs.
+
 ## 7. Email (Resend): address confirmation and password reset (optional)
 
 Without these settings the site works as before (no emails, "Forgot your password?" says email is

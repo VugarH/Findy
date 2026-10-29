@@ -5,7 +5,9 @@ name: Daily deals
 
 on:
   schedule:
-    - cron: "0 3 * * *" # 03:00 UTC = 07:00 in Baku (GitHub may start it a little late)
+    # A backup only: Vercel Cron starts the run at 07:00 Baku (vercel.json, /api/cron/start-daily).
+    # GitHub's timer is often hours late; this one does nothing if today's run already started.
+    - cron: "17 5 * * *" # 05:17 UTC = 09:17 in Baku
   workflow_dispatch:
     inputs:
       only:
@@ -48,7 +50,12 @@ jobs:
       - run: npm ci
       - name: Apply database migrations
         run: npm run db:migrate
+      - name: Skip if today's run already started (backup timer only)
+        id: guard
+        if: github.event_name == 'schedule'
+        run: echo "ran=$(npm run --silent deals:ran-today | tail -1)" >> "$GITHUB_OUTPUT"
       - name: Collect and publish
+        if: steps.guard.outputs.ran != 'yes'
         env:
           # Through the environment, never pasted into the script.
           ONLY: ${{ inputs.only }}

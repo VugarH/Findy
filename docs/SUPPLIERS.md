@@ -385,3 +385,11 @@ DeFacto, Boyner, Twist, Machka, Eve Shop, Yves Rocher, Kitapyurdu, e-bebek, Joke
 (product pages 403). Russia: Ozon (works in Azerbaijan since 2024, free delivery), Wildberries (in Azerbaijan
 since 2023), Lamoda, DNS, M.Video (no product data), Gold Apple, L'Etoile (no schema.org), Detsky Mir. Azerbaijan:
 Kontakt, Birmarket/Umico, Optimal. Georgia: Zoommer, Alta, Elit Electronics. UAE: Noon, Namshi, Sharaf DG.
+
+## Sephora (2026-10-29)
+
+Every Sephora store blocks automated requests, robots.txt included (HTTP 403 on sephora.com, .com.tr, .ae,
+.fr, .de, .co.uk, .pl, .it; Akamai/Cloudflare-style bot protection). Not connectable within our rules.
+Its affiliate program runs through networks such as Rakuten Advertising, Impact and Skimlinks; none found
+listing Turkey or the Middle East, and no product feed is documented. Route: ask Sephora or the network
+for a feed. Its brands are partly covered already (Fenty, Rare Beauty, Huda, Tarte, Glow Recipe… directly).

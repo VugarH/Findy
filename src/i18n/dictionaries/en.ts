@@ -579,6 +579,7 @@ const en = {
     filterHint: "Price really fell in the last {days} days",
     nav: "Verified discounts",
     short: "Verified",
+    navInfo: "Items whose price really dropped in the last {days} days. We record every store’s price daily and compare it ourselves.",
     badge: "Prices checked daily",
     title: "Verified discounts",
     countTitle: "{count} verified discounts",

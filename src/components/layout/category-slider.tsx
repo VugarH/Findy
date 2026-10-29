@@ -15,15 +15,17 @@ interface Item {
 
 interface Props {
   items: Item[];
+  /** Where a click on the open category goes: the list of all deals, so the choice can be undone. */
+  allHref: string;
   labels: { previous: string; next: string };
 }
 
 /**
  * Every category as a sideways-scrolling row of chips. The open category is
- * highlighted; the edges fade, with arrows on wider screens, only where more
- * chips are hidden.
+ * highlighted, and clicking it again closes it (back to all deals); the edges
+ * fade, with arrows on wider screens, only where more chips are hidden.
  */
-export function CategorySlider({ items, labels }: Props) {
+export function CategorySlider({ items, allHref, labels }: Props) {
   const pathname = usePathname();
   const rowRef = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: false, end: false });
@@ -70,7 +72,7 @@ export function CategorySlider({ items, labels }: Props) {
           return (
             <Link
               key={item.slug}
-              href={item.href}
+              href={active ? allHref : item.href}
               aria-current={active ? "page" : undefined}
               className={`group flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 transition-all duration-200 ${
                 active

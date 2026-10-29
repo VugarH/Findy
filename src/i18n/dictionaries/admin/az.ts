@@ -658,7 +658,7 @@ const adminAz: AdminDictionary = {
     filtersIntro:
       "Ziyarətçilərin endirim siyahıları və axtarış nəticələrinin yanında hansı filtrləri görəcəyi. Söndürülmüş filtr görünmür, onu hələ də istifadə edən linklər siyahını filtrsiz göstərir.",
     filters: {
-      verified: { label: "Təsdiqlənmiş endirimlər", hint: "Bütün endirimlər və kateqoriya səhifələrində “Yalnız təsdiqlənmiş endirimlər” qutusu." },
+      verified: { label: "Real endirimlər", hint: "Bütün endirimlər və kateqoriya səhifələrində “Yalnız real endirimlər” qutusu." },
       category: { label: "Kateqoriya", hint: "Bütün endirimlər və axtarışda; kateqoriya səhifələri həmişə öz kateqoriyasıdır." },
       subcategory: { label: "Növ", hint: "Kateqoriya daxilində alt kateqoriyalar." },
       audience: { label: "Kimin üçün", hint: "Qadın, kişi, uşaq, uniseks." },

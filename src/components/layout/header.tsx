@@ -16,7 +16,9 @@ import { CartLink } from "@/components/cart/cart-link";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { SearchBar } from "@/components/search/search-bar";
 import { ButtonLink } from "@/components/ui/button";
+import { HoverInfo } from "@/components/ui/hover-info";
 import { Container } from "@/components/ui/container";
+import { fmt } from "@/i18n/format";
 import { CategorySlider } from "./category-slider";
 import { LocaleSwitcher } from "./locale-switcher";
 import { MessagesLink } from "@/components/messages/messages-link";
@@ -104,20 +106,23 @@ export async function Header() {
           <Link href={href("/deals")} className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-ink hover:bg-surface-2">
             {t.nav.deals}
           </Link>
-          <Link
-            href={href("/fresh")}
-            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-ink hover:bg-surface-2"
-          >
-            <BadgeCheck className="size-4 text-brand" aria-hidden />
-            <span className="hidden sm:inline">{t.fresh.nav}</span>
-            <span className="sm:hidden">{t.fresh.short}</span>
-          </Link>
+          <HoverInfo info={fmt(t.fresh.navInfo, { days: market.deals.freshDrop.windowDays })}>
+            <Link
+              href={href("/fresh")}
+              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-ink hover:bg-surface-2"
+            >
+              <BadgeCheck className="size-4 text-brand" aria-hidden />
+              <span className="hidden sm:inline">{t.fresh.nav}</span>
+              <span className="sm:hidden">{t.fresh.short}</span>
+            </Link>
+          </HoverInfo>
           <CategorySlider
             items={categories.map((category) => ({
               slug: category.slug,
               href: href(`/category/${category.slug}`),
               name: t.categories[category.slug].short,
             }))}
+            allHref={href("/deals")}
             labels={{ previous: t.nav.scrollBack, next: t.nav.scrollMore }}
           />
           <Link

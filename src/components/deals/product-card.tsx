@@ -6,6 +6,7 @@ import { fmt } from "@/i18n/format";
 import { cn } from "@/lib/cn";
 import { WatchButton } from "@/components/alerts/watch-button";
 import { CartButton } from "@/components/cart/cart-button";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ProductImage } from "@/components/product/product-image";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { brandLabel } from "@/lib/text";
@@ -54,6 +55,7 @@ export function ProductCard({
         >
           <CartButton offerId={card.offerId} />
           <WatchButton productId={card.productId} />
+          <FavoriteButton productId={card.productId} />
         </div>
       </div>
       <Link
@@ -114,6 +116,12 @@ export function ProductCard({
               </span>
             )}
           </div>
+          {/* The saving in money: "610 ₼ cheaper" reads stronger than a percent. */}
+          {isDeal && (card.savingsMinor ?? 0) > 0 && (
+            <p className={cn("font-semibold text-deal", compact ? "text-xs" : "text-sm")}>
+              {fmt(t.deal.save, { amount: money(card.savingsMinor!) })}
+            </p>
+          )}
           {!compact && <p className="text-xs text-muted">{t.deal.totalHint}</p>}
         </div>
 

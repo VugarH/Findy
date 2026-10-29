@@ -17,6 +17,7 @@ import { storeDiscount } from "@/modules/catalog/summary";
 import { offerFreshDrop } from "@/modules/deals/fresh-drop";
 import { sameBrand } from "@/modules/catalog/normalizers/fashion";
 import { getFeatureSwitches } from "@/modules/settings/service";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { WatchButton } from "@/components/alerts/watch-button";
 import { FollowButton } from "@/components/follows/follow-button";
 import { AssistCard } from "@/components/orders/assist-card";
@@ -227,6 +228,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
                 extraActions={
                   <>
                     <WatchButton productId={product.id} variant="button" />
+                    <FavoriteButton productId={product.id} variant="button" />
                     <ShareButton title={product.title} />
                   </>
                 }

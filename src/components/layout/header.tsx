@@ -13,6 +13,7 @@ import { marketDay, summarizeDigest } from "@/modules/digest/pick";
 import { latestDigest } from "@/modules/digest/service";
 import { channelUrl } from "@/modules/telegram/config";
 import { CartLink } from "@/components/cart/cart-link";
+import { FavoritesLink } from "@/components/favorites/favorites-link";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { SearchBar } from "@/components/search/search-bar";
 import { ButtonLink } from "@/components/ui/button";
@@ -52,7 +53,7 @@ export async function Header() {
           className="order-last basis-full md:order-none md:flex-1 md:basis-0"
         />
         {/* relative: the notification list opens below this group, aligned to its right edge. */}
-        <div className="relative ml-auto flex items-center gap-2">
+        <div className="relative ml-auto flex items-center gap-0.5 sm:gap-2">
           <Suspense>
             <LocaleSwitcher current={locale} label={t.nav.language} />
           </Suspense>
@@ -67,6 +68,7 @@ export async function Header() {
               <Shield className="size-[18px]" aria-hidden />
             </Link>
           )}
+          <FavoritesLink />
           <CartLink />
           {/* Writing to us (and our replies); the badge counts conversations with an unread reply and keeps itself current. */}
           <MessagesLink

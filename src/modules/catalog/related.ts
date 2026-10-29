@@ -24,7 +24,7 @@ export interface RelatedSource {
 }
 
 /** Deals read to choose from: one small query on the deals table. */
-const CANDIDATES = 40;
+const CANDIDATES = 60;
 /** Fewer than this is not worth a section. */
 export const MIN_RELATED = 4;
 

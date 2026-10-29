@@ -288,6 +288,8 @@ const az: Dictionary = {
   },
   product: {
     similarTitle: "Oxşar məhsullar",
+    similarPrevious: "Əvvəlki məhsullar",
+    similarNext: "Daha çox məhsul",
     marketNote: "Xarici mağazaların qiymətləri mağazanın əsas saytından götürülür (ABŞ mağazalarında ABŞ qiyməti). Mağaza sizin ölkə üçün fərqli qiymət göstərə bilər.",
     photo: "Şəkil",
     preowned: "İşlənmiş lüks məhsul",

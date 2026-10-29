@@ -287,6 +287,7 @@ const az: Dictionary = {
     page: "Səhifə {page} / {pages}",
   },
   product: {
+    similarTitle: "Oxşar məhsullar",
     marketNote: "Xarici mağazaların qiymətləri mağazanın əsas saytından götürülür (ABŞ mağazalarında ABŞ qiyməti). Mağaza sizin ölkə üçün fərqli qiymət göstərə bilər.",
     photo: "Şəkil",
     preowned: "İşlənmiş lüks məhsul",

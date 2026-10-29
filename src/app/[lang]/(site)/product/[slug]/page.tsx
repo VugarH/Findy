@@ -32,6 +32,9 @@ import { SizeFinder, type SizedOffer } from "@/components/product/size-finder";
 import { Container } from "@/components/ui/container";
 import { brandLabel } from "@/lib/text";
 import { InterestTracker } from "@/components/recommendations/interest-tracker";
+import { Suspense } from "react";
+import type { Audience } from "@/config/audience";
+import { RelatedProducts } from "@/components/product/related-products";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/product/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -304,6 +307,23 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
         </div>
         {offers.length > 1 && <OffersTable offers={offers} />}
       </section>
+
+      {/* Alternatives, streamed in after the page: the product details never wait for them. */}
+      {best && (
+        <Suspense fallback={null}>
+          <RelatedProducts
+            source={{
+              productId: product.id,
+              title: product.title,
+              brand: product.brand,
+              categorySlug: category,
+              subcategorySlug: subcategory ?? "other",
+              audience: product.audience as Audience | null,
+              landedMinor: best.landed.totalMinor,
+            }}
+          />
+        </Suspense>
+      )}
     </Container>
   );
 }

@@ -12,17 +12,21 @@ import { getAllAdapters } from "@/modules/suppliers/registry";
 import { recordAdminEvent } from "../audit";
 import { formValues, localeOf, text, type AdminFormState } from "../forms";
 import { requireAdmin } from "../guard";
-import { createCustomStore, setStoreActive, setStoreNotes, updateCustomStore } from "../stores";
+import { createCustomStore, setStoreActive, setStoreNotes, setStoreOffReason, updateCustomStore } from "../stores";
 import { parseStoreForm } from "../validation";
 import { log } from "@/modules/logs/logger";
 import { resumeStore } from "@/modules/suppliers/health";
 
-/** Switches a store on or off. Off: the daily job stops contacting it and its offers leave the site at once. */
+const MAX_OFF_REASON = 500;
+const offReasonOf = (form: FormData) => text(form, "reason").slice(0, MAX_OFF_REASON) || null;
+
+/** Switches a store on or off, off with an optional note saying why. Off: the daily job stops contacting it and its offers leave the site at once. */
 export async function setStoreActiveAction(form: FormData): Promise<void> {
   const admin = await requireAdmin();
   const id = text(form, "id");
   const active = text(form, "active") === "true";
-  const store = await setStoreActive(id, active);
+  const reason = active ? null : offReasonOf(form);
+  const store = await setStoreActive(id, active, reason);
   if (!store) return;
   if (!active) await withdrawSupplierDeals(id);
   await recordAdminEvent(admin, {
@@ -30,9 +34,21 @@ export async function setStoreActiveAction(form: FormData): Promise<void> {
     entityType: "store",
     entityId: id,
     entityLabel: store.name,
+    details: reason ? { reason } : undefined,
     // Switching on brings the store's offers back only with the next publish.
     needsPublish: active,
   });
+  refresh();
+}
+
+/** Changes the note on a store that is already off. */
+export async function saveStoreOffReasonAction(form: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const id = text(form, "id");
+  const reason = offReasonOf(form);
+  const store = await setStoreOffReason(id, reason);
+  if (!store) return;
+  await recordAdminEvent(admin, { action: "store.off-reason", entityType: "store", entityId: id, entityLabel: store.name, details: reason ? { reason } : undefined });
   refresh();
 }
 

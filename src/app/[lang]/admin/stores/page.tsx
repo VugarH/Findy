@@ -9,6 +9,7 @@ import { getAdminI18n } from "@/modules/admin/i18n";
 import { listAdminStores, STORE_STATUSES, type StoreStatus } from "@/modules/admin/stores";
 import { StoreStatusBadge } from "@/components/admin/status-badges";
 import { ActionButton } from "@/components/admin/action-button";
+import { StoreOffDialog } from "@/components/admin/store-off-dialog";
 import { Badge, EmptyState, FilterBar, filterControl, PageHeader, Panel, Table, Td, Th } from "@/components/admin/ui";
 import { ButtonLink } from "@/components/ui/button";
 
@@ -122,6 +123,11 @@ export default async function AdminStoresPage({ searchParams }: PageProps<"/[lan
                   </Td>
                   <Td>
                     <StoreStatusBadge status={store.status} labels={a.stores.statuses} />
+                    {store.offReason && (
+                      <p className="mt-1 line-clamp-2 max-w-56 text-xs text-muted" title={store.offReason}>
+                        {store.offReason}
+                      </p>
+                    )}
                   </Td>
                   <Td className="max-w-72">
                     <span className="whitespace-nowrap">
@@ -135,13 +141,20 @@ export default async function AdminStoresPage({ searchParams }: PageProps<"/[lan
                     {fmt(a.stores.offersLine, { live: num(store.liveOffers), total: num(store.offers) })}
                   </Td>
                   <Td className="text-right">
-                    <ActionButton
-                      action={setStoreActiveAction}
-                      fields={{ id: store.id, active: String(!store.active) }}
-                      variant={store.active ? "ghost" : "secondary"}
-                    >
-                      {store.active ? a.common.switchOff : a.common.switchOn}
-                    </ActionButton>
+                    {store.active ? (
+                      <StoreOffDialog
+                        action={setStoreActiveAction}
+                        fields={{ id: store.id, active: "false" }}
+                        title={fmt(a.stores.off.title, { store: store.name })}
+                        submit={a.common.switchOff}
+                      >
+                        {a.common.switchOff}
+                      </StoreOffDialog>
+                    ) : (
+                      <ActionButton action={setStoreActiveAction} fields={{ id: store.id, active: "true" }} variant="secondary">
+                        {a.common.switchOn}
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))}

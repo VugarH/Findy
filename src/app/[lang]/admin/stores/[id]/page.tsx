@@ -3,12 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { fmt } from "@/i18n/format";
-import { setStoreActiveAction, resumeStoreAction } from "@/modules/admin/actions/stores";
+import { saveStoreOffReasonAction, setStoreActiveAction, resumeStoreAction } from "@/modules/admin/actions/stores";
 import { param } from "@/modules/admin/forms";
 import { getAdminI18n } from "@/modules/admin/i18n";
 import { getAdminStore } from "@/modules/admin/stores";
 import { STORE_HEALTH } from "@/modules/suppliers/health";
 import { ActionButton } from "@/components/admin/action-button";
+import { StoreOffDialog } from "@/components/admin/store-off-dialog";
 import { StoreStatusBadge } from "@/components/admin/status-badges";
 import { CollectButton, StoreNotes } from "@/components/admin/store-controls";
 import { StoreForm } from "@/components/admin/store-form";
@@ -65,13 +66,21 @@ export default async function AdminStorePage({ params, searchParams }: PageProps
                 {d.resume}
               </ActionButton>
             )}
-            <ActionButton
-              action={setStoreActiveAction}
-              fields={{ id: store.id, active: String(!store.active) }}
-              variant={store.active ? "secondary" : "primary"}
-            >
-              {store.active ? a.common.switchOff : a.common.switchOn}
-            </ActionButton>
+            {store.active ? (
+              <StoreOffDialog
+                action={setStoreActiveAction}
+                fields={{ id: store.id, active: "false" }}
+                title={fmt(a.stores.off.title, { store: store.name })}
+                submit={a.common.switchOff}
+                variant="secondary"
+              >
+                {a.common.switchOff}
+              </StoreOffDialog>
+            ) : (
+              <ActionButton action={setStoreActiveAction} fields={{ id: store.id, active: "true" }} variant="primary">
+                {a.common.switchOn}
+              </ActionButton>
+            )}
           </>
         }
       />
@@ -212,6 +221,23 @@ export default async function AdminStorePage({ params, searchParams }: PageProps
         <div className="space-y-6">
           <Panel>
             <p className="text-sm text-muted">{store.active ? d.switchOffHint : d.switchOnHint}</p>
+            {!store.active && (
+              <div className="mt-4 space-y-2 border-t border-line pt-4">
+                <p className="text-sm font-semibold">{a.stores.off.reason}</p>
+                <p className="whitespace-pre-wrap text-sm">{store.offReason ?? a.stores.off.noReason}</p>
+                {store.offAt && <p className="text-xs text-muted">{fmt(a.stores.off.since, { date: dateTime(store.offAt) })}</p>}
+                <StoreOffDialog
+                  action={saveStoreOffReasonAction}
+                  fields={{ id: store.id }}
+                  reason={store.offReason}
+                  title={fmt(a.stores.off.title, { store: store.name })}
+                  submit={a.common.save}
+                  variant="secondary"
+                >
+                  {a.stores.off.edit}
+                </StoreOffDialog>
+              </div>
+            )}
             {store.active && access && access.kind !== "manual-entry" && store.status !== "retired" && (
               <div className="mt-4 border-t border-line pt-4">
                 <CollectButton storeId={store.id} />

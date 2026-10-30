@@ -16,6 +16,7 @@ export const ADMIN_ACTIONS = [
   "store.switch-off",
   "store.resume",
   "store.notes",
+  "store.off-reason",
   "store.collect",
   "product.create",
   "product.update",

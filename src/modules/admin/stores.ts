@@ -1,4 +1,4 @@
-import { count, eq, sql } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { offers, suppliers, type Supplier } from "@/db/schema";
 import { getMarket } from "@/config/markets";
@@ -49,6 +49,9 @@ export interface AdminStore {
   liveOffers: number;
   manualOffers: number;
   notes: string | null;
+  /** Why an admin switched it off, and when. */
+  offReason: string | null;
+  offAt: Date | null;
 }
 
 export function storeStatus(
@@ -108,6 +111,8 @@ function toAdminStore(
     liveOffers: counts?.live ?? 0,
     manualOffers: counts?.manual ?? 0,
     notes: row?.notes ?? null,
+    offReason: row?.offReason ?? null,
+    offAt: row?.offAt ?? null,
   };
 }
 
@@ -136,7 +141,7 @@ export async function listAdminStores(filters: StoreFilters = {}): Promise<Admin
     .map((id) => toAdminStore(definitionOf(byId.get(id), id), byId.get(id), counts.get(id)))
     .filter(
       (store) =>
-        (!q || store.name.toLowerCase().includes(q) || store.id.includes(q) || store.websiteUrl.includes(q)) &&
+        (!q || store.name.toLowerCase().includes(q) || store.id.includes(q) || store.websiteUrl.includes(q) || store.offReason?.toLowerCase().includes(q)) &&
         (!filters.status || store.status === filters.status) &&
         (!filters.source || store.source === filters.source) &&
         (!filters.category || store.categories.includes(filters.category)),
@@ -193,7 +198,7 @@ export async function getAdminStore(id: string): Promise<AdminStoreDetail | null
  * Switches a store on or off. A code store that has never returned data has
  * no row yet, so one is written from its definition first.
  */
-export async function setStoreActive(id: string, active: boolean): Promise<{ name: string } | null> {
+export async function setStoreActive(id: string, active: boolean, reason: string | null = null): Promise<{ name: string } | null> {
   const [existing] = await db.select({ id: suppliers.id }).from(suppliers).where(eq(suppliers.id, id)).limit(1);
   if (!existing) {
     const definition = getAdapters().find((adapter) => adapter.definition.id === id)?.definition;
@@ -202,8 +207,18 @@ export async function setStoreActive(id: string, active: boolean): Promise<{ nam
   }
   const [updated] = await db
     .update(suppliers)
-    .set({ active, updatedAt: new Date() })
+    .set({ active, offReason: active ? null : reason, offAt: active ? null : new Date(), updatedAt: new Date() })
     .where(eq(suppliers.id, id))
+    .returning({ name: suppliers.name });
+  return updated ?? null;
+}
+
+/** Changes the note on a store that is already off; the time it went off stays. */
+export async function setStoreOffReason(id: string, reason: string | null): Promise<{ name: string } | null> {
+  const [updated] = await db
+    .update(suppliers)
+    .set({ offReason: reason, updatedAt: new Date() })
+    .where(and(eq(suppliers.id, id), eq(suppliers.active, false)))
     .returning({ name: suppliers.name });
   return updated ?? null;
 }

@@ -33,6 +33,9 @@ function detailOf(event: AdminEvent, { a, t, money }: Pick<AdminI18n, "a" | "t" 
       const audience = String(d.audience ?? "");
       return `→ ${isAudience(audience) ? t.audiences[audience] : audience === "none" ? a.products.detail.audienceNone : a.common.automatic}`;
     }
+    case "store.switch-off":
+    case "store.off-reason":
+      return d.reason ? String(d.reason) : null;
     case "product.merge":
       return d.intoTitle ? `→ ${String(d.intoTitle)}` : null;
     case "product.update":

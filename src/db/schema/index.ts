@@ -61,6 +61,9 @@ export const suppliers = pgTable("suppliers", {
   customConfig: jsonb("custom_config").$type<StoredCustomConfig>(),
   /** Internal notes from the team ("asked them for a feed on 3 Oct"). Never shown to visitors. */
   notes: text("notes"),
+  /** Why and when an admin switched the store off, so it can be reconsidered later. Cleared when switched on (the activity log keeps it). */
+  offReason: text("off_reason"),
+  offAt: timestamp("off_at", { withTimezone: true }),
   /** A code store's row exists once a fetch has returned real offers; an admin store's from when it is added. */
   firstVerifiedAt: timestamp("first_verified_at", { withTimezone: true }).notNull().defaultNow(),
   lastSuccessAt: timestamp("last_success_at", { withTimezone: true }),

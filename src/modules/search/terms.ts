@@ -5,6 +5,7 @@ import type { MarketConfig } from "@/config/markets";
 import { foldForMatching } from "@/lib/text";
 import { freshSince } from "@/modules/catalog/offer-view";
 import { bestCorrection, correctedQuery, maxTypos, wordsToCheck, type SpellingCandidate } from "./spelling";
+import { NOT_A_SEARCH } from "./normalize";
 import { expandQuery } from "./synonyms";
 
 /**
@@ -21,8 +22,13 @@ export interface SearchSuggestion {
 /** The same folding as foldForMatching, in SQL. */
 const fold = (column: string) => `translate(lower(translate(${column}, 'İ', 'i')), 'çşğöüıə', 'csgouie')`;
 
-/** Searches kept as suggestions: asked at least this often in the last 90 days, and they found something. */
-const MIN_QUERY_COUNT = 2;
+/**
+ * Searches kept as suggestions: from this many different visitors in the last
+ * 90 days (one person repeating a search cannot put it in front of others;
+ * visitor ids change daily, so returning on other days counts again), and they
+ * found something.
+ */
+const MIN_QUERY_VISITORS = 3;
 /** A title word must appear in this many products: rarer ones are usually typos themselves. */
 const MIN_WORD_PRODUCTS = 3;
 
@@ -53,7 +59,13 @@ export async function refreshSearchTerms(market: MarketConfig, now = new Date())
       sql.raw(`insert into search_terms (market_code, kind, folded, label, weight)
         select '${code}', 'query', ${fold("q.query")}, min(q.query), sum(q.count)
         from search_queries q
-        where q.market_code = '${code}' and q.count >= ${MIN_QUERY_COUNT} and q.last_result_count > 0
+        join (
+          select lower(trim(e.query)) as query
+          from site_events e
+          where e.type = 'search' and e.query is not null and e.created_at >= now() - interval '90 days'
+          group by 1 having count(distinct e.visitor_id) >= ${MIN_QUERY_VISITORS}
+        ) asked on asked.query = lower(trim(q.query))
+        where q.market_code = '${code}' and q.last_result_count > 0 and q.query !~ '${NOT_A_SEARCH}'
           and q.last_searched_at >= now() - interval '90 days'
         group by ${fold("q.query")}`),
     );

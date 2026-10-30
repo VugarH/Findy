@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, gte } from "drizzle-orm";
+import { and, desc, eq, gt, gte, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { pipelineRuns, searchQueries, suppliers, type PipelineStats, type SupplierRunStat } from "@/db/schema";
 import type { MarketConfig } from "@/config/markets";
@@ -22,6 +22,7 @@ import { postDigest } from "@/modules/telegram/channel";
 import { buildDeals } from "./build";
 import { admitadConfigured, isAdmitadStore } from "@/modules/suppliers/adapters/admitad/adapter";
 import { savePopularCoverage } from "@/modules/catalog/popular";
+import { NOT_A_SEARCH } from "@/modules/search/normalize";
 import { refreshSearchTerms } from "@/modules/search/terms";
 import { pausedStoresToSkip, updateStoreHealth } from "@/modules/suppliers/health";
 import { marketDay } from "@/modules/digest/pick";
@@ -294,6 +295,7 @@ async function refreshPopularSearches(
         eq(searchQueries.marketCode, market.code),
         gte(searchQueries.lastSearchedAt, since),
         gt(searchQueries.liveCount, 0),
+        sql`${searchQueries.query} !~ ${NOT_A_SEARCH}`,
       ),
     )
     .orderBy(desc(searchQueries.liveCount))

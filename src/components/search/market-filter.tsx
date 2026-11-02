@@ -25,7 +25,7 @@ export function MarketFilter({ scope, hrefFor, labels }: Props) {
 
   return (
     <div role="group" aria-label={labels.title} className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-      <span className="text-muted">{labels.title}</span>
+      <span className="text-muted max-md:sr-only">{labels.title}</span>
       {boxes.map((box) => (
         <CheckLink key={box.value} href={box.href} checked={box.checked}>
           {box.label}

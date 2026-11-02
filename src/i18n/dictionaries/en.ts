@@ -13,6 +13,8 @@ const en = {
     stores: "Stores",
     home: "Home",
     deals: "All deals",
+    dealsShort: "Deals",
+    mainPages: "Main pages",
     messages: "Messages",
     language: "Language",
     theme: "Switch theme",

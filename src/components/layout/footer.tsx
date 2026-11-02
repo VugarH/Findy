@@ -13,13 +13,14 @@ export async function Footer() {
   const categories = orderedCategories(await getDisplayOrder());
 
   return (
-    <footer className="mt-20 border-t border-line bg-surface">
-      <Container className="flex flex-col gap-8 py-10 md:flex-row md:justify-between">
+    // Phones: room for the bottom bar below it.
+    <footer className="mt-10 border-t border-line bg-surface max-md:pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:mt-20">
+      <Container className="flex flex-col gap-6 py-6 md:flex-row md:justify-between md:gap-8 md:py-10">
         <div className="max-w-sm space-y-3">
           <Logo href={href("/")} />
           <p className="text-sm text-muted">{t.footer.tagline}</p>
         </div>
-        <nav className="flex flex-col gap-2 text-sm">
+        <nav className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm md:flex md:flex-col">
           <Link href={href("/deals")} className="font-semibold text-ink hover:underline">
             {t.nav.deals}
           </Link>

@@ -15,6 +15,8 @@ const ru: Dictionary = {
     stores: "Магазины",
     home: "Главная",
     deals: "Все скидки",
+    dealsShort: "Скидки",
+    mainPages: "Основные страницы",
     messages: "Сообщения",
     language: "Язык",
     theme: "Сменить тему",

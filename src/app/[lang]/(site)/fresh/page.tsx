@@ -116,16 +116,17 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
   return (
     <>
       <section className="hero-glow border-b border-line">
-        <Container className="max-w-[88rem] py-8">
+        <Container className="max-w-[88rem] py-3 md:py-8">
           <p className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-strong">
             <BadgeCheck className="size-3.5" aria-hidden />
             {t.fresh.badge}
           </p>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
+          <h1 className="mt-2 text-2xl font-extrabold tracking-tight md:mt-3 md:text-4xl">
             {overall > 0 ? fmt(t.fresh.countTitle, { count: overall.toLocaleString(LOCALE_TAGS[locale]) }) : t.fresh.title}
           </h1>
-          <p className="mt-2 max-w-3xl text-pretty text-muted">{fmt(t.fresh.intro, { days: windowDays })}</p>
-          <ul className="mt-5 grid gap-3 md:grid-cols-3">
+          <p className="mt-1 max-w-3xl text-pretty text-sm text-muted md:mt-2 md:text-base">{fmt(t.fresh.intro, { days: windowDays })}</p>
+          {/* Phones: the products first; the intro above already says this. */}
+          <ul className="mt-5 hidden gap-3 md:grid md:grid-cols-3">
             {trust.map((item) => (
               <li key={item.title} className="flex gap-3 rounded-2xl border border-line bg-surface/70 p-4 backdrop-blur-sm">
                 <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
@@ -141,7 +142,7 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
         </Container>
       </section>
 
-      <Container className="max-w-[88rem] py-6">
+      <Container className="max-w-[88rem] py-3 md:py-6">
         <FilterDrawerProvider>
           <div className="md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
             <FilterDrawerPanel
@@ -185,15 +186,17 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
             </FilterDrawerPanel>
 
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
+              {/* Phones: filters and sort share one row, the count sits under them. */}
+              <div className="flex flex-wrap items-center justify-between gap-2 md:gap-3">
+                <div className="flex items-center gap-3 max-md:contents">
                   <FilterDrawerButton label={t.filters.filters} activeCount={selected.length + selectedStores.length} />
-                  <p className="text-sm font-semibold">{fmt(t.filters.results, { count: totalLabel })}</p>
+                  <p className="text-sm font-semibold max-md:order-3 max-md:basis-full max-md:text-xs max-md:font-normal max-md:text-muted">{fmt(t.filters.results, { count: totalLabel })}</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 max-md:contents">
                   <Suspense>
                     <ParamSelect
                       param="size"
+                      className="max-md:hidden"
                       cookie={PAGE_SIZE_COOKIE}
                       label={t.filters.perPage}
                       value={String(size)}
@@ -201,6 +204,7 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
                     />
                     <ParamSelect
                       param="sort"
+                      className="max-md:min-w-0 max-md:flex-1"
                       label={t.filters.sort}
                       value={sort}
                       options={[
@@ -225,7 +229,8 @@ export default async function VerifiedDiscountsPage({ searchParams }: Props) {
                 className="mt-4"
               />
 
-              {pages > 1 && <div className="mt-4">{pagination}</div>}
+              {/* Phones: only below the list. */}
+              {pages > 1 && <div className="mt-4 max-md:hidden">{pagination}</div>}
 
               {cards.length > 0 ? (
                 <div className="mt-5">

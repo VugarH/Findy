@@ -40,7 +40,7 @@ export default async function NewMessagePage({ searchParams }: PageProps<"/[lang
   // One request at a time: the next one waits until we have answered.
   const waiting = await waitingRequestOf(user.id);
   return (
-    <Container className="max-w-4xl py-8">
+    <Container className="max-w-4xl py-2 md:py-8">
       <Link href={href("/messages")} className="text-sm font-semibold text-muted hover:text-ink">
         ← {m.allConversations}
       </Link>

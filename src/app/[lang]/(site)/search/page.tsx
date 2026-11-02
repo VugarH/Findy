@@ -124,9 +124,9 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
   );
 
   return (
-    <Container className="max-w-[88rem] py-6">
+    <Container className="max-w-[88rem] py-2 md:py-6">
       {interest && <InterestTracker event={interest} />}
-      <h1 className="text-2xl font-extrabold tracking-tight">{fmt(t.search.resultsFor, { query: shownQuery })}</h1>
+      <h1 className="text-xl font-extrabold tracking-tight md:text-2xl">{fmt(t.search.resultsFor, { query: shownQuery })}</h1>
       {shownQuery !== query && (
         <p className="mt-1 text-sm">
           {fmt(t.search.showingFor, { query: shownQuery })}.{" "}
@@ -146,7 +146,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
       </p>
 
       <FilterDrawerProvider>
-        <div className="mt-5 md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
+        <div className="mt-3 md:mt-5 md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
           <FilterDrawerPanel
             title={t.filters.filters}
             closeLabel={t.filters.close}
@@ -165,23 +165,29 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
             />
           </FilterDrawerPanel>
 
-          <div className="min-w-0 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <div className="min-w-0 space-y-3 md:space-y-4">
+            {/* Phones: filters and sort share one row, the ticks sit under them; the groups dissolve for that. */}
+            <div className="flex flex-wrap items-center justify-between gap-2 md:gap-3">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 max-md:contents">
                 <FilterDrawerButton label={t.filters.filters} activeCount={activeCount} />
+                <span className="max-md:order-3 max-md:basis-full">
                 <CheckLink href={dealsOnlyHref} checked={dealsOnly}>
                   {t.search.dealsOnly}
                 </CheckLink>
+                </span>
+                <span className="max-md:order-4 max-md:basis-full">
                 <MarketFilter
                   scope={filters.scope}
                   hrefFor={(scope: SupplierScope | undefined) => link({ scope })}
                   labels={{ title: t.search.market, local: t.search.localMarket, global: t.search.globalMarket }}
                 />
+                </span>
               </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 max-md:contents">
                 <Suspense>
                   <ParamSelect
                     param="size"
+                    className="max-md:hidden"
                     cookie={PAGE_SIZE_COOKIE}
                     label={t.filters.perPage}
                     value={String(filters.size)}
@@ -189,6 +195,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
                   />
                   <ParamSelect
                     param="sort"
+                    className="max-md:min-w-0 max-md:flex-1"
                     label={t.search.sort}
                     value={sort}
                     options={[
@@ -216,7 +223,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
               query={{ text: shownQuery, remove: href("/deals") + filterQuery(filters, true, {}) }}
             />
 
-            {pages > 1 && pagination}
+            {/* Phones: only below the list. */}
+            {pages > 1 && <div className="max-md:hidden">{pagination}</div>}
 
             {items.length > 0 ? (
               <ProductGrid cards={items} density="compact" t={t} money={money} href={href} />

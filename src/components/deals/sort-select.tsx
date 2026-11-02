@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { cn } from "@/lib/cn";
 
 interface Props {
   /** URL parameter this select controls, e.g. "sort" or "size". */
@@ -11,10 +12,11 @@ interface Props {
   options: { value: string; label: string }[];
   /** Also remember the choice in this cookie until the browser closes (read by the server). */
   cookie?: string;
+  className?: string;
 }
 
 /** A dropdown that writes its choice to the URL (and optionally a cookie) and returns to page 1. */
-export function ParamSelect({ param, label, value, options, cookie }: Props) {
+export function ParamSelect({ param, label, value, options, cookie, className }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -30,12 +32,12 @@ export function ParamSelect({ param, label, value, options, cookie }: Props) {
   }
 
   return (
-    <label className="flex items-center gap-2 text-sm text-muted">
-      <span className="whitespace-nowrap">{label}</span>
+    <label className={cn("flex items-center gap-2 text-sm text-muted", className)}>
+      <span className="whitespace-nowrap max-md:sr-only">{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-9 rounded-full border border-line bg-surface px-3 text-sm font-medium text-ink"
+        className="h-9 rounded-full border border-line bg-surface px-3 text-sm font-medium text-ink max-md:w-full max-md:min-w-0"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

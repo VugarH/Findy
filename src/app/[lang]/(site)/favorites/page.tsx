@@ -12,10 +12,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function FavoritesPage() {
   const { t } = await getI18n();
   return (
-    <Container className="space-y-6 py-10">
+    <Container className="space-y-4 py-2 md:space-y-6 md:py-10">
       <header className="max-w-3xl">
-        <h1 className="text-3xl font-extrabold tracking-tight">{t.favorites.title}</h1>
-        <p className="mt-1 text-muted">{t.favorites.intro}</p>
+        <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">{t.favorites.title}</h1>
+        <p className="mt-1 text-sm text-muted md:text-base">{t.favorites.intro}</p>
       </header>
       <FavoritesList />
     </Container>

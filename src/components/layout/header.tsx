@@ -39,12 +39,13 @@ export async function Header() {
   const categories = orderedCategories(order);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
+    // Phones: the logo row scrolls away, search and categories stay.
+    <header className="sticky top-0 z-30 border-b max-md:-top-[52px] border-line bg-bg/90 backdrop-blur">
       {siteConfig.demoData && (
         <p className="bg-ink px-4 py-1.5 text-center text-xs font-medium text-bg">{t.demoBanner}</p>
       )}
-      <Container className="flex flex-wrap items-center gap-x-4 gap-y-3 py-3">
-        <Logo href={href("/")} />
+      <Container className="flex flex-wrap items-center gap-x-2 gap-y-2 py-2 md:gap-x-4 md:gap-y-3 md:py-3">
+        <Logo href={href("/")} shrink />
         <SearchBar
           action={href("/search")}
           placeholder={t.search.placeholder}
@@ -53,7 +54,7 @@ export async function Header() {
           className="order-last basis-full md:order-none md:flex-1 md:basis-0"
         />
         {/* relative: the notification list opens below this group, aligned to its right edge. */}
-        <div className="relative ml-auto flex items-center gap-0.5 sm:gap-2">
+        <div className="relative ml-auto flex items-center sm:gap-2">
           <Suspense>
             <LocaleSwitcher current={locale} label={t.nav.language} />
           </Suspense>
@@ -87,7 +88,7 @@ export async function Header() {
             <Link
               href={href("/account")}
               title={t.auth.account}
-              className="flex h-9 items-center gap-2 rounded-full border border-line bg-surface pl-1 pr-3 text-sm font-semibold text-ink hover:bg-surface-2"
+              className="flex h-9 items-center gap-2 rounded-full border border-line bg-surface pl-1 pr-1 text-sm sm:pr-3 font-semibold text-ink hover:bg-surface-2"
             >
               <span className="grid size-7 place-items-center rounded-full bg-brand text-xs font-bold text-on-brand">
                 {user.fullName.trim().charAt(0).toUpperCase()}
@@ -96,7 +97,7 @@ export async function Header() {
             </Link>
           ) : (
             // Icon only on small phones: the header row has no room for the text there.
-            <ButtonLink href={href("/login")} size="sm" aria-label={t.auth.signIn} title={t.auth.signIn}>
+            <ButtonLink href={href("/login")} size="sm" aria-label={t.auth.signIn} title={t.auth.signIn} className="max-sm:size-9 max-sm:shrink-0 max-sm:px-0">
               <User className="size-4" aria-hidden />
               <span className="hidden sm:inline">{t.auth.signIn}</span>
             </ButtonLink>
@@ -104,10 +105,12 @@ export async function Header() {
         </div>
       </Container>
       <Container>
-        <nav className="-mx-1 flex items-center gap-1 pb-2 text-sm font-medium">
-          <Link href={href("/deals")} className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-ink hover:bg-surface-2">
+        {/* Phones: only the categories, edge to edge; the main pages are in the bottom bar (mobile-nav.tsx). */}
+        <nav className="-mx-1 flex items-center gap-1 pb-2 text-sm font-medium max-md:-mx-4">
+          <Link href={href("/deals")} className="shrink-0 whitespace-nowrap max-md:hidden rounded-full px-3 py-1.5 text-ink hover:bg-surface-2">
             {t.nav.deals}
           </Link>
+          <span className="hidden md:contents">
           <HoverInfo info={fmt(t.fresh.navInfo, { days: market.deals.freshDrop.windowDays })}>
             <Link
               href={href("/fresh")}
@@ -118,6 +121,7 @@ export async function Header() {
               <span className="sm:hidden">{t.fresh.short}</span>
             </Link>
           </HoverInfo>
+          </span>
           <CategorySlider
             items={categories.map((category) => ({
               slug: category.slug,
@@ -129,7 +133,7 @@ export async function Header() {
           />
           <Link
             href={href("/top")}
-            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-ink hover:bg-surface-2"
+            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-ink hover:bg-surface-2 max-md:hidden"
           >
             <Flame className="size-4 text-deal" aria-hidden />
             <span className="hidden sm:inline">{t.top.nav}</span>

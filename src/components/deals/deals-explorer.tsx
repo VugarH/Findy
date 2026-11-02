@@ -69,7 +69,7 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
   );
 
   return (
-    <Container className="max-w-[88rem] py-6">
+    <Container className="max-w-[88rem] py-4 md:py-6">
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <div className="flex min-w-0 items-start gap-2">
           {/* A category (page or filter) goes straight back to all deals, however many were opened. */}
@@ -84,8 +84,8 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
             </Link>
           )}
           <div className="min-w-0">
-            <h1 className="text-2xl font-extrabold tracking-tight">{title}</h1>
-            <p className="mt-1 text-sm text-muted">{subtitle}</p>
+            <h1 className="text-xl font-extrabold tracking-tight md:text-2xl">{title}</h1>
+            <p className="mt-1 text-xs text-muted md:text-sm">{subtitle}</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -101,7 +101,7 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
       </div>
 
       <FilterDrawerProvider>
-        <div className="mt-5 md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
+        <div className="mt-3 md:mt-5 md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
           <FilterDrawerPanel
             title={t.filters.filters}
             closeLabel={t.filters.close}
@@ -122,20 +122,22 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
           </FilterDrawerPanel>
 
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
+            {/* Phones: filters and sort share one row, the count sits under them; the groups dissolve for that. */}
+            <div className="flex flex-wrap items-center justify-between gap-2 md:gap-3">
+              <div className="flex items-center gap-3 max-md:contents">
                 <FilterDrawerButton label={t.filters.filters} activeCount={activeCount} />
-                <p className="text-sm">
+                <p className="text-sm max-md:order-3 max-md:basis-full max-md:text-xs max-md:text-muted">
                   <span className="font-semibold">{fmt(t.filters.results, { count: totalLabel })}</span>
                   {total > 0 && (
                     <span className="hidden text-muted sm:inline"> · {fmt(t.filters.showing, { from, to, total })}</span>
                   )}
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 max-md:contents">
                 <Suspense>
                   <ParamSelect
                     param="size"
+                    className="max-md:hidden"
                     cookie={PAGE_SIZE_COOKIE}
                     label={t.filters.perPage}
                     value={String(filters.size)}
@@ -143,6 +145,7 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
                   />
                   <ParamSelect
                     param="sort"
+                    className="max-md:min-w-0 max-md:flex-1"
                     label={t.filters.sort}
                     value={filters.sort}
                     options={[
@@ -174,10 +177,11 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
               <RecommendedRow category={lockedCategory} limit={4} density="compact" className="mt-5" />
             )}
 
-            {pages > 1 && <div className="mt-4">{pagination}</div>}
+            {/* Phones: only below the list, it pushed the products off the first screen. */}
+            {pages > 1 && <div className="mt-4 max-md:hidden">{pagination}</div>}
 
             {items.length > 0 ? (
-              <div className="mt-5">
+              <div className="mt-3 md:mt-5">
                 <ProductGrid cards={items} density="compact" t={t} money={money} href={href} />
               </div>
             ) : (

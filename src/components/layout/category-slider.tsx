@@ -64,7 +64,7 @@ export function CategorySlider({ items, allHref, labels }: Props) {
     <div className="relative min-w-0 flex-1">
       <div
         ref={rowRef}
-        className="no-scrollbar flex items-center gap-1.5 overflow-x-auto px-1 py-1"
+        className="no-scrollbar flex items-center gap-1.5 overflow-x-auto px-1 py-1 max-md:px-4"
         style={{ maskImage: fade, WebkitMaskImage: fade }}
       >
         {items.map((item) => {

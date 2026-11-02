@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
@@ -14,6 +14,9 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext", 
 
 // Prices change daily and searches are per-request, so pages render on demand.
 export const dynamic = "force-dynamic";
+
+/** Lets the bottom bar reach past a phone's rounded corners and home indicator (it pads itself with safe-area-inset). */
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Promise<Metadata> {
   const { lang } = await params;

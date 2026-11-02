@@ -48,7 +48,7 @@ export default async function AlertsPage() {
   });
 
   return (
-    <Container className="max-w-3xl space-y-8 py-10">
+    <Container className="max-w-3xl space-y-5 py-2 md:space-y-8 md:py-10">
       <MarkNotificationsRead enabled={items.some((item) => !item.readAt)} />
       <header>
         <h1 className="text-3xl font-extrabold tracking-tight">{t.alerts.pageTitle}</h1>

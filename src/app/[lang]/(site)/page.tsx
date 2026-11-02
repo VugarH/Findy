@@ -62,30 +62,31 @@ export default async function HomePage() {
   return (
     <>
       <section className="hero-glow border-b border-line">
-        <Container className="py-12 md:py-16">
+        <Container className="py-6 md:py-16">
           <div className="mx-auto max-w-3xl text-center">
             <p className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-strong">
               <span className="size-1.5 rounded-full bg-brand" aria-hidden />
               {t.home.heroBadge}
             </p>
-            <h1 className="mt-5 text-balance text-4xl font-extrabold tracking-tight md:text-5xl">{t.home.heroTitle}</h1>
-            <p className="mx-auto mt-4 max-w-2xl text-pretty text-lg text-muted">{t.home.heroSubtitle}</p>
+            <h1 className="mt-3 text-balance text-3xl font-extrabold tracking-tight md:mt-5 md:text-5xl">{t.home.heroTitle}</h1>
+            <p className="mx-auto mt-2 max-w-2xl text-pretty text-sm text-muted md:mt-4 md:text-lg">{t.home.heroSubtitle}</p>
             <SearchBar
               action={href("/search")}
               placeholder={t.search.placeholder}
               buttonLabel={t.search.button}
               suggest={{ suggestions: t.search.suggestions, brand: t.search.suggestionBrand }}
               size="lg"
-              className="mx-auto mt-8 max-w-2xl"
+              // Phones have the header's search right above it.
+              className="mx-auto mt-8 max-w-2xl max-md:hidden"
             />
             {/* The way into the deal list, right where people start: no hunting for the small menu link. */}
             {stats.dealCount > 0 && (
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <ButtonLink href={href("/deals")} size="lg" className="shadow-card">
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 md:mt-6 md:gap-3">
+                <ButtonLink href={href("/deals")} size="lg" className="shadow-card max-md:w-full">
                   {fmt(t.home.browseAll, { count: dealCount })}
                   <ArrowRight className="size-5" aria-hidden />
                 </ButtonLink>
-                <ButtonLink href={href("/top")} size="lg" variant="secondary">
+                <ButtonLink href={href("/top")} size="lg" variant="secondary" className="max-md:hidden">
                   <Flame className="size-5 text-deal" aria-hidden />
                   {t.top.nav}
                 </ButtonLink>
@@ -93,10 +94,10 @@ export default async function HomePage() {
             )}
           </div>
 
-          <dl className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-3 md:grid-cols-4">
+          <dl className="mx-auto mt-5 grid max-w-4xl grid-cols-4 gap-1.5 md:mt-12 md:gap-3">
             {statTiles.map((stat) => (
-              <div key={stat.label} className="rounded-2xl border border-line bg-surface/70 px-4 py-5 text-center backdrop-blur-sm">
-                <dd className="text-3xl font-extrabold tracking-tight">
+              <div key={stat.label} className="rounded-xl border border-line bg-surface/70 px-1 py-2.5 text-center backdrop-blur-sm md:rounded-2xl md:px-4 md:py-5">
+                <dd className="text-base font-extrabold tracking-tight md:text-3xl">
                   {stat.href ? (
                     <Link href={stat.href} className="hover:text-brand-strong hover:underline">
                       {stat.value}
@@ -105,22 +106,22 @@ export default async function HomePage() {
                     stat.value
                   )}
                 </dd>
-                <dt className="mt-1 text-sm text-muted">{stat.label}</dt>
+                <dt className="mt-0.5 text-[10px] leading-tight text-muted md:mt-1 md:text-sm md:leading-5">{stat.label}</dt>
               </div>
             ))}
           </dl>
           {updatedAt && (
-            <p className="mt-6 text-center text-xs text-muted">{fmt(t.home.updated, { time: updatedAt })}</p>
+            <p className="mt-3 text-center text-xs text-muted md:mt-6">{fmt(t.home.updated, { time: updatedAt })}</p>
           )}
         </Container>
       </section>
 
-      <Container className="space-y-14 py-12">
+      <Container className="space-y-8 py-6 md:space-y-14 md:py-12">
         {/* Asked for after the page is shown; nothing for new visitors (components/recommendations). */}
         {features.recommendations && <RecommendedRow />}
         {/* Right after the hero: prices our own checks saw fall, the site's strongest promise. */}
         {fresh.length > 0 && (
-          <section className="rounded-3xl border border-brand/25 p-5 shadow-card md:p-7" style={{ background: "radial-gradient(60% 50% at 0% 0%, var(--brand-soft), transparent 70%), var(--surface)" }}>
+          <section className="-mx-1 rounded-3xl border border-brand/25 p-3 shadow-card md:mx-0 md:p-7" style={{ background: "radial-gradient(60% 50% at 0% 0%, var(--brand-soft), transparent 70%), var(--surface)" }}>
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div className="max-w-2xl">
                 <p className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand-strong">
@@ -143,24 +144,24 @@ export default async function HomePage() {
 
         <section>
           <SectionHeading title={t.home.categoriesTitle} />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 md:gap-3 lg:grid-cols-4">
             {orderedCategories(order).map((category) => (
               <Link
                 key={category.slug}
                 href={href(`/category/${category.slug}`)}
-                className="group flex items-center gap-4 rounded-2xl border border-line bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-card"
+                className="group flex min-w-0 items-center gap-2.5 rounded-2xl border border-line bg-surface p-3 transition-all md:gap-4 md:p-5 duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-card"
               >
                 <span
-                  className={`relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl transition-transform duration-200 group-hover:scale-105 ${CATEGORY_TEXT[category.slug]}`}
+                  className={`relative grid size-9 shrink-0 place-items-center md:size-12 overflow-hidden rounded-xl transition-transform duration-200 group-hover:scale-105 ${CATEGORY_TEXT[category.slug]}`}
                 >
                   <span aria-hidden className="absolute inset-0 bg-current opacity-10" />
-                  <CategoryIcon category={category.slug} className="relative size-6" />
+                  <CategoryIcon category={category.slug} className="relative size-5 md:size-6" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-bold group-hover:underline">{t.categories[category.slug].name}</span>
-                  <span className="block truncate text-sm text-muted">{t.categories[category.slug].description}</span>
+                  <span className="block truncate text-sm font-bold group-hover:underline md:text-base">{t.categories[category.slug].name}</span>
+                  <span className="block truncate text-sm text-muted max-md:hidden">{t.categories[category.slug].description}</span>
                   <span
-                    className={`mt-1 block text-xs font-semibold ${stats.byCategory[category.slug] ? "text-brand-strong" : "text-muted"}`}
+                    className={`mt-0.5 block truncate text-xs font-semibold md:mt-1 ${stats.byCategory[category.slug] ? "text-brand-strong" : "text-muted"}`}
                   >
                     {fmt(t.home.categoryDeals, { count: stats.byCategory[category.slug] ?? 0 })}
                   </span>
@@ -211,7 +212,7 @@ export default async function HomePage() {
             </section>
 
             {market.assistedOrder.enabled && (
-              <section className="rounded-3xl border border-global/30 bg-global-soft p-6 md:p-8">
+              <section className="rounded-3xl border border-global/30 bg-global-soft p-4 md:p-8">
                 <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
                   <div className="max-w-2xl">
                     <p className="flex items-center gap-2 text-sm font-bold text-global">
@@ -271,7 +272,7 @@ export default async function HomePage() {
           <SectionHeading title={t.home.howTitle} />
           <ol className="grid gap-4 md:grid-cols-3">
             {steps.map((step, index) => (
-              <li key={step.title} className="rounded-2xl border border-line bg-surface p-6">
+              <li key={step.title} className="rounded-2xl border border-line bg-surface p-4 md:p-6">
                 <div className="flex items-center gap-3">
                   <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand-strong">
                     <step.icon className="size-5" aria-hidden />

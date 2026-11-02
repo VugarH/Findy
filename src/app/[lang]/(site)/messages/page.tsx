@@ -31,7 +31,7 @@ export default async function MessagesPage() {
   const when = new Intl.DateTimeFormat(LOCALE_TAGS[locale], { dateStyle: "medium", timeStyle: "short", timeZone: market.timeZone });
 
   return (
-    <Container className="max-w-3xl py-8">
+    <Container className="max-w-3xl py-2 md:py-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-3xl font-extrabold tracking-tight">{m.title}</h1>

@@ -25,13 +25,13 @@ export function FavoriteButton({ productId, variant = "icon", className }: Props
         aria-pressed={saved}
         onClick={toggle}
         className={cn(
-          "inline-flex h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold transition-colors",
+          "inline-flex h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold transition-colors max-md:flex-1 max-md:px-0",
           saved ? "border-deal bg-surface-2 text-deal" : "border-line bg-surface text-ink hover:bg-surface-2",
           className,
         )}
       >
         <Heart className={cn("size-4", saved && "fill-current")} aria-hidden />
-        {saved ? t.favorites.saved : t.favorites.save}
+        <span className="max-md:sr-only">{saved ? t.favorites.saved : t.favorites.save}</span>
       </button>
     );
   }

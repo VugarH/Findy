@@ -151,7 +151,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
   );
 
   return (
-    <Container className="py-8">
+    <Container className="py-2 md:py-8">
       <nav className="flex items-center gap-1 text-sm text-muted">
         <Link href={href("/deals")} className="hover:text-ink">
           {t.nav.deals}
@@ -171,7 +171,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
       </nav>
 
       {/* First screen: the photo and everything needed to decide and buy. */}
-      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,11fr)_minmax(0,13fr)] lg:gap-10">
+      <div className="mt-3 grid gap-4 md:mt-5 md:gap-6 lg:grid-cols-[minmax(0,11fr)_minmax(0,13fr)] lg:gap-10">
         <div className="lg:sticky lg:top-40 lg:self-start">
           {gallery.length > 0 ? (
             <ProductGallery images={gallery} title={product.title} labels={{ photo: t.product.photo }} />
@@ -196,7 +196,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
           )}
           <header>
             {product.brand && <p className="text-sm font-semibold tracking-wide text-muted">{brandLabel(product.brand)}</p>}
-            <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{product.title}</h1>
+            <h1 className="mt-1 text-xl font-extrabold tracking-tight sm:text-3xl">{product.title}</h1>
             {/* Pre-owned items (The Luxury Closet): never mistaken for new. */}
             {product.attributes.condition === "pre-owned" && (
               <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-2.5 py-1 text-xs font-semibold text-ink">
@@ -255,9 +255,9 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
 
       {/* Second: how the price moved, then ordering it through us. */}
       {best && (hasHistory || showAssist) && (
-        <div className="mt-10 space-y-6">
+        <div className="mt-6 space-y-6 md:mt-10">
           {hasHistory && (
-            <section className="min-w-0 rounded-2xl border border-line bg-surface p-5">
+            <section className="min-w-0 rounded-2xl border border-line bg-surface p-4 md:p-5">
               <h2 className="text-lg font-bold">{t.product.historyTitle}</h2>
               <p className="mb-4 text-sm text-muted">
                 {fmt(t.product.historySubtitle, { store: best.supplier.name, days: market.deals.historyWindowDays })}
@@ -296,7 +296,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
       )}
 
       {/* Last: every store, when there is more than one; and the search for the same item elsewhere. */}
-      <section className="mt-10">
+      <section className="mt-6 md:mt-10">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           {offers.length > 1 && <h2 className="text-lg font-bold">{t.product.allOffers}</h2>}
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">

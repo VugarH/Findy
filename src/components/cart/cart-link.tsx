@@ -49,7 +49,7 @@ export function CartLink() {
         aria-label={label}
         title={c.nav}
         className={cn(
-          "relative grid size-9 shrink-0 place-items-center rounded-full transition-colors hover:bg-surface-2 hover:text-ink",
+          "relative grid size-9 shrink-0 place-items-center rounded-full transition-colors hover:bg-surface-2 hover:text-ink max-md:hidden",
           onCartPage ? "bg-surface-2 text-ink" : "text-muted",
         )}
       >
@@ -65,7 +65,7 @@ export function CartLink() {
         createPortal(
           <p
             role="status"
-            className="fixed bottom-5 left-1/2 z-50 flex w-[min(28rem,92vw)] -translate-x-1/2 items-center justify-between gap-3 rounded-xl bg-ink px-4 py-3 text-sm font-medium text-bg shadow-card"
+            className="fixed bottom-5 max-md:bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-50 flex w-[min(28rem,92vw)] -translate-x-1/2 items-center justify-between gap-3 rounded-xl bg-ink px-4 py-3 text-sm font-medium text-bg shadow-card"
           >
             <span>{message.text}</span>
             {message.link && !onCartPage && (

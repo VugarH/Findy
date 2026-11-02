@@ -39,9 +39,9 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
   ].filter((line) => line.always || line.value > 0);
 
   return (
-    <section className="rounded-2xl border border-brand bg-surface p-5 shadow-card ring-1 ring-brand">
+    <section className="rounded-2xl border border-brand bg-surface p-4 shadow-card ring-1 ring-brand md:p-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <p className="text-4xl font-extrabold tracking-tight text-ink">{money(landed.totalMinor)}</p>
+        <p className="text-3xl font-extrabold tracking-tight text-ink md:text-4xl">{money(landed.totalMinor)}</p>
         {before && (
           <>
             <span className="text-lg font-medium tabular-nums text-muted line-through">{money(before.wasLandedMinor)}</span>
@@ -74,7 +74,7 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
         </a>
         <CartButton offerId={offer.offerId} variant="button" />
       </div>
-      {extraActions && <div className="mt-2 flex flex-wrap gap-2">{extraActions}</div>}
+      {extraActions && <div className="mt-2 flex flex-wrap gap-2 max-md:flex-nowrap">{extraActions}</div>}
 
       <details open className="group mt-4 border-t border-line pt-3">
         <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-muted hover:text-ink [&::-webkit-details-marker]:hidden">

@@ -17,7 +17,7 @@ export async function AssistCard({ offer }: { offer: OfferView }) {
   const estimate = estimateAssistedOrder(offer.costInput, market, 1);
 
   return (
-    <section className="rounded-2xl border border-global/30 bg-global-soft p-5">
+    <section className="rounded-2xl border border-global/30 bg-global-soft p-4 md:p-5">
       <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
         <div className="min-w-0 flex-1 basis-72">
           <p className="flex items-center gap-2 text-sm font-bold text-global">
@@ -33,7 +33,7 @@ export async function AssistCard({ offer }: { offer: OfferView }) {
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-col gap-2">
+        <div className="flex shrink-0 flex-col gap-2 max-md:w-full max-md:shrink">
           <p className="text-lg font-extrabold tracking-tight text-ink">
             {fmt(t.order.cardEstimate, {
               total: money(market.assistedOrder.showFee ? estimate.totalMinor : estimate.totalMinor - estimate.feeMinor),

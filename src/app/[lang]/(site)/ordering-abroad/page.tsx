@@ -18,7 +18,7 @@ export default async function OrderingAbroadPage() {
   const { feeRate, minFee } = market.assistedOrder;
 
   return (
-    <Container className="space-y-10 py-10">
+    <Container className="space-y-6 py-2 md:space-y-10 md:py-10">
       <header className="max-w-3xl">
         <h1 className="text-balance text-4xl font-extrabold tracking-tight">{t.order.helpTitle}</h1>
         <p className="mt-3 text-lg text-muted">{t.order.helpIntro}</p>

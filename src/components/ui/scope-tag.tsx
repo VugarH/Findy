@@ -10,10 +10,13 @@ export function ScopeTag({
   scope,
   label,
   className,
+  iconOnPhones = false,
 }: {
   scope: SupplierScope | "both";
   label: string;
   className?: string;
+  /** Just the icon on phones, where a small photo has no room for the word. */
+  iconOnPhones?: boolean;
 }) {
   const Icon = scope === "local" ? MapPin : scope === "global" ? Globe : ArrowLeftRight;
   return (
@@ -25,7 +28,7 @@ export function ScopeTag({
       )}
     >
       <Icon className="size-3" aria-hidden />
-      {label}
+      <span className={iconOnPhones ? "max-md:sr-only" : undefined}>{label}</span>
     </span>
   );
 }

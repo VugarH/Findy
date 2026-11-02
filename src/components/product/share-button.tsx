@@ -55,16 +55,16 @@ export function ShareButton({ title }: { title: string }) {
   const url = () => encodeURIComponent(link());
 
   return (
-    <div ref={root} className="relative">
+    <div ref={root} className="relative max-md:flex-1">
       <button
         type="button"
         onClick={onShare}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink transition-colors hover:bg-surface-2"
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink transition-colors hover:bg-surface-2 max-md:w-full max-md:px-0"
       >
         <Share2 className="size-4" aria-hidden />
-        {s.button}
+        <span className="max-md:sr-only">{s.button}</span>
       </button>
       {open && (
         <div role="menu" className="absolute left-0 top-13 z-20 w-52 rounded-xl border border-line bg-surface p-1.5 shadow-card">

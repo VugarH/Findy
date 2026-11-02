@@ -22,11 +22,12 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({ href }: { href: string }) {
+/** `shrink`: only the mark on the narrowest phones, where the header row is full. */
+export function Logo({ href, shrink = false }: { href: string; shrink?: boolean }) {
   return (
     <Link href={href} className="flex shrink-0 items-center gap-2 text-xl font-extrabold tracking-tight text-ink">
       <LogoMark className="size-8" />
-      <span className="lowercase">{siteConfig.name}</span>
+      <span className={cn("lowercase", shrink && "max-[374px]:sr-only")}>{siteConfig.name}</span>
     </Link>
   );
 }

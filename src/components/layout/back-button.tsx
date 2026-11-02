@@ -36,7 +36,7 @@ export function BackButton() {
   if (pathname === href("/") || pathname === "/" || hasOwnBackLink(pathname, href)) return null;
 
   return (
-    <Container className="pt-4">
+    <Container className="pt-2 md:pt-4">
       <button
         type="button"
         onClick={() => (pagesSeen > 1 ? router.back() : router.push(href("/")))}

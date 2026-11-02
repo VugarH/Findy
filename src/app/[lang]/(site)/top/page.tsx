@@ -47,21 +47,21 @@ export default async function TopDealsPage({ searchParams }: Props) {
   });
 
   return (
-    <Container className="space-y-8 py-10">
+    <Container className="space-y-4 py-2 md:space-y-8 md:py-10">
       <header className="max-w-3xl">
         <p className="inline-flex items-center gap-2 rounded-full bg-deal-soft px-3 py-1 text-xs font-semibold text-deal">
           <Flame className="size-3.5" aria-hidden />
           {t.top.nav}
         </p>
-        <h1 className="mt-3 text-3xl font-extrabold tracking-tight">
+        <h1 className="mt-2 text-2xl font-extrabold tracking-tight md:mt-3 md:text-3xl">
           {digest && isToday
             ? fmt(t.top.title, { count: digest.items.length })
             : digest
               ? fmt(t.top.titleOn, { date: formatDay(digest.day, locale) })
               : t.top.nav}
         </h1>
-        <p className="mt-2 text-muted">{t.top.intro}</p>
-        {digest && <p className="mt-1 text-sm text-muted">{fmt(t.top.pickedAt, { time: pickedAt.format(digest.createdAt) })}</p>}
+        <p className="mt-1 text-sm text-muted md:mt-2 md:text-base">{t.top.intro}</p>
+        {digest && <p className="mt-1 text-xs text-muted md:text-sm">{fmt(t.top.pickedAt, { time: pickedAt.format(digest.createdAt) })}</p>}
       </header>
 
       {!digest ? (

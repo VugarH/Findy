@@ -15,6 +15,8 @@ const az: Dictionary = {
     stores: "Mağazalar",
     home: "Ana səhifə",
     deals: "Bütün endirimlər",
+    dealsShort: "Endirimlər",
+    mainPages: "Əsas səhifələr",
     messages: "Mesajlar",
     language: "Dil",
     theme: "Görünüşü dəyiş",

@@ -36,7 +36,7 @@ export function PriceHistoryChart({ points, currency, usual }: Props) {
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(280, entry.contentRect.width)));
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(200, entry.contentRect.width)));
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -97,7 +97,7 @@ export function PriceHistoryChart({ points, currency, usual }: Props) {
           {usual.label}
         </p>
       )}
-      <div ref={wrapRef} className="relative">
+      <div ref={wrapRef} className="relative max-md:overflow-hidden">
         <svg
           width={width}
           height={HEIGHT}

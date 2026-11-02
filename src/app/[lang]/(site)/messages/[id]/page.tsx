@@ -42,7 +42,7 @@ export default async function ConversationPage({ params }: PageProps<"/[lang]/me
   const when = new Intl.DateTimeFormat(LOCALE_TAGS[locale], { dateStyle: "medium", timeStyle: "short", timeZone: market.timeZone });
 
   return (
-    <Container className="max-w-3xl py-8">
+    <Container className="max-w-3xl py-2 md:py-8">
       <LiveRefresh now={hadUnread} />
       <Link href={href("/messages")} className="text-sm font-semibold text-muted hover:text-ink">
         ← {m.allConversations}

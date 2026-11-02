@@ -43,7 +43,7 @@ export default async function AccountPage() {
   ];
 
   return (
-    <Container className="max-w-2xl py-10">
+    <Container className="max-w-2xl py-2 md:py-10">
       <h1 className="text-3xl font-extrabold tracking-tight">{t.auth.accountTitle}</h1>
       <p className="mt-1 text-sm text-muted">{fmt(t.auth.memberSince, { date: since })}</p>
 

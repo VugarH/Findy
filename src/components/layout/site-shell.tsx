@@ -9,6 +9,7 @@ import { PageTracker } from "@/components/analytics/page-tracker";
 import { BackButton } from "./back-button";
 import { Footer } from "./footer";
 import { Header } from "./header";
+import { MobileNav } from "./mobile-nav";
 
 /** The public site's frame: header, footer and the watched products and follows every button reads. */
 export async function SiteShell({ children }: { children: ReactNode }) {
@@ -24,6 +25,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
           {children}
         </main>
         <Footer />
+        <MobileNav />
       </FollowProvider>
     </WatchProvider>
   );

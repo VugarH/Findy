@@ -110,6 +110,7 @@ docker exec -i serfeli-db psql -U serfeli -d serfeli   # SQL (note -i for heredo
 - macOS blocks launchd from ~/Desktop, so the daily schedule can't be installed until the project moves.
 - A running `deals:run` keeps its old code in memory; changes apply from the next run.
 - Neon free plan caps **network transfer at 5 GB/month** (hit on 2026-10-20). Every full rebuild reads the whole catalog: select only the columns you need (never a store's full row per offer), send history grouped per offer, keep per-page-view reads small (home tiles are a daily snapshot, `catalog/popular.ts`), and avoid extra full runs.
+- Phones (below `md`): main pages are in the bottom bar (`layout/mobile-nav.tsx`; fixed things sit above it, the footer pads for it); the header's logo row scrolls away (`max-md:-top-[52px]` in `header.tsx` must equal that row's height). Keep desktop unchanged by writing phone styles as the base or `max-md:` with the old value under `md:`.
 - Testing admin pages: create a throwaway admin + session row in the local DB, set the `session`
   cookie in the browser pane, and delete the user, its `admin_events` and any test data afterwards.
 

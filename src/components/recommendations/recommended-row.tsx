@@ -51,13 +51,13 @@ export function RecommendedRow({ category, limit = 8, density = "comfortable", c
   if (cards.length < MIN_CARDS) return null;
   return (
     <section className={className} aria-labelledby="recommended-title">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-x-3 gap-y-1 md:mb-4">
         <div>
-          <h2 id="recommended-title" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <h2 id="recommended-title" className="flex items-center gap-2 text-lg font-bold tracking-tight md:text-xl">
             <Sparkles className="size-5 text-brand" aria-hidden />
             {t.recommendations.title}
           </h2>
-          <p className="mt-1 text-sm text-muted">{t.recommendations.hint}</p>
+          <p className="mt-1 text-xs text-muted md:text-sm">{t.recommendations.hint}</p>
         </div>
         <button
           type="button"
@@ -65,7 +65,7 @@ export function RecommendedRow({ category, limit = 8, density = "comfortable", c
             forgetInterests();
             setCards([]);
           }}
-          className="text-sm text-muted underline-offset-2 hover:text-ink hover:underline"
+          className="text-xs text-muted underline-offset-2 md:text-sm hover:text-ink hover:underline"
         >
           {t.recommendations.clear}
         </button>

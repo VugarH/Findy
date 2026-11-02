@@ -79,7 +79,7 @@ export function FollowProvider({ initialIds, children }: { initialIds: string[];
         createPortal(
           <p
             role="status"
-            className="fixed bottom-5 left-1/2 z-50 w-[min(28rem,92vw)] -translate-x-1/2 rounded-xl bg-ink px-4 py-3 text-center text-sm font-medium text-bg shadow-card"
+            className="fixed bottom-5 max-md:bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-50 w-[min(28rem,92vw)] -translate-x-1/2 rounded-xl bg-ink px-4 py-3 text-center text-sm font-medium text-bg shadow-card"
           >
             {message}
           </p>,

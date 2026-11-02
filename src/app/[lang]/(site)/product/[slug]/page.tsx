@@ -174,7 +174,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
       <div className="mt-3 grid gap-4 md:mt-5 md:gap-6 lg:grid-cols-[minmax(0,11fr)_minmax(0,13fr)] lg:gap-10">
         <div className="lg:sticky lg:top-40 lg:self-start">
           {gallery.length > 0 ? (
-            <ProductGallery images={gallery} title={product.title} labels={{ photo: t.product.photo }} />
+            <ProductGallery images={gallery} title={product.title} category={category} labels={{ photo: t.product.photo }} />
           ) : (
             <div className={PHOTO_FRAME}>
               <ProductImage imageUrl={null} title={product.title} category={category} />

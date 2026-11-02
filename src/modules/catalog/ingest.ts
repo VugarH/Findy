@@ -234,7 +234,8 @@ export async function ingestOffers(
           shippingMinor: raw.shippingMinor,
           inStock: raw.inStock,
           sizes: raw.sizes ?? null,
-          images: raw.images?.length ? raw.images.slice(0, GALLERY_MAX) : null,
+          // A store that gives one photo lists it too: refreshProductPhotos reads these lists.
+          images: raw.images?.length ? raw.images.slice(0, GALLERY_MAX) : raw.imageUrl ? [raw.imageUrl] : null,
           deliveryMinDays: raw.deliveryDays?.min ?? null,
           deliveryMaxDays: raw.deliveryDays?.max ?? null,
           firstSeenAt: now,
@@ -274,7 +275,36 @@ export async function ingestOffers(
       });
   }
 
+  await refreshProductPhotos(supplier.id, now);
+
   return { offerCount: saved.length, productIds: [...new Set(productIdByRaw)] };
+}
+
+/**
+ * A product keeps the photo it was first seen with, and stores replace their
+ * files: the old address then stops working. So when a product's main photo is
+ * in no store's current list, it takes the first photo of the store just read.
+ * A photo another store still lists stays, and one set by hand is never touched.
+ * All in the database: no store is contacted and nothing is sent back.
+ */
+export async function refreshProductPhotos(supplierId: string, readAt: Date): Promise<void> {
+  await db.execute(sql`
+    update products p
+    set image_url = o.images[1], updated_at = now()
+    from offers o
+    where o.product_id = p.id
+      and o.supplier_id = ${supplierId}
+      and o.removed_at is null
+      and o.last_seen_at >= ${readAt.toISOString()}::timestamptz
+      and cardinality(o.images) > 0
+      and not ('imageUrl' = any(p.locked_fields))
+      and (
+        p.image_url is null
+        or not exists (
+          select 1 from offers other
+          where other.product_id = p.id and other.removed_at is null and p.image_url = any(other.images)
+        )
+      )`);
 }
 
 /** Returns the product id for each raw offer, in order, creating missing products. */

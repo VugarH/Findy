@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { largeImage } from "@/config/images";
 
@@ -24,8 +24,14 @@ interface View {
  * Without room for the panel (narrow windows), nothing happens; touch screens
  * see the plain photo.
  */
-export function ZoomImage({ src, alt }: { src: string; alt: string }) {
+export function ZoomImage({ src, alt, onFail }: { src: string; alt: string; onFail?: () => void }) {
   const [view, setView] = useState<View | null>(null);
+  const image = useRef<HTMLImageElement>(null);
+
+  // A photo that failed before the page became interactive fired its error with nobody listening.
+  useEffect(() => {
+    if (image.current?.complete && image.current.naturalWidth === 0) onFail?.();
+  });
 
   const move = (event: MouseEvent<HTMLDivElement>) => {
     // A tap on a touch screen fires mouse events too; zoom only with a real pointer.
@@ -61,7 +67,7 @@ export function ZoomImage({ src, alt }: { src: string; alt: string }) {
       onMouseLeave={() => setView(null)}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- supplier images come from arbitrary hosts */}
-      <img src={src} alt={alt} className="size-full object-contain" />
+      <img ref={image} src={src} alt={alt} onError={onFail} className="size-full object-contain" />
       {view && (
         <>
           <div

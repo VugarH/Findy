@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import type { CategorySlug } from "@/config/categories";
 import { cn } from "@/lib/cn";
 import { CATEGORY_TEXT, CategoryIcon } from "@/components/ui/category-icon";
@@ -9,13 +12,33 @@ interface Props {
   className?: string;
 }
 
-/** Product photo, or a category-tinted placeholder when the supplier gave none. */
+/**
+ * Product photo, or a category-tinted placeholder when the supplier gave none
+ * or the photo no longer loads (stores replace files; the daily job then picks
+ * up the new one, catalog/ingest.ts).
+ */
 export function ProductImage({ imageUrl, title, category, className }: Props) {
-  if (imageUrl) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const image = useRef<HTMLImageElement>(null);
+
+  // A photo that failed before the page became interactive fired its error with nobody listening.
+  useEffect(() => {
+    const element = image.current;
+    if (imageUrl && element?.complete && element.naturalWidth === 0) setFailedUrl(imageUrl);
+  }, [imageUrl]);
+
+  if (imageUrl && imageUrl !== failedUrl) {
     return (
       // White behind the photo: store photos have white backgrounds, so a narrow one fills its frame without dark bars.
       // eslint-disable-next-line @next/next/no-img-element -- supplier images come from arbitrary hosts
-      <img src={imageUrl} alt={title} loading="lazy" className={cn("size-full bg-white object-contain", className)} />
+      <img
+        ref={image}
+        src={imageUrl}
+        alt={title}
+        loading="lazy"
+        onError={() => setFailedUrl(imageUrl)}
+        className={cn("size-full bg-white object-contain", className)}
+      />
     );
   }
   return (

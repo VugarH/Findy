@@ -46,7 +46,7 @@ export function FavoriteButton({ productId, variant = "icon", className }: Props
       onClick={toggle}
       className={cn(
         "grid size-9 place-items-center rounded-full border border-line bg-surface shadow-card transition-colors",
-        saved ? "text-deal" : "text-muted hover:text-ink",
+        saved ? "text-deal" : "text-muted hover:border-deal hover:text-deal",
         className,
       )}
     >

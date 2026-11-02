@@ -144,6 +144,22 @@ body {
   outline-offset: 2px;
 }
 
+/*
+ * Everything that can be clicked says so: the hand cursor (Tailwind's reset
+ * gives buttons the arrow), and a small press while it is held down, which is
+ * the feedback a touch screen gets instead of hover. :where() keeps these weak,
+ * so any element's own classes win. Inline text links do not scale.
+ */
+:where(button:not(:disabled), [role="button"], summary, select, label:has(input[type="checkbox"], input[type="radio"])) {
+  cursor: pointer;
+}
+:where(a[href], button:not(:disabled), [role="button"], summary):active {
+  scale: 0.97;
+}
+:where(a, button, summary) {
+  -webkit-tap-highlight-color: transparent;
+}
+
 @keyframes pulse-soft {
   50% {
     opacity: 0.45;

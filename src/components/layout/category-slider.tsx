@@ -77,7 +77,7 @@ export function CategorySlider({ items, allHref, labels }: Props) {
               className={`group flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 transition-all duration-200 ${
                 active
                   ? "border-brand bg-brand-soft font-semibold text-brand-strong shadow-card"
-                  : "border-line bg-surface text-muted hover:-translate-y-px hover:border-brand/40 hover:text-ink hover:shadow-card"
+                  : "border-line bg-surface text-muted hover:-translate-y-px hover:border-brand/70 hover:text-ink hover:shadow-card"
               }`}
             >
               <span

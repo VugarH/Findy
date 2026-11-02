@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 
 const VARIANTS = {
   primary: "bg-brand text-on-brand hover:bg-brand-strong",
-  secondary: "border border-line bg-surface text-ink hover:bg-surface-2",
+  secondary: "border border-line bg-surface text-ink hover:border-brand/60 hover:bg-surface-2",
   ghost: "text-ink hover:bg-surface-2",
 } as const;
 

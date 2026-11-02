@@ -49,7 +49,7 @@ export function WatchButton({ productId, variant = "icon", className }: Props) {
       onClick={() => toggle(productId)}
       className={cn(
         "grid size-9 place-items-center rounded-full border shadow-card transition-colors disabled:opacity-60",
-        watched ? "border-brand bg-brand text-on-brand" : "border-line bg-surface text-muted hover:text-ink",
+        watched ? "border-brand bg-brand text-on-brand" : "border-line bg-surface text-muted hover:border-brand hover:text-brand-strong",
         className,
       )}
     >

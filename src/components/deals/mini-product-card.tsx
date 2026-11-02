@@ -13,7 +13,7 @@ export function MiniProductCard({ card, money, href }: { card: ProductCardData }
   return (
     <Link
       href={href(`/product/${card.slug}`)}
-      className="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-card"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/70 hover:shadow-card hover:ring-1 hover:ring-brand/30"
     >
       <div className="relative aspect-square overflow-hidden">
         <ProductImage

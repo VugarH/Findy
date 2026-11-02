@@ -149,7 +149,7 @@ export default async function HomePage() {
               <Link
                 key={category.slug}
                 href={href(`/category/${category.slug}`)}
-                className="group flex min-w-0 items-center gap-2.5 rounded-2xl border border-line bg-surface p-3 transition-all md:gap-4 md:p-5 duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-card"
+                className="group flex min-w-0 items-center gap-2.5 rounded-2xl border border-line bg-surface p-3 transition-all md:gap-4 md:p-5 duration-200 hover:-translate-y-0.5 hover:border-brand/70 hover:shadow-card hover:ring-1 hover:ring-brand/30"
               >
                 <span
                   className={`relative grid size-9 shrink-0 place-items-center md:size-12 overflow-hidden rounded-xl transition-transform duration-200 group-hover:scale-105 ${CATEGORY_TEXT[category.slug]}`}

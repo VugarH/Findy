@@ -40,7 +40,7 @@ export function CartButton({ offerId, variant = "icon", className }: Props) {
         title={inCart ? c.remove : c.add}
         className={cn(
           "grid size-9 place-items-center rounded-full border shadow-card transition-colors",
-          inCart ? "border-brand bg-brand text-on-brand" : "border-line bg-surface text-muted hover:text-ink",
+          inCart ? "border-brand bg-brand text-on-brand" : "border-line bg-surface text-muted hover:border-brand hover:text-brand-strong",
           className,
         )}
       >

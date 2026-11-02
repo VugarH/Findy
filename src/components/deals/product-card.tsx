@@ -62,7 +62,7 @@ export function ProductCard({
       <Link
         href={href(`/product/${card.slug}`)}
         className={cn(
-          "group flex w-full flex-col overflow-hidden border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-card",
+          "group flex w-full flex-col overflow-hidden border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/70 hover:shadow-card hover:ring-1 hover:ring-brand/30",
           compact ? "rounded-xl" : "rounded-2xl",
         )}
       >

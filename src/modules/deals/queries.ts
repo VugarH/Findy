@@ -11,6 +11,7 @@ import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { sortSizes } from "@/modules/suppliers/sizes";
 import { holdBack, holdBackFor } from "./hold-back";
 import { convertMinor } from "@/lib/money";
+import { usualItemMinor } from "@/modules/catalog/price-parts";
 import type { CurrencyCode } from "@/config/currencies";
 import type { SupplierScope } from "@/modules/suppliers/types";
 
@@ -115,7 +116,7 @@ export async function listDeals(
   const offset = filters.offset ?? 0;
   const select = () =>
     db
-      .select({ deal: deals, product: products, supplierId: suppliers.id, supplierName: suppliers.name, itemPriceMinor: offers.priceMinor, itemCurrency: offers.currency })
+      .select({ deal: deals, product: products, supplierId: suppliers.id, supplierName: suppliers.name, itemPriceMinor: offers.priceMinor, itemListMinor: offers.listPriceMinor, itemCurrency: offers.currency })
       .from(deals)
       .innerJoin(products, eq(deals.productId, products.id))
       .innerJoin(offers, eq(deals.offerId, offers.id))
@@ -152,7 +153,9 @@ export async function listDeals(
 
   const fresh = await freshDropsOf(market, rows.map((row) => row.product.id));
   const items = rows.map(
-    ({ deal, product, supplierId, supplierName, itemPriceMinor, itemCurrency }): ProductCardData => ({
+    ({ deal, product, supplierId, supplierName, itemPriceMinor, itemListMinor, itemCurrency }): ProductCardData => {
+    const itemMinor = convertMinor(itemPriceMinor, itemCurrency as CurrencyCode, market.currency, market.fxRates);
+    return {
       productId: product.id,
       offerId: deal.offerId,
       slug: product.slug,
@@ -165,7 +168,8 @@ export async function listDeals(
       originCountry: deal.originCountry,
       imageUrl: usableImage(product.imageUrl),
       landedMinor: deal.landedMinor,
-      itemMinor: convertMinor(itemPriceMinor, itemCurrency as CurrencyCode, market.currency, market.fxRates),
+      itemMinor,
+      usualItemMinor: usualItemMinor(itemMinor, itemPriceMinor, itemListMinor),
       usualLandedMinor: deal.storeListLandedMinor,
       discountPct: deal.storeDiscountPct,
       savingsMinor: deal.storeListLandedMinor === null ? null : deal.storeListLandedMinor - deal.landedMinor,
@@ -180,8 +184,8 @@ export async function listDeals(
       bestGlobalLandedMinor: deal.bestGlobalLandedMinor,
       sizes: deal.sizes,
       fresh: fresh.get(product.id) ?? null,
-    }),
-  );
+    };
+  });
 
   return { items, total };
 }

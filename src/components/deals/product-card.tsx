@@ -10,7 +10,7 @@ import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ProductImage } from "@/components/product/product-image";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { brandLabel } from "@/lib/text";
-import { priceParts } from "@/modules/catalog/price-parts";
+import { shownPrice } from "@/modules/catalog/price-parts";
 
 export interface CardLabels {
   t: Dictionary;
@@ -42,8 +42,8 @@ export function ProductCard({
   const lowest = card.badges.includes("lowest_price");
   // Sold locally and abroad: say so, and show both prices instead of only the cheaper one.
   const inBoth = card.bestLocalLandedMinor !== null && card.bestGlobalLandedMinor !== null;
-  // "35,00 ₼ + 10,20 ₼ delivery/customs" under the total, when something is added to the store's price.
-  const parts = priceParts(card.landedMinor, card.itemMinor);
+  // The store's price big ("35 ₼"), what delivery and customs add below ("+ 10,20 ₼").
+  const price = shownPrice({ totalMinor: card.landedMinor, itemMinor: card.itemMinor, usualItemMinor: card.usualItemMinor, usualTotalMinor: card.usualLandedMinor });
 
   return (
     // The buttons are siblings of the link, not inside it: a button within a link is invalid.
@@ -113,29 +113,27 @@ export function ProductCard({
         <div className="mt-1">
           <div className="flex flex-wrap items-baseline gap-x-2">
             <span className={cn("text-base font-bold tracking-tight text-ink", compact ? "md:text-lg" : "md:text-xl")}>
-              {money(card.landedMinor)}
+              {money(price.mainMinor)}
             </span>
-            {isDeal && (
+            {isDeal && price.wasMinor !== null && (
               <span className={cn("text-xs text-muted line-through", !compact && "md:text-sm")}>
-                {money(card.usualLandedMinor!)}
+                {money(price.wasMinor)}
               </span>
             )}
             {/* The saving in money, beside the price: "610 ₼ cheaper" reads stronger than a percent. */}
-            {isDeal && (card.savingsMinor ?? 0) > 0 && (
+            {isDeal && (price.savingMinor ?? 0) > 0 && (
               // Just "−83,14 ₼", so it fits beside the price; the full "83,14 ₼ saved" is its label.
               <span
-                title={fmt(t.deal.save, { amount: money(card.savingsMinor!) })}
-                aria-label={fmt(t.deal.save, { amount: money(card.savingsMinor!) })}
+                title={fmt(t.deal.save, { amount: money(price.savingMinor!) })}
+                aria-label={fmt(t.deal.save, { amount: money(price.savingMinor!) })}
                 className={cn("whitespace-nowrap text-xs font-semibold text-deal", !compact && "md:text-sm")}
               >
-                −{money(card.savingsMinor!)}
+                −{money(price.savingMinor!)}
               </span>
             )}
           </div>
-          {parts ? (
-            <p className="text-[11px] leading-4 text-muted md:text-xs">
-              {fmt(t.deal.breakdown, { item: money(parts.itemMinor), extra: money(parts.extraMinor) })}
-            </p>
+          {price.extraMinor !== null ? (
+            <p className="text-[11px] leading-4 text-muted md:text-xs">{fmt(t.deal.extra, { extra: money(price.extraMinor) })}</p>
           ) : (
             !compact && <p className="text-xs text-muted max-md:hidden">{t.deal.totalHint}</p>
           )}

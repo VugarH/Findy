@@ -30,13 +30,10 @@ export const azMarket: MarketConfig = {
     minCharge: 3,
     defaultPerKg: 8,
     perKgByOrigin: { US: 6.5, TR: 2.5, CN: 7, DE: 6, GB: 7 },
-    defaultDeliveryDays: { min: 10, max: 18 },
+    // What we promise on cards ("up to 14 days"): Turkey up to 14, everywhere else up to 20.
+    defaultDeliveryDays: { min: 10, max: 20 },
     deliveryDaysByOrigin: {
-      TR: { min: 4, max: 8 },
-      US: { min: 8, max: 14 },
-      DE: { min: 7, max: 12 },
-      GB: { min: 8, max: 14 },
-      CN: { min: 12, max: 22 },
+      TR: { min: 5, max: 14 },
     },
   },
 

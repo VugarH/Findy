@@ -3,6 +3,7 @@ import type { ProductCardData } from "@/modules/catalog/card";
 import { brandLabel } from "@/lib/text";
 import { ProductImage } from "@/components/product/product-image";
 import type { CardLabels } from "./product-card";
+import { shownPrice } from "@/modules/catalog/price-parts";
 
 /**
  * A small product card for sideways rows (Similar items): photo, discount,
@@ -10,6 +11,7 @@ import type { CardLabels } from "./product-card";
  */
 export function MiniProductCard({ card, money, href }: { card: ProductCardData } & Omit<CardLabels, "t">) {
   const isDeal = card.discountPct !== null && card.usualLandedMinor !== null;
+  const price = shownPrice({ totalMinor: card.landedMinor, itemMinor: card.itemMinor, usualItemMinor: card.usualItemMinor, usualTotalMinor: card.usualLandedMinor });
   return (
     <Link
       href={href(`/product/${card.slug}`)}
@@ -32,8 +34,8 @@ export function MiniProductCard({ card, money, href }: { card: ProductCardData }
         {card.brand && <p className="truncate text-[11px] font-semibold tracking-wide text-muted">{brandLabel(card.brand)}</p>}
         <h3 className="line-clamp-2 min-h-8 text-xs font-medium leading-4 text-ink group-hover:underline">{card.title}</h3>
         <div className="mt-auto flex flex-wrap items-baseline gap-x-1.5 pt-1">
-          <span className="text-sm font-bold text-ink">{money(card.landedMinor)}</span>
-          {isDeal && <span className="text-[11px] text-muted line-through">{money(card.usualLandedMinor!)}</span>}
+          <span className="text-sm font-bold text-ink">{money(price.mainMinor)}</span>
+          {isDeal && price.wasMinor !== null && <span className="text-[11px] text-muted line-through">{money(price.wasMinor)}</span>}
         </div>
       </div>
     </Link>

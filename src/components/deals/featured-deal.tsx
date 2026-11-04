@@ -7,12 +7,12 @@ import { ProductImage } from "@/components/product/product-image";
 import { buttonClass } from "@/components/ui/button";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { brandLabel } from "@/lib/text";
-import { priceParts } from "@/modules/catalog/price-parts";
+import { shownPrice } from "@/modules/catalog/price-parts";
 
 /** The day's highest-scoring deal, given the most room on the home page. */
 export async function FeaturedDeal({ card }: { card: ProductCardData }) {
   const { t, money, href } = await getI18n();
-  const parts = priceParts(card.landedMinor, card.itemMinor);
+  const price = shownPrice({ totalMinor: card.landedMinor, itemMinor: card.itemMinor, usualItemMinor: card.usualItemMinor, usualTotalMinor: card.usualLandedMinor });
   // Local vs abroad is worth a row only when both exist.
   const compare =
     card.bestLocalLandedMinor !== null && card.bestGlobalLandedMinor !== null
@@ -55,9 +55,9 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
 
         <div>
           <div className="flex flex-wrap items-baseline gap-x-3">
-            <span className="text-4xl font-extrabold tracking-tight">{money(card.landedMinor)}</span>
-            {card.usualLandedMinor !== null && (
-              <span className="text-lg text-muted line-through">{money(card.usualLandedMinor)}</span>
+            <span className="text-4xl font-extrabold tracking-tight">{money(price.mainMinor)}</span>
+            {price.wasMinor !== null && (
+              <span className="text-lg text-muted line-through">{money(price.wasMinor)}</span>
             )}
           </div>
           {(card.verified || card.fresh) && (
@@ -67,9 +67,9 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
             </p>
           )}
           <p className="mt-1 text-sm text-muted">
-            {parts ? fmt(t.deal.breakdown, { item: money(parts.itemMinor), extra: money(parts.extraMinor) }) : t.deal.totalHint}
-            {card.savingsMinor !== null && (
-              <span className="font-semibold text-deal"> · {fmt(t.deal.save, { amount: money(card.savingsMinor) })}</span>
+            {price.extraMinor !== null ? fmt(t.deal.extra, { extra: money(price.extraMinor) }) : t.deal.totalHint}
+            {price.savingMinor !== null && (
+              <span className="font-semibold text-deal"> · {fmt(t.deal.save, { amount: money(price.savingMinor) })}</span>
             )}
           </p>
         </div>

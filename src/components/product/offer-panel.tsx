@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { ArrowUpRight, ChevronDown, ShieldCheck, Truck } from "lucide-react";
 import type { OfferView } from "@/modules/catalog/offer-view";
 import { storeDiscount } from "@/modules/catalog/summary";
-import { priceParts } from "@/modules/catalog/price-parts";
+import { shownPrice, usualItemMinor } from "@/modules/catalog/price-parts";
 import { getI18n } from "@/i18n/server";
 import { fmt } from "@/i18n/format";
 import { CartButton } from "@/components/cart/cart-button";
@@ -28,9 +28,15 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
   const { t, money } = await getI18n();
 
   const { landed, supplier } = offer;
-  const parts = priceParts(landed.totalMinor, landed.itemMinor);
   // The store's own discount; our own check is the note under the price.
   const before = storeDiscount(offer);
+  // The store's price big, its crossed-out price and percent beside it, what delivery and customs add below.
+  const price = shownPrice({
+    totalMinor: landed.totalMinor,
+    itemMinor: landed.itemMinor,
+    usualItemMinor: before ? usualItemMinor(landed.itemMinor, offer.priceMinor, offer.listPriceMinor) : null,
+    usualTotalMinor: before?.wasLandedMinor ?? null,
+  });
   const storeDiscounted = offer.listPriceMinor !== null && offer.listPriceMinor > offer.priceMinor;
   const lines = [
     { label: t.product.item, value: landed.itemMinor, always: true },
@@ -43,16 +49,16 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
   return (
     <section className="rounded-2xl border border-brand bg-surface p-4 shadow-card ring-1 ring-brand md:p-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <p className="text-3xl font-extrabold tracking-tight text-ink md:text-4xl">{money(landed.totalMinor)}</p>
-        {before && (
+        <p className="text-3xl font-extrabold tracking-tight text-ink md:text-4xl">{money(price.mainMinor)}</p>
+        {before && price.wasMinor !== null && (
           <>
-            <span className="text-lg font-medium tabular-nums text-muted line-through">{money(before.wasLandedMinor)}</span>
+            <span className="text-lg font-medium tabular-nums text-muted line-through">{money(price.wasMinor)}</span>
             <span className="rounded-md bg-deal px-2 py-0.5 text-sm font-bold text-on-deal">−{before.pct}%</span>
           </>
         )}
       </div>
       <p className="mt-1 text-xs text-muted">
-        {parts ? fmt(t.deal.breakdown, { item: money(parts.itemMinor), extra: money(parts.extraMinor) }) : t.deal.totalHint}
+        {price.extraMinor !== null ? fmt(t.deal.extra, { extra: money(price.extraMinor) }) : t.deal.totalHint}
       </p>
       {note && <div className="mt-2">{note}</div>}
 

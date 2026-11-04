@@ -91,7 +91,7 @@ export const ADMITAD_FEED_STORES: AdmitadFeedStore[] = [
     },
     // AliExpress delivers to Azerbaijan itself, mostly free at these prices.
     shippingMinor: 0,
-    deliveryDays: { min: 10, max: 25 },
+    deliveryDays: { min: 10, max: 20 },
     trustScore: 70,
     reliability: {
       basis: "established-retailer",
@@ -141,7 +141,7 @@ export const ADMITAD_FEED_STORES: AdmitadFeedStore[] = [
     },
     // Shipping is included in the price for Azerbaijan (its delivery page lists AZ); customs are the buyer's.
     shippingMinor: 0,
-    deliveryDays: { min: 10, max: 21 },
+    deliveryDays: { min: 10, max: 20 },
     trustScore: 80,
     reliability: {
       basis: "established-retailer",

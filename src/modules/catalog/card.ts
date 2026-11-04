@@ -5,6 +5,7 @@ import type { CategorySlug } from "@/config/categories";
 import type { SupplierScope } from "@/modules/suppliers/types";
 import { inStockSizeKeys } from "@/modules/suppliers/sizes";
 import { storeDiscount, type ProductSummary } from "./summary";
+import { usualItemMinor } from "./price-parts";
 
 /** The flat, serialisable shape every product card in the UI renders from. */
 export interface ProductCardData {
@@ -26,6 +27,8 @@ export interface ProductCardData {
   landedMinor: number;
   /** The store's own price of the best offer, in the market currency (the rest of the total is delivery, customs, fees). */
   itemMinor?: number | null;
+  /** The store's crossed-out price in the market currency (catalog/price-parts.ts); null when it shows none. */
+  usualItemMinor?: number | null;
   /**
    * The store's own discount (its crossed-out price): the badge, the crossed-out
    * total and the saving. Null when the store shows none. Our own check is
@@ -78,6 +81,7 @@ export function toCard(product: Product, summary: ProductSummary): ProductCardDa
     imageUrl: usableImage(product.imageUrl),
     landedMinor: best.landed.totalMinor,
     itemMinor: best.landed.itemMinor,
+    usualItemMinor: usualItemMinor(best.landed.itemMinor, best.priceMinor, best.listPriceMinor),
     usualLandedMinor: store?.wasLandedMinor ?? null,
     discountPct: store?.pct ?? null,
     savingsMinor: store?.savingsMinor ?? null,

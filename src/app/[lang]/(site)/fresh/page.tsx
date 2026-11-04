@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "@/i18n/alternates";
 import { Suspense } from "react";
 import { BadgeCheck, CalendarCheck, SearchX, ShieldCheck, TrendingDown } from "lucide-react";
 import { isCategorySlug, type CategorySlug } from "@/config/categories";
@@ -27,8 +28,8 @@ type Props = PageProps<"/[lang]/fresh">;
 const CATEGORY_SEPARATOR = ",";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { t, market } = await getI18n();
-  return { title: t.fresh.title, description: fmt(t.fresh.intro, { days: market.deals.freshDrop.windowDays }) };
+  const { t, market, locale } = await getI18n();
+  return { title: t.fresh.title, description: fmt(t.fresh.intro, { days: market.deals.freshDrop.windowDays }), alternates: pageAlternates(locale, "/fresh") };
 }
 
 /** Verified discounts (modules/deals/fresh.ts): prices our own checks saw fall in the last days. */

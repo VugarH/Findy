@@ -5,13 +5,15 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { BadgeCheck, ChevronRight, Info, Search, Sparkles, TrendingDown } from "lucide-react";
 import type { CategorySlug } from "@/config/categories";
 import { isSubcategoryOf } from "@/config/subcategories";
-import { siteConfig } from "@/config/site";
+import { siteConfig, siteUrl } from "@/config/site";
+import { pageAlternates } from "@/i18n/alternates";
+import { jsonLdText, productJsonLd } from "@/modules/catalog/structured-data";
 import { fmt, formatDay } from "@/i18n/format";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { toMinor } from "@/lib/money";
 import { findMergeTargetSlug } from "@/modules/catalog/merge";
-import { historyInMarketCurrency, toMarketCurrency } from "@/modules/catalog/offer-view";
+import { historyInMarketCurrency, onePerStore, toMarketCurrency } from "@/modules/catalog/offer-view";
 import { getProductDetail } from "@/modules/catalog/queries";
 import { storeDiscount } from "@/modules/catalog/summary";
 import { offerFreshDrop } from "@/modules/deals/fresh-drop";
@@ -39,7 +41,7 @@ import { RelatedProducts } from "@/components/product/related-products";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/product/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const { market, t, money } = await getI18n();
+  const { market, t, money, locale } = await getI18n();
   const detail = await getProductDetail(slug, market);
   if (!detail) return {};
   // What a shared link shows: the product photo, its best price and where.
@@ -56,6 +58,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/product/[s
   return {
     title: detail.product.title,
     description,
+    alternates: pageAlternates(locale, `/product/${slug}`),
     // A page's openGraph replaces the layout's, so the site-wide fields are repeated here.
     openGraph: { siteName: siteConfig.name, type: "website", title: detail.product.title, description, ...(image ? { images: [{ url: image, alt: detail.product.title }] } : {}) },
   };
@@ -150,8 +153,19 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
     </p>
   );
 
+  // For search engines: the price and photo they may show in a result (modules/catalog/structured-data.ts).
+  const structured = productJsonLd({
+    name: product.title,
+    brand: product.brand,
+    images: gallery,
+    url: `${siteUrl()}${href(`/product/${product.slug}`)}`,
+    currency: market.currency,
+    offers: onePerStore(offers).map((offer) => ({ priceMinor: offer.landed.totalMinor, inStock: offer.inStock, store: offer.supplier.name })),
+  });
+
   return (
     <Container className="py-2 md:py-8">
+      {structured && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(structured) }} />}
       <nav className="flex items-center gap-1 text-sm text-muted">
         <Link href={href("/deals")} className="hover:text-ink">
           {t.nav.deals}

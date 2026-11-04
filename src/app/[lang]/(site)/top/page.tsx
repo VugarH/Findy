@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "@/i18n/alternates";
 import Link from "next/link";
 import { Flame, Send } from "lucide-react";
 import { LOCALE_TAGS } from "@/i18n/config";
@@ -26,6 +27,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: digest ? fmt(t.top.titleOn, { date: formatDay(digest.day, locale) }) : t.top.nav,
     description: t.top.intro,
+    alternates: pageAlternates(locale, "/top"),
   };
 }
 

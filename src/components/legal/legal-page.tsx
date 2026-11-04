@@ -1,3 +1,4 @@
+import { pageAlternates } from "@/i18n/alternates";
 import { siteConfig } from "@/config/site";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { getLegalDictionary, LEGAL_UPDATED } from "@/i18n/dictionaries/legal";
@@ -39,5 +40,5 @@ export async function LegalPage({ doc }: { doc: "terms" | "privacy" }) {
 export async function legalMetadata(doc: "terms" | "privacy") {
   const { locale } = await getI18n();
   const page = getLegalDictionary(locale)[doc];
-  return { title: page.title, description: fmt(page.intro, { site: siteConfig.name }).slice(0, 160) };
+  return { title: page.title, description: fmt(page.intro, { site: siteConfig.name }).slice(0, 160), alternates: pageAlternates(locale, `/${doc}`) };
 }

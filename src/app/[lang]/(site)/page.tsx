@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { pageAlternates } from "@/i18n/alternates";
 import { ArrowRight, BadgeCheck, Calculator, Flame, Handshake, RefreshCw, ShieldCheck } from "lucide-react";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
@@ -21,6 +23,11 @@ import { RecommendedRow } from "@/components/recommendations/recommended-row";
 
 /** Fresh real deals shown on the home page; the rest are on /fresh. */
 const FRESH_ON_HOME = 8;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale } = await getI18n();
+  return { alternates: pageAlternates(locale) };
+}
 
 export default async function HomePage() {
   const { t, money, href, market, locale } = await getI18n();

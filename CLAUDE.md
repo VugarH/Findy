@@ -59,7 +59,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 | Admin UI | `src/components/admin/*` (ui.tsx primitives, fields.tsx `useAdminForm`), pages `src/app/[lang]/admin/` |
 | Public pages | `src/app/[lang]/(site)/…` (route group; URLs have no "(site)") |
 | Site text | `src/i18n/dictionaries/{en,az,ru}.ts` (`Dictionary = typeof en`) |
-| Terms / privacy, error pages, SEO | texts `i18n/dictionaries/legal/*` (update `LEGAL_UPDATED` with any change; keep them true to what the code stores), pages `(site)/terms`, `(site)/privacy`; `error.tsx` per segment + `app/global-error.tsx`; `app/robots.ts`, `app/sitemap.ts`, `[lang]/opengraph-image.tsx`, `metadataBase` in `[lang]/layout.tsx` |
+| Terms / privacy, error pages, SEO | texts `i18n/dictionaries/legal/*` (update `LEGAL_UPDATED` with any change; keep them true to what the code stores), pages `(site)/terms`, `(site)/privacy`; `error.tsx` per segment + `app/global-error.tsx`; `app/robots.ts`, `app/sitemap.ts`, `[lang]/opengraph-image.tsx`, `metadataBase` in `[lang]/layout.tsx`; every indexable page sets `alternates: pageAlternates(locale, path)` (`i18n/alternates.ts`: canonical + az/en/ru); product pages add schema.org Product JSON-LD (`catalog/structured-data.ts`). Main address `https://findy.az` (www redirects) |
 
 ## Commands
 

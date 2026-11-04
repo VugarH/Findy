@@ -10,6 +10,7 @@ import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ProductImage } from "@/components/product/product-image";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { brandLabel } from "@/lib/text";
+import { priceParts } from "@/modules/catalog/price-parts";
 
 export interface CardLabels {
   t: Dictionary;
@@ -41,6 +42,8 @@ export function ProductCard({
   const lowest = card.badges.includes("lowest_price");
   // Sold locally and abroad: say so, and show both prices instead of only the cheaper one.
   const inBoth = card.bestLocalLandedMinor !== null && card.bestGlobalLandedMinor !== null;
+  // "35,00 ₼ + 10,20 ₼ delivery/customs" under the total, when something is added to the store's price.
+  const parts = priceParts(card.landedMinor, card.itemMinor);
 
   return (
     // The buttons are siblings of the link, not inside it: a button within a link is invalid.
@@ -117,14 +120,25 @@ export function ProductCard({
                 {money(card.usualLandedMinor!)}
               </span>
             )}
+            {/* The saving in money, beside the price: "610 ₼ cheaper" reads stronger than a percent. */}
+            {isDeal && (card.savingsMinor ?? 0) > 0 && (
+              // Just "−83,14 ₼", so it fits beside the price; the full "83,14 ₼ saved" is its label.
+              <span
+                title={fmt(t.deal.save, { amount: money(card.savingsMinor!) })}
+                aria-label={fmt(t.deal.save, { amount: money(card.savingsMinor!) })}
+                className={cn("whitespace-nowrap text-xs font-semibold text-deal", !compact && "md:text-sm")}
+              >
+                −{money(card.savingsMinor!)}
+              </span>
+            )}
           </div>
-          {/* The saving in money: "610 ₼ cheaper" reads stronger than a percent. */}
-          {isDeal && (card.savingsMinor ?? 0) > 0 && (
-            <p className={cn("text-xs font-semibold text-deal", !compact && "md:text-sm")}>
-              {fmt(t.deal.save, { amount: money(card.savingsMinor!) })}
+          {parts ? (
+            <p className="text-[11px] leading-4 text-muted md:text-xs">
+              {fmt(t.deal.breakdown, { item: money(parts.itemMinor), extra: money(parts.extraMinor) })}
             </p>
+          ) : (
+            !compact && <p className="text-xs text-muted max-md:hidden">{t.deal.totalHint}</p>
           )}
-          {!compact && <p className="text-xs text-muted max-md:hidden">{t.deal.totalHint}</p>}
         </div>
 
         {inBoth && (

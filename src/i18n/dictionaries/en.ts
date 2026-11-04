@@ -222,6 +222,7 @@ const en = {
     stores: "{count} stores",
     oneStore: "1 store",
     totalHint: "Total with delivery & customs",
+    breakdown: "{item} + {extra} delivery/customs",
   },
   badges: {
     lowest_price: "Lowest in 90 days",

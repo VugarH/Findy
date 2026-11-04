@@ -24,6 +24,8 @@ export interface ProductCardData {
   imageUrl: string | null;
   /** Landed total of the best offer, in the market currency. */
   landedMinor: number;
+  /** The store's own price of the best offer, in the market currency (the rest of the total is delivery, customs, fees). */
+  itemMinor?: number | null;
   /**
    * The store's own discount (its crossed-out price): the badge, the crossed-out
    * total and the saving. Null when the store shows none. Our own check is
@@ -75,6 +77,7 @@ export function toCard(product: Product, summary: ProductSummary): ProductCardDa
     originCountry: best.supplier.originCountry,
     imageUrl: usableImage(product.imageUrl),
     landedMinor: best.landed.totalMinor,
+    itemMinor: best.landed.itemMinor,
     usualLandedMinor: store?.wasLandedMinor ?? null,
     discountPct: store?.pct ?? null,
     savingsMinor: store?.savingsMinor ?? null,

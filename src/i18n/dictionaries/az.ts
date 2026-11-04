@@ -224,6 +224,7 @@ const az: Dictionary = {
     stores: "{count} mağaza",
     oneStore: "1 mağaza",
     totalHint: "Çatdırılma və gömrük daxil",
+    breakdown: "{item} + {extra} çatdırılma/gömrük",
   },
   badges: {
     lowest_price: "90 günün ən ucuzu",

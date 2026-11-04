@@ -7,10 +7,12 @@ import { ProductImage } from "@/components/product/product-image";
 import { buttonClass } from "@/components/ui/button";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { brandLabel } from "@/lib/text";
+import { priceParts } from "@/modules/catalog/price-parts";
 
 /** The day's highest-scoring deal, given the most room on the home page. */
 export async function FeaturedDeal({ card }: { card: ProductCardData }) {
   const { t, money, href } = await getI18n();
+  const parts = priceParts(card.landedMinor, card.itemMinor);
   // Local vs abroad is worth a row only when both exist.
   const compare =
     card.bestLocalLandedMinor !== null && card.bestGlobalLandedMinor !== null
@@ -65,7 +67,7 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
             </p>
           )}
           <p className="mt-1 text-sm text-muted">
-            {t.deal.totalHint}
+            {parts ? fmt(t.deal.breakdown, { item: money(parts.itemMinor), extra: money(parts.extraMinor) }) : t.deal.totalHint}
             {card.savingsMinor !== null && (
               <span className="font-semibold text-deal"> · {fmt(t.deal.save, { amount: money(card.savingsMinor) })}</span>
             )}

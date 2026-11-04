@@ -10,6 +10,8 @@ import type { CardFresh, ProductCardData } from "@/modules/catalog/card";
 import { freshSince, offerIsLive } from "@/modules/catalog/offer-view";
 import { sortSizes } from "@/modules/suppliers/sizes";
 import { holdBack, holdBackFor } from "./hold-back";
+import { convertMinor } from "@/lib/money";
+import type { CurrencyCode } from "@/config/currencies";
 import type { SupplierScope } from "@/modules/suppliers/types";
 
 export const DEAL_SORTS = ["best", "discount", "savings", "price_asc", "price_desc", "newest", "oldest"] as const;
@@ -113,7 +115,7 @@ export async function listDeals(
   const offset = filters.offset ?? 0;
   const select = () =>
     db
-      .select({ deal: deals, product: products, supplierId: suppliers.id, supplierName: suppliers.name })
+      .select({ deal: deals, product: products, supplierId: suppliers.id, supplierName: suppliers.name, itemPriceMinor: offers.priceMinor, itemCurrency: offers.currency })
       .from(deals)
       .innerJoin(products, eq(deals.productId, products.id))
       .innerJoin(offers, eq(deals.offerId, offers.id))
@@ -150,7 +152,7 @@ export async function listDeals(
 
   const fresh = await freshDropsOf(market, rows.map((row) => row.product.id));
   const items = rows.map(
-    ({ deal, product, supplierId, supplierName }): ProductCardData => ({
+    ({ deal, product, supplierId, supplierName, itemPriceMinor, itemCurrency }): ProductCardData => ({
       productId: product.id,
       offerId: deal.offerId,
       slug: product.slug,
@@ -163,6 +165,7 @@ export async function listDeals(
       originCountry: deal.originCountry,
       imageUrl: usableImage(product.imageUrl),
       landedMinor: deal.landedMinor,
+      itemMinor: convertMinor(itemPriceMinor, itemCurrency as CurrencyCode, market.currency, market.fxRates),
       usualLandedMinor: deal.storeListLandedMinor,
       discountPct: deal.storeDiscountPct,
       savingsMinor: deal.storeListLandedMinor === null ? null : deal.storeListLandedMinor - deal.landedMinor,

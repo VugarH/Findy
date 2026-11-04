@@ -224,6 +224,7 @@ const ru: Dictionary = {
     stores: "Магазинов: {count}",
     oneStore: "1 магазин",
     totalHint: "С доставкой и таможней",
+    breakdown: "{item} + {extra} доставка/таможня",
   },
   badges: {
     lowest_price: "Минимум за 90 дней",

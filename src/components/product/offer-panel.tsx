@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { ArrowUpRight, ChevronDown, ShieldCheck, Truck } from "lucide-react";
 import type { OfferView } from "@/modules/catalog/offer-view";
 import { storeDiscount } from "@/modules/catalog/summary";
+import { priceParts } from "@/modules/catalog/price-parts";
 import { getI18n } from "@/i18n/server";
 import { fmt } from "@/i18n/format";
 import { CartButton } from "@/components/cart/cart-button";
@@ -27,6 +28,7 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
   const { t, money } = await getI18n();
 
   const { landed, supplier } = offer;
+  const parts = priceParts(landed.totalMinor, landed.itemMinor);
   // The store's own discount; our own check is the note under the price.
   const before = storeDiscount(offer);
   const storeDiscounted = offer.listPriceMinor !== null && offer.listPriceMinor > offer.priceMinor;
@@ -49,7 +51,9 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
           </>
         )}
       </div>
-      <p className="mt-1 text-xs text-muted">{t.deal.totalHint}</p>
+      <p className="mt-1 text-xs text-muted">
+        {parts ? fmt(t.deal.breakdown, { item: money(parts.itemMinor), extra: money(parts.extraMinor) }) : t.deal.totalHint}
+      </p>
       {note && <div className="mt-2">{note}</div>}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">

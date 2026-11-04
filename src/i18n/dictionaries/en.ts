@@ -218,6 +218,7 @@ const en = {
     usual: "Usually {amount}",
     local: "Local",
     global: "Abroad",
+    turkey: "Turkey",
     deliveryDays: "up to {days} days",
     stores: "{count} stores",
     oneStore: "1 store",

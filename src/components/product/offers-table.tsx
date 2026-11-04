@@ -4,6 +4,7 @@ import { getI18n } from "@/i18n/server";
 import { fmt } from "@/i18n/format";
 import { CartButton } from "@/components/cart/cart-button";
 import { ScopeTag } from "@/components/ui/scope-tag";
+import { scopeLabel } from "@/i18n/scope-label";
 
 export async function OffersTable({ offers }: { offers: OfferView[] }) {
   const { t, money } = await getI18n();
@@ -29,7 +30,7 @@ export async function OffersTable({ offers }: { offers: OfferView[] }) {
                   <span className="font-semibold text-ink">{offer.supplier.name}</span>
                   <ScopeTag
                     scope={offer.supplier.scope}
-                    label={offer.supplier.scope === "local" ? t.deal.local : t.deal.global}
+                    label={scopeLabel(t, offer.supplier.scope, offer.supplier.originCountry)}
                   />
                 </div>
                 <p className="mt-0.5 max-w-xs truncate text-xs text-muted">{offer.title}</p>

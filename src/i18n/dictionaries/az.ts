@@ -220,6 +220,7 @@ const az: Dictionary = {
     usual: "Adətən {amount}",
     local: "Yerli",
     global: "Xaricdən",
+    turkey: "Türkiyə",
     deliveryDays: "{days} günə qədər",
     stores: "{count} mağaza",
     oneStore: "1 mağaza",

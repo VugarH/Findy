@@ -220,6 +220,7 @@ const ru: Dictionary = {
     usual: "Обычно {amount}",
     local: "Местный",
     global: "Из-за рубежа",
+    turkey: "Турция",
     deliveryDays: "до {days} дн.",
     stores: "Магазинов: {count}",
     oneStore: "1 магазин",

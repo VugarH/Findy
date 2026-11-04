@@ -8,6 +8,7 @@ import { listSuppliers, type SupplierOverview } from "@/modules/suppliers/querie
 import { FollowButton } from "@/components/follows/follow-button";
 import { Container } from "@/components/ui/container";
 import { ScopeTag } from "@/components/ui/scope-tag";
+import { scopeLabel } from "@/i18n/scope-label";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t, locale } = await getI18n();
@@ -34,7 +35,7 @@ export default async function StoresPage() {
     <li key={store.id} className="flex min-w-0 flex-col gap-1.5 rounded-2xl border border-line bg-surface p-3 md:gap-3 md:p-5">
       <div className="flex items-start justify-between gap-2 md:gap-3">
         <h3 className="min-w-0 truncate text-sm font-bold md:text-lg">{store.name}</h3>
-        <ScopeTag scope={store.scope} label={store.scope === "local" ? t.deal.local : t.deal.global} iconOnPhones className="shrink-0 max-md:p-1" />
+        <ScopeTag scope={store.scope} label={scopeLabel(t, store.scope, store.originCountry)} iconOnPhones className="shrink-0 max-md:p-1" />
       </div>
       {store.scope === "global" && (
         <p className="text-xs font-medium text-muted max-md:hidden">

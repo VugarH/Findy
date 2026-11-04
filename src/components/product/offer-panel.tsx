@@ -8,6 +8,7 @@ import { fmt } from "@/i18n/format";
 import { CartButton } from "@/components/cart/cart-button";
 import { buttonClass } from "@/components/ui/button";
 import { ScopeTag } from "@/components/ui/scope-tag";
+import { scopeLabel } from "@/i18n/scope-label";
 
 interface Props {
   offer: OfferView;
@@ -64,7 +65,7 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
 
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
         <span className="font-semibold text-ink">{supplier.name}</span>
-        <ScopeTag scope={supplier.scope} label={supplier.scope === "local" ? t.deal.local : t.deal.global} />
+        <ScopeTag scope={supplier.scope} label={scopeLabel(t, supplier.scope, supplier.originCountry)} />
         <span className="flex items-center gap-1 text-muted">
           <Truck className="size-4" aria-hidden />
           {fmt(t.product.deliveryRange, offer.delivery)}

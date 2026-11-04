@@ -8,6 +8,7 @@ import { buttonClass } from "@/components/ui/button";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { brandLabel } from "@/lib/text";
 import { shownPrice } from "@/modules/catalog/price-parts";
+import { scopeLabel } from "@/i18n/scope-label";
 
 /** The day's highest-scoring deal, given the most room on the home page. */
 export async function FeaturedDeal({ card }: { card: ProductCardData }) {
@@ -75,7 +76,7 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
-          <ScopeTag scope={card.scope} label={card.scope === "local" ? t.deal.local : t.deal.global} />
+          <ScopeTag scope={card.scope} label={scopeLabel(t, card.scope, card.originCountry)} />
           <span className="flex items-center gap-1.5">
             <Store className="size-4" aria-hidden />
             {card.supplierName}

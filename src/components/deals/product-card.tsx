@@ -11,6 +11,7 @@ import { ProductImage } from "@/components/product/product-image";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { brandLabel } from "@/lib/text";
 import { shownPrice } from "@/modules/catalog/price-parts";
+import { scopeLabel } from "@/i18n/scope-label";
 
 export interface CardLabels {
   t: Dictionary;
@@ -89,7 +90,7 @@ export function ProductCard({
         )}
         <ScopeTag
           scope={inBoth ? "both" : card.scope}
-          label={inBoth ? t.deal.bothMarkets : card.scope === "local" ? t.deal.local : t.deal.global}
+          label={inBoth ? t.deal.bothMarkets : scopeLabel(t, card.scope, card.originCountry)}
           iconOnPhones
           className={cn("absolute max-md:px-1.5 max-md:py-1.5", compact ? "right-2 top-2 md:right-2.5 md:top-2.5" : "right-2 top-2 md:right-3 md:top-3")}
         />

@@ -95,6 +95,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
             offerId: offer.offerId,
             storeName: offer.supplier.name,
             scope: offer.supplier.scope,
+            originCountry: offer.supplier.originCountry,
             landedMinor: offer.landed.totalMinor,
             delivery: offer.delivery,
             sizes: offer.sizes,

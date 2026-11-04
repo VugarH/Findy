@@ -16,6 +16,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { ScopeTag } from "@/components/ui/scope-tag";
 import { cart, useCartItems, useHydrated } from "./cart-store";
 import { brandLabel } from "@/lib/text";
+import { scopeLabel } from "@/i18n/scope-label";
 
 /** Waits this long after the last change before re-pricing, so quick +/+/+ clicks make one request. */
 const REPRICE_DELAY_MS = 250;
@@ -124,7 +125,7 @@ function ParcelCard({ parcel }: { parcel: Parcel }) {
           <h2 className="flex flex-wrap items-center gap-2 font-bold">
             <span aria-hidden>{flag(store.originCountry)}</span>
             {fmt(c.parcelFrom, { store: store.name })}
-            <ScopeTag scope={store.scope} label={store.scope === "local" ? t.deal.local : t.deal.global} />
+            <ScopeTag scope={store.scope} label={scopeLabel(t, store.scope, store.originCountry)} />
           </h2>
           <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-muted">
             <span className="inline-flex items-center gap-1">

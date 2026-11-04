@@ -8,11 +8,13 @@ import { cn } from "@/lib/cn";
 import { sortSizes } from "@/modules/suppliers/sizes";
 import { CartButton } from "@/components/cart/cart-button";
 import { ScopeTag } from "@/components/ui/scope-tag";
+import { scopeLabel } from "@/i18n/scope-label";
 
 export interface SizedOffer {
   offerId: string;
   storeName: string;
   scope: "local" | "global";
+  originCountry?: string;
   landedMinor: number;
   delivery: { min: number; max: number };
   sizes: { label: string; inStock: boolean }[];
@@ -77,7 +79,7 @@ export function SizeFinder({ offers }: { offers: SizedOffer[] }) {
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                     {offer.storeName}
-                    <ScopeTag scope={offer.scope} label={offer.scope === "local" ? t.deal.local : t.deal.global} />
+                    <ScopeTag scope={offer.scope} label={scopeLabel(t, offer.scope, offer.originCountry)} />
                   </span>
                   <span className="text-xs text-muted">{fmt(p.deliveryRange, offer.delivery)}</span>
                 </span>

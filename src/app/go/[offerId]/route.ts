@@ -21,7 +21,7 @@ export async function GET(request: Request, { params }: RouteContext<"/go/[offer
   if (!offer) return new Response("Not found", { status: 404 });
 
   // Bots and admins still reach the store, but are not counted.
-  const visitor = visitorOf(request.headers, await getCurrentUser());
+  const visitor = await visitorOf(request.headers, await getCurrentUser());
   if (visitor) await db.insert(outboundClicks).values({ offerId, marketCode: getMarket().code, visitorId: visitor.id, userId: visitor.userId });
   return Response.redirect(offer.url, 302);
 }

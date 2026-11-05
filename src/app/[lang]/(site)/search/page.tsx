@@ -77,7 +77,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[lang]/se
   const plainSearch = Object.keys(params).every((key) => key === "q");
   const interest = plainSearch && (await getFeatureSwitches()).recommendations ? searchInterest(sortCards(found, "relevance", shownQuery)) : null;
   if (plainSearch) {
-    const visitor = visitorOf(await headers(), await getCurrentUser());
+    const visitor = await visitorOf(await headers(), await getCurrentUser());
     if (visitor) after(() => recordSearchEvent(visitor, query, asTyped.length));
   }
 

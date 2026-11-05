@@ -5,6 +5,8 @@ import { siteUrl } from "@/config/site";
 import { isAdmin } from "@/modules/admin/guard";
 import type { CurrentUser } from "@/modules/auth/session";
 import { marketDay } from "@/modules/digest/pick";
+import { getIgnoredUsers } from "@/modules/settings/service";
+import { hasNoAnalyticsCookie } from "./exclusions";
 import { deviceOf, isBot, sourceOf, visitorId, type Device } from "./visitor";
 
 export interface Visitor {
@@ -15,13 +17,32 @@ export interface Visitor {
 
 const salt = () => process.env.ANALYTICS_SALT || process.env.DATABASE_URL || "serfeli";
 
+/** The ignored accounts, read at most once a minute per server instance: every tracked page view asks. */
+const IGNORED_TTL_MS = 60_000;
+let ignored: { ids: Set<string>; until: number } | null = null;
+
+async function ignoredUsers(now: number): Promise<Set<string>> {
+  if (!ignored || ignored.until < now) {
+    const ids = await getIgnoredUsers().catch(() => [] as string[]);
+    ignored = { ids: new Set(ids), until: now + IGNORED_TTL_MS };
+  }
+  return ignored.ids;
+}
+
+/** After the list changes, this server instance reads it again at once. */
+export function forgetIgnoredUsers(): void {
+  ignored = null;
+}
+
 /**
  * The visitor behind a request, or null when it should not be counted: bots,
- * and admins (their own clicking around is not traffic).
+ * admins (their own clicking around is not traffic), accounts an admin chose
+ * to leave out, and browsers with the "don't count me" cookie (./exclusions.ts).
  */
-export function visitorOf(headers: Headers, user: CurrentUser | null, now = new Date()): Visitor | null {
+export async function visitorOf(headers: Headers, user: CurrentUser | null, now = new Date()): Promise<Visitor | null> {
   const userAgent = headers.get("user-agent") ?? "";
-  if (isBot(userAgent) || isAdmin(user)) return null;
+  if (isBot(userAgent) || isAdmin(user) || hasNoAnalyticsCookie(headers.get("cookie"))) return null;
+  if (user && (await ignoredUsers(now.getTime())).has(user.id)) return null;
   const ip = headers.get("x-forwarded-for")?.split(",")[0].trim() || headers.get("x-real-ip") || "unknown";
   const day = marketDay(now, getMarket().timeZone);
   return { id: visitorId(ip, userAgent, day, salt()), device: deviceOf(userAgent), userId: user?.id ?? null };

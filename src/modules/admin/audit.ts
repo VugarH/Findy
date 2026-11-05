@@ -32,6 +32,8 @@ export const ADMIN_ACTIONS = [
   "conversation.status",
   "job.run",
   "user.role",
+  "analytics.ignore-user",
+  "analytics.count-user",
   "deals.publish",
   "digest.pick",
   "digest.post",

@@ -69,9 +69,6 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
           )}
           <p className="mt-1 text-sm text-muted">
             {price.extraMinor !== null ? fmt(t.deal.extra, { extra: money(price.extraMinor) }) : t.deal.totalHint}
-            {price.savingMinor !== null && (
-              <span className="font-semibold text-deal"> · {fmt(t.deal.save, { amount: money(price.savingMinor) })}</span>
-            )}
           </p>
         </div>
 

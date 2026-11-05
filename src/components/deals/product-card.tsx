@@ -121,17 +121,6 @@ export function ProductCard({
                 {money(price.wasMinor)}
               </span>
             )}
-            {/* The saving in money, beside the price: "610 ₼ cheaper" reads stronger than a percent. */}
-            {isDeal && (price.savingMinor ?? 0) > 0 && (
-              // Just "−83,14 ₼", so it fits beside the price; the full "83,14 ₼ saved" is its label.
-              <span
-                title={fmt(t.deal.save, { amount: money(price.savingMinor!) })}
-                aria-label={fmt(t.deal.save, { amount: money(price.savingMinor!) })}
-                className={cn("whitespace-nowrap text-xs font-semibold text-deal", !compact && "md:text-sm")}
-              >
-                −{money(price.savingMinor!)}
-              </span>
-            )}
           </div>
           {price.extraMinor !== null ? (
             <p className="text-[11px] leading-4 text-muted md:text-xs">{fmt(t.deal.extra, { extra: money(price.extraMinor) })}</p>

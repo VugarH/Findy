@@ -6,12 +6,14 @@ import { toDealRules, type DealRules } from "./deal-rules";
 import { toDisplayOrder, type DisplayOrder } from "./display-order";
 import { toFeatureSwitches, type FeatureSwitches } from "./features";
 import { toFilterSwitches, type FilterSwitches } from "./filter-switches";
+import { toIgnoredUsers } from "@/modules/analytics/exclusions";
 
 /** Settings stored in site_settings, by key. */
 const FILTERS_KEY = "deal-filters";
 const ORDER_KEY = "display-order";
 const DEAL_RULES_KEY = "deal-rules";
 const FEATURES_KEY = "features";
+const IGNORED_USERS_KEY = "analytics-ignored-users";
 
 async function read(key: string): Promise<unknown> {
   const [row] = await db.select({ value: siteSettings.value }).from(siteSettings).where(eq(siteSettings.key, key));
@@ -53,4 +55,13 @@ export const getFeatureSwitches = cache(async (): Promise<FeatureSwitches> => to
 
 export async function saveFeatureSwitches(switches: FeatureSwitches, by: string): Promise<void> {
   await write(FEATURES_KEY, toFeatureSwitches(switches), by);
+}
+
+/** Accounts whose visits Analytics leaves out (Users → "Don't count"). */
+export async function getIgnoredUsers(): Promise<string[]> {
+  return toIgnoredUsers(await read(IGNORED_USERS_KEY));
+}
+
+export async function saveIgnoredUsers(userIds: string[], by: string): Promise<void> {
+  await write(IGNORED_USERS_KEY, toIgnoredUsers(userIds), by);
 }

@@ -6,7 +6,9 @@ import { recordAdminEvent } from "../audit";
 import { text, type AdminFormState } from "../forms";
 import { requireAdmin } from "../guard";
 import { isOrderStatus, setOrderStatus } from "../orders";
-import { isUserRole, setUserRole } from "../users";
+import { getUserEmail, isUserRole, setUserRole } from "../users";
+import { forgetIgnoredUsers } from "@/modules/analytics/record";
+import { getIgnoredUsers, saveIgnoredUsers } from "@/modules/settings/service";
 
 /** Rebuilds the published deals from the saved offers, so every change made in the panel shows on the site. */
 export async function publishDealsAction(): Promise<AdminFormState> {
@@ -58,4 +60,23 @@ export async function setUserRoleAction(_previous: AdminFormState, form: FormDat
   });
   refresh();
   return { notice: "saved" };
+}
+
+/** Leaves an account's visits out of Analytics, or counts them again (Users page). */
+export async function setAnalyticsIgnoredAction(form: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const id = text(form, "id");
+  const ignore = text(form, "ignore") === "true";
+  const user = await getUserEmail(id);
+  if (!user) return;
+  const current = await getIgnoredUsers();
+  await saveIgnoredUsers(ignore ? [...current, id] : current.filter((other) => other !== id), admin.id);
+  forgetIgnoredUsers();
+  await recordAdminEvent(admin, {
+    action: ignore ? "analytics.ignore-user" : "analytics.count-user",
+    entityType: "user",
+    entityId: id,
+    entityLabel: user.email,
+  });
+  refresh();
 }

@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   try {
     const parsed = body.safeParse(JSON.parse(await request.text()));
     if (!parsed.success) return new Response(null, { status: 204 });
-    const visitor = visitorOf(await headers(), await getCurrentUser());
+    const visitor = await visitorOf(await headers(), await getCurrentUser());
     if (visitor) {
       const { path, locale = null, landing = false, referrer = null, utmSource = null } = parsed.data;
       await recordView(visitor, { path, locale, landing, referrer, utmSource });

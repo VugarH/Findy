@@ -6,6 +6,8 @@ import { getAdminI18n } from "@/modules/admin/i18n";
 import { listUsers, USER_PAGE_SIZE } from "@/modules/admin/users";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { RoleButton } from "@/components/admin/role-button";
+import { IgnoreUserButton } from "@/components/admin/analytics-ignore";
+import { getIgnoredUsers } from "@/modules/settings/service";
 import { Badge, EmptyState, FilterBar, filterControl, PageHeader, Panel, Table, Td, Th } from "@/components/admin/ui";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,7 +21,8 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/[lang
   const { a, t, href, date, dateTime } = await getAdminI18n();
   const q = param(params, "q");
   const page = pageParam(params);
-  const { rows, total } = await listUsers(q || undefined, page);
+  const [{ rows, total }, ignoredIds] = await Promise.all([listUsers(q || undefined, page), getIgnoredUsers()]);
+  const ignored = new Set(ignoredIds);
   const path = href("/admin/users");
   const u = a.users;
 
@@ -68,13 +71,22 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/[lang
                   </Td>
                   <Td>
                     <Badge tone={user.role === "admin" ? "strong" : "neutral"}>{u.roles[user.role]}</Badge>
+                    {ignored.has(user.id) && (
+                      <span className="ml-1.5">
+                        <Badge tone="neutral">{u.notCounted}</Badge>
+                      </span>
+                    )}
                   </Td>
                   <Td className="whitespace-nowrap">{date(user.createdAt)}</Td>
                   <Td className="whitespace-nowrap">
                     {user.lastLoginAt ? dateTime(user.lastLoginAt) : a.common.never}
                   </Td>
                   <Td className="text-right">
-                    {user.id !== me.id && <RoleButton userId={user.id} isAdmin={user.role === "admin"} />}
+                    <div className="flex flex-wrap items-start justify-end gap-2">
+                      {/* Admins are never counted; the choice matters for ordinary accounts. */}
+                      {user.role !== "admin" && <IgnoreUserButton userId={user.id} ignored={ignored.has(user.id)} />}
+                      {user.id !== me.id && <RoleButton userId={user.id} isAdmin={user.role === "admin"} />}
+                    </div>
                   </Td>
                 </tr>
               ))}

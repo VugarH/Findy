@@ -1,4 +1,4 @@
-import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
+import { asc, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { db } from "@/db/client";
 import { users, type UserRole } from "@/db/schema";
 
@@ -61,4 +61,16 @@ export async function setUserRoleByEmail(email: string, role: UserRole): Promise
     .limit(1);
   if (!row) return false;
   return !!(await setUserRole(row.id, role));
+}
+
+export async function getUserEmail(id: string): Promise<{ email: string } | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const [row] = await db.select({ email: users.email }).from(users).where(eq(users.id, id)).limit(1);
+  return row ?? null;
+}
+
+/** The accounts Analytics leaves out, for its page. */
+export async function listUsersByIds(ids: string[]): Promise<{ id: string; email: string; fullName: string }[]> {
+  if (ids.length === 0) return [];
+  return db.select({ id: users.id, email: users.email, fullName: users.fullName }).from(users).where(inArray(users.id, ids));
 }

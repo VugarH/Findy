@@ -14,6 +14,9 @@ import {
 } from "@/modules/analytics/report";
 import { loadMarket } from "@/modules/pricing/fx";
 import { DayBars } from "@/components/admin/day-bars";
+import { ThisBrowserToggle } from "@/components/admin/analytics-ignore";
+import { listUsersByIds } from "@/modules/admin/users";
+import { getIgnoredUsers } from "@/modules/settings/service";
 import { EmptyState, PageHeader, Panel } from "@/components/admin/ui";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,7 +32,10 @@ export default async function AdminAnalyticsPage({ searchParams }: PageProps<"/[
   const requested = Number(param(params, "days"));
   const period = isAnalyticsPeriod(requested) ? requested : 30;
   const market = await loadMarket();
-  const report = await getAnalyticsReport(market, period, href);
+  const [report, ignoredUsers] = await Promise.all([
+    getAnalyticsReport(market, period, href),
+    getIgnoredUsers().then(listUsersByIds),
+  ]);
   const path = href("/admin/analytics");
   const dayLabel = (day: string) =>
     new Intl.DateTimeFormat(LOCALE_TAGS[locale], { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${day}T00:00:00Z`));
@@ -51,6 +57,21 @@ export default async function AdminAnalyticsPage({ searchParams }: PageProps<"/[
   return (
     <>
       <PageHeader title={a.nav.analytics} intro={s.intro} />
+
+      {/* Whose visits are left out: this browser (a cookie), and accounts chosen on the Users page. */}
+      <Panel className="mb-5" title={s.excludedTitle}>
+        <div className="space-y-3">
+          <ThisBrowserToggle />
+          <p className="text-sm text-muted">
+            {ignoredUsers.length > 0
+              ? fmt(s.ignoredUsers, { list: ignoredUsers.map((user) => user.email).join(", ") })
+              : s.noIgnoredUsers}{" "}
+            <Link href={href("/admin/users")} className="font-semibold text-brand-strong hover:underline">
+              {s.manageUsers}
+            </Link>
+          </p>
+        </div>
+      </Panel>
 
       <nav className="mb-5 flex flex-wrap gap-1">
         {ANALYTICS_PERIODS.map((days) => (

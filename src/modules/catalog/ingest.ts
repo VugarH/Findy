@@ -316,7 +316,7 @@ async function resolveProducts(
 
   const loadKnown = () =>
     db
-      .select({ id: products.id, gtin: products.gtin, modelKey: products.modelKey })
+      .select({ id: products.id, gtin: products.gtin, modelKey: products.modelKey, sourceType: products.sourceType })
       .from(products)
       .where(or(gtins.length ? inArray(products.gtin, gtins) : undefined, inArray(products.modelKey, modelKeys)));
 
@@ -364,6 +364,18 @@ async function resolveProducts(
     }
     known = await loadKnown();
     find = index(known);
+  }
+
+  // A product type that now says "sunglasses" (the adapter learned it from tags) lets
+  // the daily rules move products created before as watches or jewelry.
+  const eyewearType = new Map<string, string>();
+  for (const { keys, raw } of keyed) {
+    const id = find(keys);
+    const row = id ? known.find((k) => k.id === id) : undefined;
+    if (row && raw.productType?.endsWith(" sunglasses") && row.sourceType !== raw.productType) eyewearType.set(row.id, raw.productType);
+  }
+  for (const [id, sourceType] of eyewearType) {
+    await db.update(products).set({ sourceType, updatedAt: new Date() }).where(sql`${products.id} = ${id}`);
   }
 
   // Enrich products first seen without a GTIN once a supplier provides one.

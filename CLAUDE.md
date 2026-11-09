@@ -16,7 +16,7 @@ recipe you need (search its "How to add things" headings). `docs/SUPPLIERS.md` =
 
 | Need | File |
 |---|---|
-| Categories + keyword hints | `src/config/categories.ts` (`CATEGORY_HINTS`, `detectCategory`) |
+| Categories + keyword hints | `src/config/categories.ts` (`CATEGORY_HINTS`, `detectCategory`, `definiteCategory`); sunglasses sold by watch/jewelry Shopify stores under model names are found by tags/description (`shopify/adapter.ts` `isEyewear`, product type gets " sunglasses") |
 | Subcategory rules (≤10/category) | `src/config/subcategories.ts` (`classifyProduct`) |
 | Audience (women/men/kids/unisex) | `src/config/audience.ts` |
 | Market (FX, customs, forwarders, `staleAfterHours: 48`) | `src/config/markets/az.ts`; items below `deals.minItemPrice` (300 TL / 10 AZN / 10 USD / 10 EUR) are never collected (`pricing/min-price.ts`, applied in `pipeline.ts` before ingest) |

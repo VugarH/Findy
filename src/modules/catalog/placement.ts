@@ -40,7 +40,7 @@ export function reclassify(product: ClassifiableProduct): {
   if (isCategorySlug(product.categorySlug) && !isLocked(product.lockedFields, "subcategorySlug")) {
     let category: CategorySlug = product.categorySlug;
     // A hand-picked subcategory pins its category too.
-    const moved = isLocked(product.lockedFields, "categorySlug") ? null : definiteCategory(category, product.title);
+    const moved = isLocked(product.lockedFields, "categorySlug") ? null : definiteCategory(category, product.title, product.sourceType);
     if (moved) category = result.categorySlug = moved;
     const next = classifyProduct(category, product.title, product.sourceType);
     if (next !== product.subcategorySlug) result.subcategorySlug = next;

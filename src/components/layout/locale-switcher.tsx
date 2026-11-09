@@ -28,7 +28,8 @@ export function LocaleSwitcher({ current, label }: { current: Locale; label: str
       onChange={(event) => {
         const locale = event.target.value as Locale;
         remember(locale);
-        router.push(hrefFor(locale));
+        // Replace, not push: "back" should leave the page, not undo the language.
+        router.replace(hrefFor(locale));
       }}
       className="h-8 w-[3.25rem] shrink-0 rounded-full border border-line bg-surface pl-2 font-semibold uppercase text-ink md:hidden"
     >
@@ -44,6 +45,7 @@ export function LocaleSwitcher({ current, label }: { current: Locale; label: str
           key={locale}
           href={hrefFor(locale)}
           hrefLang={locale}
+          replace
           title={LOCALE_LABELS[locale]}
           aria-current={locale === current ? "true" : undefined}
           onClick={() => remember(locale)}

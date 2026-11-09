@@ -27,13 +27,13 @@ export function WatchButton({ productId, variant = "icon", className }: Props) {
         disabled={pendingId === productId}
         onClick={() => toggle(productId)}
         className={cn(
-          "inline-flex h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold transition-colors disabled:opacity-60 max-md:flex-1 max-md:px-0",
+          "inline-flex h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-full border  max-md:h-auto max-md:flex-col max-md:gap-0.5 max-md:rounded-2xl max-md:py-2 px-2 text-sm font-semibold transition-colors disabled:opacity-60",
           watched ? "border-brand bg-brand-soft text-brand-strong" : "border-line bg-surface text-ink hover:bg-surface-2",
           className,
         )}
       >
-        <Icon className="size-4" aria-hidden />
-        <span className="max-md:sr-only">{watched ? t.alerts.watching : t.alerts.watch}</span>
+        <Icon className="size-4 shrink-0" aria-hidden />
+        <span className="truncate max-md:text-xs">{watched ? t.alerts.watching : t.alerts.watch}</span>
       </button>
     );
   }

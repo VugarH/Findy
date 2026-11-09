@@ -31,7 +31,7 @@ export function MiniProductCard({ card, money, href }: { card: ProductCardData }
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-2.5">
-        {card.brand && <p className="truncate text-[11px] font-semibold tracking-wide text-muted">{brandLabel(card.brand)}</p>}
+        {card.brand && <p className="truncate text-[11px] font-semibold tracking-wide text-brand-strong">{brandLabel(card.brand)}</p>}
         <h3 className="line-clamp-2 min-h-8 text-xs font-medium leading-4 text-ink group-hover:underline">{card.title}</h3>
         <div className="mt-auto flex flex-wrap items-baseline gap-x-1.5 pt-1">
           <span className="text-sm font-bold text-ink">{money(price.mainMinor)}</span>

@@ -50,7 +50,7 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
           {t.home.dealOfDay}
         </p>
         <div>
-          {card.brand && <p className="text-xs font-semibold tracking-wide text-muted">{brandLabel(card.brand)}</p>}
+          {card.brand && <p className="text-xs font-semibold tracking-wide text-brand-strong">{brandLabel(card.brand)}</p>}
           <h3 className="mt-1 text-2xl font-bold tracking-tight group-hover:underline">{card.title}</h3>
         </div>
 
@@ -74,7 +74,7 @@ export async function FeaturedDeal({ card }: { card: ProductCardData }) {
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
           <ScopeTag scope={card.scope} label={scopeLabel(t, card.scope, card.originCountry)} />
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 font-semibold text-brand-strong">
             <Store className="size-4" aria-hidden />
             {card.supplierName}
           </span>

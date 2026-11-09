@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { ArrowUpRight, ChevronDown, ShieldCheck, Truck } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, ChevronDown, ChevronRight, Store, Truck } from "lucide-react";
 import type { OfferView } from "@/modules/catalog/offer-view";
 import { storeDiscount } from "@/modules/catalog/summary";
 import { shownPrice, usualItemMinor } from "@/modules/catalog/price-parts";
@@ -26,7 +27,7 @@ interface Props {
  * the total.
  */
 export async function OfferPanel({ offer, note, children, extraActions }: Props) {
-  const { t, money } = await getI18n();
+  const { t, money, href } = await getI18n();
 
   const { landed, supplier } = offer;
   // The store's own discount; our own check is the note under the price.
@@ -49,6 +50,16 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
 
   return (
     <section className="rounded-2xl border border-brand bg-surface p-4 shadow-card ring-1 ring-brand md:p-5">
+      {/* First thing in the box: new visitors look for who sells it before the price. */}
+      <Link
+        href={href(`/deals?store=${encodeURIComponent(supplier.id)}`)}
+        className="group/store mb-3 inline-flex max-w-full items-center gap-2 rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm transition-colors hover:border-brand/60"
+      >
+        <Store className="size-4 shrink-0 text-brand-strong" aria-hidden />
+        <span className="shrink-0 text-muted">{t.product.store}:</span>
+        <span className="truncate font-bold text-brand-strong group-hover/store:underline underline-offset-2">{supplier.name}</span>
+        <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
+      </Link>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <p className="text-3xl font-extrabold tracking-tight text-ink md:text-4xl">{money(price.mainMinor)}</p>
         {before && price.wasMinor !== null && (
@@ -64,15 +75,10 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
       {note && <div className="mt-2">{note}</div>}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
-        <span className="font-semibold text-ink">{supplier.name}</span>
         <ScopeTag scope={supplier.scope} label={scopeLabel(t, supplier.scope, supplier.originCountry)} />
         <span className="flex items-center gap-1 text-muted">
           <Truck className="size-4" aria-hidden />
           {fmt(t.product.deliveryRange, offer.delivery)}
-        </span>
-        <span className="flex items-center gap-1 text-muted">
-          <ShieldCheck className="size-4" aria-hidden />
-          {t.product.trust} {supplier.trustScore}/100
         </span>
       </div>
 
@@ -85,7 +91,7 @@ export async function OfferPanel({ offer, note, children, extraActions }: Props)
         </a>
         <CartButton offerId={offer.offerId} variant="button" />
       </div>
-      {extraActions && <div className="mt-2 flex flex-wrap gap-2 max-md:flex-nowrap">{extraActions}</div>}
+      {extraActions && <div className="mt-2 grid grid-cols-3 gap-2">{extraActions}</div>}
 
       <details open className="group mt-4 border-t border-line pt-3">
         <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-muted hover:text-ink [&::-webkit-details-marker]:hidden">

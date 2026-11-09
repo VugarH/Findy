@@ -34,6 +34,7 @@ import { PHOTO_FRAME, ProductGallery } from "@/components/product/product-galler
 import { SizeFinder, type SizedOffer } from "@/components/product/size-finder";
 import { Container } from "@/components/ui/container";
 import { brandLabel } from "@/lib/text";
+import { brandKey } from "@/modules/catalog/brand";
 import { InterestTracker } from "@/components/recommendations/interest-tracker";
 import { Suspense } from "react";
 import type { Audience } from "@/config/audience";
@@ -210,7 +211,13 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/product
             />
           )}
           <header>
-            {product.brand && <p className="text-sm font-semibold tracking-wide text-muted">{brandLabel(product.brand)}</p>}
+            {product.brand && (
+              <p className="text-sm font-bold tracking-wide text-brand-strong">
+                <Link href={href(`/deals?brand=${encodeURIComponent(brandKey(product.brand))}`)} className="hover:underline underline-offset-2">
+                  {brandLabel(product.brand)}
+                </Link>
+              </p>
+            )}
             <h1 className="mt-1 text-xl font-extrabold tracking-tight sm:text-3xl">{product.title}</h1>
             {/* Pre-owned items (The Luxury Closet): never mistaken for new. */}
             {product.attributes.condition === "pre-owned" && (

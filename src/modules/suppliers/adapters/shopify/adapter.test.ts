@@ -64,6 +64,22 @@ describe("Shopify adapter", () => {
   });
 });
 
+describe("sunglasses from watch stores", () => {
+  const watches: ShopifyStore = { ...store, id: "vincero", name: "Vincero", category: "watches", mixedWith: ["jewelry", "bags"], brand: "Vincero" };
+  const glasses = { ...product, title: "The Brooks - Indigo", product_type: "Brooks" };
+
+  it("reads sunglasses from tags or the description", () => {
+    expect(toRawOffer({ ...glasses, tags: ["mens sunglasses"] }, watches)).toMatchObject({ categorySlug: "bags", productType: "Brooks sunglasses" });
+    expect(toRawOffer({ ...glasses, body_html: "<p>Die Sonnenbrille hat einen Wide Fit.</p>" }, watches)).toMatchObject({ categorySlug: "bags" });
+  });
+
+  it("keeps watches and products whose title names another category", () => {
+    expect(toRawOffer({ ...glasses, tags: ["watch"] }, watches)).toMatchObject({ categorySlug: "watches", productType: "Brooks" });
+    const bracelet = { ...glasses, title: "Spiritual Bead Bracelet", body_html: "Pairs well with our sunglasses" };
+    expect(toRawOffer(bracelet, watches)).toMatchObject({ categorySlug: "jewelry" });
+  });
+});
+
 describe("served currency", () => {
   it("reads the currency the response is priced in, from its cart_currency cookie", async () => {
     const { servedCurrency } = await import("./adapter");

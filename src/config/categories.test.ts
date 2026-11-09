@@ -77,3 +77,9 @@ describe("definiteCategory", () => {
     expect(definiteCategory(current, title)).toBeNull();
   });
 });
+
+  it("moves sunglasses that only their store type names", () => {
+    expect(definiteCategory("watches", "Lilienthal Berlin Dreamgaze II", "Dreamgaze II sunglasses")).toBe("bags");
+    expect(definiteCategory("watches", "Lilienthal Berlin Huxley", "Huxley")).toBeNull();
+    expect(definiteCategory("toys", "Monster Pencil Case", "Backpacks and Lunch Boxes")).toBeNull();
+  });

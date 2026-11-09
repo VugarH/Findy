@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { OfferView } from "@/modules/catalog/offer-view";
 import { getI18n } from "@/i18n/server";
@@ -7,7 +8,7 @@ import { ScopeTag } from "@/components/ui/scope-tag";
 import { scopeLabel } from "@/i18n/scope-label";
 
 export async function OffersTable({ offers }: { offers: OfferView[] }) {
-  const { t, money } = await getI18n();
+  const { t, money, href } = await getI18n();
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
@@ -18,7 +19,6 @@ export async function OffersTable({ offers }: { offers: OfferView[] }) {
             <th className="px-4 py-3 text-right font-semibold">{t.product.storePrice}</th>
             <th className="px-4 py-3 text-right font-semibold">{t.product.totalPrice}</th>
             <th className="px-4 py-3 font-semibold">{t.product.delivery}</th>
-            <th className="px-4 py-3 text-right font-semibold">{t.product.trust}</th>
             <th className="px-4 py-3" />
           </tr>
         </thead>
@@ -27,7 +27,12 @@ export async function OffersTable({ offers }: { offers: OfferView[] }) {
             <tr key={offer.offerId} className="border-b border-line last:border-0">
               <td className="px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-ink">{offer.supplier.name}</span>
+                  <Link
+                    href={href(`/deals?store=${encodeURIComponent(offer.supplier.id)}`)}
+                    className="font-semibold text-ink hover:text-brand-strong hover:underline underline-offset-2"
+                  >
+                    {offer.supplier.name}
+                  </Link>
                   <ScopeTag
                     scope={offer.supplier.scope}
                     label={scopeLabel(t, offer.supplier.scope, offer.supplier.originCountry)}
@@ -43,7 +48,6 @@ export async function OffersTable({ offers }: { offers: OfferView[] }) {
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right font-bold tabular-nums text-ink">{money(offer.landed.totalMinor)}</td>
               <td className="whitespace-nowrap px-4 py-3 text-muted">{fmt(t.product.deliveryRange, offer.delivery)}</td>
-              <td className="px-4 py-3 text-right tabular-nums text-muted">{offer.supplier.trustScore}</td>
               <td className="px-4 py-3 text-right">
                 {offer.inStock ? (
                   <div className="flex flex-col items-end gap-1.5">

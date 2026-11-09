@@ -99,7 +99,7 @@ const KEEP_HINTS: [CategorySlug, RegExp][] = [
 const DEFINITE_HINTS: [CategorySlug, RegExp][] = [
   // Before bags, so a "hat necklace" is a necklace; a "pendant keychain" is not jewelry.
   ["jewelry", /^(?!.*(keychain|key ?ring|anahtarlik)).*(necklace|kolye|earrings?\b|\bkupe\b|bracelet|bileklik|pendant|anklet)/],
-  ["bags", /sunglass|gunes gozlu|eyewear|backpack|sirt canta|\bwallets?\b|cuzdan|\btote\b|duffel|snapback|strapback|trucker hat|59fifty|9forty|beanie|bucket hat|\bhats?\b/],
+  ["bags", /sunglass|gunes gozlu|eyewear|backpack|daypack|sirt canta|\bwallets?\b|cuzdan|\btote\b|duffel|snapback|strapback|trucker hat|59fifty|9forty|beanie|bucket hat|\bhats?\b/],
   ["fashion", /\bt-?shirts?\b|tisort|hoodie|sweatshirt|\btees?\b|sweater|\bjackets?\b|\bshorts\b|joggers?\b/],
 ];
 
@@ -108,12 +108,18 @@ const DEFINITE_HINTS: [CategorySlug, RegExp][] = [
  * keep it. Only when the title says nothing that fits `current`: a "Sorting
  * Hat watch" stays a watch, a "Sunglasses Chain" from a jewelry store stays jewelry.
  */
-export function definiteCategory(current: CategorySlug, title: string): CategorySlug | null {
+export function definiteCategory(current: CategorySlug, title: string, sourceType?: string | null): CategorySlug | null {
   const folded = foldForMatching(title);
   const fits = [...CATEGORY_HINTS, ...KEEP_HINTS].some(([slug, hint]) => slug === current && hint.test(folded));
   if (fits) return null;
-  return DEFINITE_HINTS.find(([slug, hint]) => slug !== current && hint.test(folded))?.[0] ?? null;
+  const byTitle = DEFINITE_HINTS.find(([slug, hint]) => slug !== current && hint.test(folded))?.[0] ?? null;
+  if (byTitle) return byTitle;
+  // Store types are too loose in general ("Backpacks and Lunch Boxes" for a pencil case),
+  // but sunglasses named after a model ("Dreamgaze II") only say so there.
+  return current !== "bags" && sourceType && EYEWEAR_TYPE.test(foldForMatching(sourceType)) ? "bags" : null;
 }
+
+const EYEWEAR_TYPE = /sunglass|eyewear/;
 
 /**
  * The category of a product from a store that sells several: the first of

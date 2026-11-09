@@ -98,7 +98,7 @@ export function ProductCard({
 
       <div className={cn("flex flex-1 flex-col gap-1.5 p-3 md:gap-2", compact ? "md:p-3.5" : "md:p-4")}>
         {card.brand && (
-          <p className={cn("truncate font-semibold tracking-wide text-muted", compact ? "text-[11px]" : "text-xs")}>
+          <p className={cn("truncate font-semibold tracking-wide text-brand-strong", compact ? "text-[11px]" : "text-xs")}>
             {brandLabel(card.brand)}
           </p>
         )}
@@ -164,7 +164,7 @@ export function ProductCard({
             compact ? "md:pt-2.5" : "md:pt-3",
           )}
         >
-          <span className="flex min-w-0 items-center gap-1">
+          <span className="flex min-w-0 items-center gap-1 font-semibold text-brand-strong">
             <Store className="size-3.5 shrink-0" aria-hidden />
             <span className="truncate">{card.supplierName}</span>
           </span>

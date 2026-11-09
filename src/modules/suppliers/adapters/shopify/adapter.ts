@@ -1,6 +1,7 @@
-import { detectCategory, type CategorySlug } from "@/config/categories";
+import { definiteCategory, detectCategory, type CategorySlug } from "@/config/categories";
 import { isCurrencyCode, type CurrencyCode } from "@/config/currencies";
 import { toMinor } from "@/lib/money";
+import { foldForMatching } from "@/lib/text";
 import { articleNumberOf, detectBrand } from "@/modules/catalog/normalizers/fashion";
 import { parsePhoneTitle } from "@/modules/catalog/normalizers/phones";
 import { PoliteClient, Throttle } from "../../http";
@@ -50,7 +51,7 @@ const MAX_PAGES = 4;
 const LIST_PATH = "/products.json";
 
 /** Things a store lists as "products" that are not goods anyone compares prices on. */
-const NOT_A_PRODUCT = /gift\s?card|e-?gift|warranty|protection plan|insurance|reservation|deposit|donation|free gift|\bsample\b|shipping fee|price adjust|replacement part|refurbished|renewed|spare part|scratch and dent|open[- ]box|pre-?owned|membership|app only|live only/i;
+const NOT_A_PRODUCT = /gift\s?card|e-?gift|warranty|protection plan|insurance|reservation|deposit|donation|free gift|\bsample\b|shipping fee|price adjust|replacement part|refurbished|renewed|spare part|scratch and dent|open[- ]box|pre-?owned|membership|app only|live only|lensadvizor/i;
 const MIN_PRICE = 3;
 
 interface ShopifyVariant {
@@ -74,6 +75,8 @@ export interface ShopifyProduct {
   /** "Size", "Color"…; variant.option1/2/3 hold the values in this order. */
   options?: { name: string; position?: number }[];
   images: { src: string }[];
+  tags?: string[];
+  body_html?: string | null;
 }
 
 export function toRawOffer(product: ShopifyProduct, store: ShopifyStore): RawOffer | null {
@@ -85,7 +88,8 @@ export function toRawOffer(product: ShopifyProduct, store: ShopifyStore): RawOff
   const price = Number(variant?.price);
   if (!variant || !(price >= MIN_PRICE)) return null;
 
-  const category = categoryOf(product, store);
+  const eyewear = isEyewear(product, store);
+  const category = eyewear ? "bags" : categoryOf(product, store);
   const vendor = product.vendor?.trim() || store.name;
   // Retailers spell vendors their own way ("ADIDAS"); use one spelling for brands we know.
   const brand = store.brand ?? (category === "electronics" ? vendor : (detectBrand(vendor) ?? vendor));
@@ -101,7 +105,8 @@ export function toRawOffer(product: ShopifyProduct, store: ShopifyStore): RawOff
     model: cleanPhone?.model ?? stripBrand(product.title, brand),
     mpn: articleNumberOf(brand, [variant.sku, product.title], category) ?? undefined,
     categorySlug: category,
-    productType: product.product_type || undefined,
+    // "Dreamgaze II" names a model; the subcategory rules need the word.
+    productType: eyewear ? `${product.product_type} sunglasses`.trim() : product.product_type || undefined,
     imageUrl: thumbnail(product.images[0]?.src),
     images: product.images.flatMap((image) => thumbnail(image.src) ?? []),
     priceMinor: toMinor(price),
@@ -120,6 +125,22 @@ function categoryOf(product: ShopifyProduct, store: ShopifyStore): CategorySlug 
   // "… by Shoe Palace" says nothing about the product.
   const text = `${product.title} ${product.product_type}`.replaceAll(store.name, " ");
   return detectCategory([store.category, ...store.mixedWith], text) ?? store.category;
+}
+
+/**
+ * Watch and jewelry brands sell sunglasses under model names ("Vincero The
+ * Brooks", "Lilienthal Dreamgaze II"); only their tags or description say so.
+ * Products whose title already points to another of the store's categories keep it.
+ */
+const EYEWEAR = /sunglass|sonnenbrille|\bbrillen?\b|gunes gozlu|eyewear|blue ?light glasses|eyeglass/;
+const EYEWEAR_STORES: CategorySlug[] = ["watches", "jewelry"];
+
+function isEyewear(product: ShopifyProduct, store: ShopifyStore): boolean {
+  if (!EYEWEAR_STORES.includes(store.category) || categoryOf(product, store) !== store.category) return false;
+  // "Urbaneer 3-in-1 Daypack" has a pocket for glasses.
+  if (definiteCategory(store.category, `${product.title} ${product.product_type}`)) return false;
+  const body = (product.body_html ?? "").replace(/<[^>]+>/g, " ");
+  return EYEWEAR.test(foldForMatching(`${(product.tags ?? []).join(" ")} ${body}`));
 }
 
 /** Shopify's CDN resizes on request; originals are often several megabytes. */

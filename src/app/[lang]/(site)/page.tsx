@@ -10,6 +10,7 @@ import { countFreshDeals, listFreshDeals } from "@/modules/deals/fresh";
 import { getDealStats, listDeals } from "@/modules/deals/queries";
 import { DealTicker } from "@/components/deals/deal-ticker";
 import { FeaturedDeal } from "@/components/deals/featured-deal";
+import { HeroDealCard } from "@/components/deals/hero-deal-card";
 import { ProductGrid } from "@/components/deals/product-grid";
 import { OrderSteps } from "@/components/orders/steps";
 import { ProductImage } from "@/components/product/product-image";
@@ -20,6 +21,7 @@ import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { orderedCategories } from "@/modules/settings/display-order";
 import { getDisplayOrder, getFeatureSwitches } from "@/modules/settings/service";
+import { HeroPick } from "@/components/recommendations/hero-pick";
 import { RecommendedRow } from "@/components/recommendations/recommended-row";
 
 /** Fresh real deals shown on the home page; the rest are on /fresh. */
@@ -72,6 +74,8 @@ export default async function HomePage() {
     <>
       <section className="hero-glow border-b border-line">
         <div className="hero-dots" aria-hidden />
+        {featured && <HeroDealCard card={featured} label={t.home.dealOfDay} money={money} href={href} />}
+        <HeroPick fallback={tickerCards} recommendations={features.recommendations} excludeId={featured?.productId} />
         <Container className="py-6 md:py-16">
           <div className="mx-auto max-w-3xl text-center">
             <p className="rise inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-strong">

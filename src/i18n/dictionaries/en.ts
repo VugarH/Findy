@@ -23,6 +23,7 @@ const en = {
   },
   recommendations: {
     title: "Recommended for you",
+    short: "For you",
     hint: "Deals picked from what you looked at and searched for on this device.",
     clear: "Clear my interests",
   },

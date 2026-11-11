@@ -25,6 +25,7 @@ const az: Dictionary = {
   },
   recommendations: {
     title: "Sizin üçün tövsiyələr",
+    short: "Sizə uyğun",
     hint: "Bu cihazda baxdığınız və axtardığınız məhsullara əsasən seçilmiş endirimlər.",
     clear: "Maraqlarımı sil",
   },

@@ -8,9 +8,8 @@ import { fmt } from "@/i18n/format";
 import { filterParams, filterQuery, PAGE_SIZE_COOKIE, PAGE_SIZES, parseDealFilters, type RawSearchParams } from "@/modules/deals/filters";
 import { withPageSizeCookie } from "@/modules/deals/page-size";
 import { getDealFacets, listDeals } from "@/modules/deals/queries";
-import { getFeatureSwitches, getFilterSwitches } from "@/modules/settings/service";
+import { getFilterSwitches } from "@/modules/settings/service";
 import { FollowButton } from "@/components/follows/follow-button";
-import { RecommendedRow } from "@/components/recommendations/recommended-row";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { FilterDrawerButton, FilterDrawerPanel, FilterDrawerProvider } from "./filter-drawer";
@@ -34,7 +33,7 @@ interface Props {
 /** The filterable deal listing behind /deals and every category page. */
 export async function DealsExplorer({ title, subtitle, searchParams, basePath, lockedCategory, action }: Props) {
   const { t, money, href, market, locale } = await getI18n();
-  const [switches, features] = await Promise.all([getFilterSwitches(), getFeatureSwitches()]);
+  const switches = await getFilterSwitches();
   const filters = parseDealFilters(await withPageSizeCookie(searchParams), lockedCategory, switches);
   const showCategory = !lockedCategory && switches.category;
 
@@ -171,11 +170,6 @@ export async function DealsExplorer({ title, subtitle, searchParams, basePath, l
               brands={facets.brands}
               stores={facets.stores}
             />
-
-            {/* Only on the plain list's first page: once someone filters, they asked for something else. */}
-            {features.recommendations && activeCount === 0 && filters.page === 1 && (
-              <RecommendedRow category={lockedCategory} limit={4} density="compact" className="mt-5" />
-            )}
 
             {/* Phones: only below the list, it pushed the products off the first screen. */}
             {pages > 1 && <div className="mt-4 max-md:hidden">{pagination}</div>}

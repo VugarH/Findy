@@ -8,6 +8,7 @@ import { getI18n } from "@/i18n/server";
 import { getPopularCoverage } from "@/modules/catalog/popular";
 import { countFreshDeals, listFreshDeals } from "@/modules/deals/fresh";
 import { getDealStats, listDeals } from "@/modules/deals/queries";
+import { DealTicker } from "@/components/deals/deal-ticker";
 import { FeaturedDeal } from "@/components/deals/featured-deal";
 import { ProductGrid } from "@/components/deals/product-grid";
 import { OrderSteps } from "@/components/orders/steps";
@@ -45,6 +46,7 @@ export default async function HomePage() {
   // Families sold by several stores come first: those are the ones worth comparing.
   const popularTiles = [...popular].sort((a, b) => b.stores.length - a.stores.length).slice(0, 12);
   const [featured, ...topDeals] = top.items;
+  const tickerCards = [...top.items, ...lowest.items].filter((card, i, all) => all.findIndex((c) => c.productId === card.productId) === i);
 
   const dealCount = stats.dealCount.toLocaleString(LOCALE_TAGS[locale]);
   const statTiles: { value: string; label: string; href?: string }[] = [
@@ -69,14 +71,15 @@ export default async function HomePage() {
   return (
     <>
       <section className="hero-glow border-b border-line">
+        <div className="hero-dots" aria-hidden />
         <Container className="py-6 md:py-16">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-strong">
-              <span className="size-1.5 rounded-full bg-brand" aria-hidden />
+            <p className="rise inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-strong">
+              <span className="live-dot size-1.5 rounded-full bg-brand" aria-hidden />
               {t.home.heroBadge}
             </p>
-            <h1 className="mt-3 text-balance text-3xl font-extrabold tracking-tight md:mt-5 md:text-5xl">{t.home.heroTitle}</h1>
-            <p className="mx-auto mt-2 max-w-2xl text-pretty text-sm text-muted md:mt-4 md:text-lg">{t.home.heroSubtitle}</p>
+            <h1 className="rise mt-3 [--i:1] text-balance text-3xl font-extrabold tracking-tight md:mt-5 md:text-5xl">{t.home.heroTitle}</h1>
+            <p className="rise mx-auto mt-2 [--i:2] max-w-2xl text-pretty text-sm text-muted md:mt-4 md:text-lg">{t.home.heroSubtitle}</p>
             <SearchBar
               action={href("/search")}
               placeholder={t.search.placeholder}
@@ -84,11 +87,11 @@ export default async function HomePage() {
               suggest={{ suggestions: t.search.suggestions, brand: t.search.suggestionBrand }}
               size="lg"
               // Phones have the header's search right above it.
-              className="mx-auto mt-8 max-w-2xl max-md:hidden"
+              className="rise mx-auto mt-8 max-w-2xl [--i:3] max-md:hidden"
             />
             {/* The way into the deal list, right where people start: no hunting for the small menu link. */}
             {stats.dealCount > 0 && (
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 md:mt-6 md:gap-3">
+              <div className="rise mt-4 flex flex-wrap items-center justify-center gap-2 [--i:4] md:mt-6 md:gap-3">
                 <ButtonLink href={href("/deals")} size="lg" className="shadow-card max-md:w-full">
                   {fmt(t.home.browseAll, { count: dealCount })}
                   <ArrowRight className="size-5" aria-hidden />
@@ -101,7 +104,7 @@ export default async function HomePage() {
             )}
           </div>
 
-          <dl className="mx-auto mt-5 grid max-w-4xl grid-cols-4 gap-1.5 md:mt-12 md:gap-3">
+          <dl className="rise mx-auto mt-5 grid [--i:5] max-w-4xl grid-cols-4 gap-1.5 md:mt-12 md:gap-3">
             {statTiles.map((stat) => (
               <div key={stat.label} className="rounded-xl border border-line bg-surface/70 px-1 py-2.5 text-center backdrop-blur-sm md:rounded-2xl md:px-4 md:py-5">
                 <dd className="text-base font-extrabold tracking-tight md:text-3xl">
@@ -117,6 +120,7 @@ export default async function HomePage() {
               </div>
             ))}
           </dl>
+          <DealTicker cards={tickerCards} label={t.home.tickerLabel} money={money} href={href} />
           {updatedAt && (
             <p className="mt-3 text-center text-xs text-muted md:mt-6">{fmt(t.home.updated, { time: updatedAt })}</p>
           )}

@@ -73,6 +73,7 @@ const en = {
     popularFrom: "from {price}",
     popularMeta: "{variants} variants · {stores} stores",
     heroBadge: "Updated every day",
+    tickerLabel: "Today's deals",
     heroTitle: "The real price, before you buy.",
     heroSubtitle:
       "Every day we collect prices from local and international stores, add delivery and customs, and confirm every discount against its real price history.",

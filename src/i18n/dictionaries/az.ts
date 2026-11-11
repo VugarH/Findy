@@ -75,7 +75,8 @@ const az: Dictionary = {
     popularFrom: "{price}-dən",
     popularMeta: "{variants} variant · {stores} mağaza",
     heroBadge: "Hər gün yenilənir",
-    heroTitle: "Almazdan əvvəl real qiyməti bilin.",
+    tickerLabel: "Bugünün endirimləri",
+    heroTitle: "Almadan əvvəl real qiyməti bilin.",
     heroSubtitle:
       "Hər gün yerli və xarici mağazaların qiymətlərini toplayır, çatdırılma və gömrüyü əlavə edir, hər endirimi real qiymət tarixçəsi ilə təsdiqləyirik.",
     statDeals: "bu günün endirimi",

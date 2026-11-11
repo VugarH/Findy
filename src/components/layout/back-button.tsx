@@ -51,6 +51,9 @@ function followChosenLanguage(replace: (href: string) => void) {
 
 /** Pages (without the language) seen in this tab, most recent last. */
 const SEEN_KEY = "findy:seen-paths";
+/** The page this load started on; React may run an effect twice, so it is compared, not counted. */
+let firstPath: string | null = null;
+let leftFirstPage = false;
 
 function seenPaths(): string[] {
   try {
@@ -90,8 +93,14 @@ export function BackButton() {
   useEffect(() => {
     // Back to a page seen before a language change: show it in the language chosen since.
     // A page opened from outside (a shared /en/ link) was not seen in this tab and keeps its language.
+    // The first page of a load counts only when the browser went back or forward to it:
+    // an address typed or opened from a link keeps its language.
     const path = pathname.split("/").slice(2).join("/");
-    if (seenBefore(path)) followChosenLanguage(router.replace);
+    const entry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    firstPath ??= pathname;
+    if (pathname !== firstPath) leftFirstPage = true;
+    const typed = !leftFirstPage && entry?.type !== "back_forward";
+    if (!typed && seenBefore(path)) followChosenLanguage(router.replace);
     remember(path);
   }, [pathname, router]);
 

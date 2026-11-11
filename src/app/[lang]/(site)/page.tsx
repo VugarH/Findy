@@ -183,28 +183,32 @@ export default async function HomePage() {
             <SectionHeading title={t.home.popularTitle} hint={t.home.popularHint} />
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {popularTiles.map((row) => (
-                <li key={row.family.id}>
-                  <Link
-                    href={`${href("/search")}?q=${encodeURIComponent(row.family.query)}`}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card"
-                  >
+                <li
+                  key={row.family.id}
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card"
+                >
+                  {/* The photo and "from" price are the cheapest item, so they open it; the line below opens every variant. */}
+                  <Link href={href(`/product/${row.cheapest.slug}`)} className="flex flex-1 flex-col">
                     <div className="aspect-[4/3] overflow-hidden">
                       <ProductImage
                         className="transition-transform duration-300 group-hover:scale-105"
                         imageUrl={row.cheapest.imageUrl}
-                        title={row.family.label}
+                        title={row.cheapest.title}
                         category={row.cheapest.categorySlug}
                       />
                     </div>
-                    <div className="flex flex-1 flex-col gap-0.5 p-3">
-                      <span className="font-bold group-hover:underline">{row.family.label}</span>
+                    <div className="flex flex-col gap-0.5 px-3 pt-3">
+                      <span className="font-bold hover:underline">{row.family.label}</span>
                       <span className="text-sm font-semibold text-brand-strong">
                         {fmt(t.home.popularFrom, { price: money(row.fromMinor) })}
                       </span>
-                      <span className="mt-auto pt-1 text-xs text-muted">
-                        {fmt(t.home.popularMeta, { variants: row.variants, stores: row.stores.length })}
-                      </span>
                     </div>
+                  </Link>
+                  <Link
+                    href={`${href("/search")}?q=${encodeURIComponent(row.family.query)}`}
+                    className="mt-auto px-3 pb-3 pt-1 text-xs text-muted hover:text-brand-strong hover:underline"
+                  >
+                    {fmt(t.home.popularMeta, { variants: row.variants, stores: row.stores.length })} ›
                   </Link>
                 </li>
               ))}

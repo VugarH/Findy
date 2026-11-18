@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageAlternates } from "@/i18n/alternates";
+import { pageAlternates, pageOpenGraph } from "@/i18n/alternates";
 import { notFound } from "next/navigation";
 import { isCategorySlug } from "@/config/categories";
 import { getI18n } from "@/i18n/server";
@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/category/[
   const { slug } = await params;
   if (!isCategorySlug(slug)) return {};
   const { t, locale } = await getI18n();
-  return { title: t.categories[slug].name, description: t.categories[slug].description, alternates: pageAlternates(locale, `/category/${slug}`) };
+  return { title: t.categories[slug].name, description: t.categories[slug].description, alternates: pageAlternates(locale, `/category/${slug}`), openGraph: pageOpenGraph(locale, `/category/${slug}`) };
 }
 
 export default async function CategoryPage({ params, searchParams }: PageProps<"/[lang]/category/[slug]">) {

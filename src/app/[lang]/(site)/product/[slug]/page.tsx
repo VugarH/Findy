@@ -5,8 +5,8 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { BadgeCheck, ChevronRight, Info, Search, Sparkles, TrendingDown } from "lucide-react";
 import type { CategorySlug } from "@/config/categories";
 import { isSubcategoryOf } from "@/config/subcategories";
-import { siteConfig, siteUrl } from "@/config/site";
-import { pageAlternates } from "@/i18n/alternates";
+import { siteUrl } from "@/config/site";
+import { pageAlternates, pageOpenGraph } from "@/i18n/alternates";
 import { jsonLdText, productJsonLd } from "@/modules/catalog/structured-data";
 import { fmt, formatDay } from "@/i18n/format";
 import { LOCALE_TAGS } from "@/i18n/config";
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/product/[s
     description,
     alternates: pageAlternates(locale, `/product/${slug}`),
     // A page's openGraph replaces the layout's, so the site-wide fields are repeated here.
-    openGraph: { siteName: siteConfig.name, type: "website", title: detail.product.title, description, ...(image ? { images: [{ url: image, alt: detail.product.title }] } : {}) },
+    openGraph: { ...pageOpenGraph(locale, `/product/${slug}`), title: detail.product.title, description, ...(image ? { images: [{ url: image, alt: detail.product.title }] } : {}) },
   };
 }
 

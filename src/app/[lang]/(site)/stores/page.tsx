@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageAlternates } from "@/i18n/alternates";
+import { pageAlternates, pageOpenGraph } from "@/i18n/alternates";
 import { ArrowUpRight } from "lucide-react";
 import { LOCALE_TAGS } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
@@ -12,7 +12,7 @@ import { scopeLabel } from "@/i18n/scope-label";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t, locale } = await getI18n();
-  return { title: t.stores.title, description: t.stores.subtitle, alternates: pageAlternates(locale, "/stores") };
+  return { title: t.stores.title, description: t.stores.subtitle, alternates: pageAlternates(locale, "/stores"), openGraph: pageOpenGraph(locale, "/stores") };
 }
 
 export default async function StoresPage() {

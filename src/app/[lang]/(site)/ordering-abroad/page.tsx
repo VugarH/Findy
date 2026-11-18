@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageAlternates } from "@/i18n/alternates";
+import { pageAlternates, pageOpenGraph } from "@/i18n/alternates";
 import { MessageCircle } from "lucide-react";
 import { fmt } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
@@ -11,7 +11,7 @@ import { Container } from "@/components/ui/container";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t, locale } = await getI18n();
-  return { title: t.order.helpTitle, description: t.order.helpIntro, alternates: pageAlternates(locale, "/ordering-abroad") };
+  return { title: t.order.helpTitle, description: t.order.helpIntro, alternates: pageAlternates(locale, "/ordering-abroad"), openGraph: pageOpenGraph(locale, "/ordering-abroad") };
 }
 
 export default async function OrderingAbroadPage() {
